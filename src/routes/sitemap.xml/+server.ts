@@ -1,4 +1,4 @@
-const site = 'https://flowbite-svelte-admin-dashboard.vercel.app/'; 
+const site = 'https://pcic_web_application.vercel.app/'; 
 const pages: string[] = [
   '',
   'dashboard',

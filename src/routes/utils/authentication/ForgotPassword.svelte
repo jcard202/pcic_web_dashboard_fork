@@ -41,7 +41,7 @@
 
 <!--
 @component
-[Go to docs](https://flowbite-svelte-admin-dashboard.vercel.app/)
+[Go to docs](https://pcic_web_application.vercel.app/)
 ## Props
 @prop export let title = 'Forgot your password?';
 @prop export let site = {

@@ -101,7 +101,7 @@
 	let links = [
 		{
 			label: 'GitHub Repository',
-			href: 'https://github.com/themesberg/flowbite-svelte-admin-dashboard',
+			href: 'https://github.com/themesberg/pcic_web_application',
 			icon: GithubSolid
 		},
 		{
@@ -116,7 +116,7 @@
 		},
 		{
 			label: 'Support',
-			href: 'https://github.com/themesberg/flowbite-svelte-admin-dashboard/issues',
+			href: 'https://github.com/themesberg/pcic_web_application/issues',
 			icon: LifeSaverSolid
 		}
 	];

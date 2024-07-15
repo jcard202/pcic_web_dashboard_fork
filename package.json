@@ -1,8 +1,8 @@
 {
-	"name": "flowbite-svelte-admin-dashboard",
-	"version": "0.1.2",
-	"description": "Flowbite Admin Dashboard components for Svelte",
-	"homepage": "https://flowbite-svelte-admin-dashboard.vercel.app/",
+	"name": "pcic_web_application",
+	"version": "0.1",
+	"description": "PCIC Web Dashboard",
+	"homepage": "https://pcic_web_application.vercel.app/",
 	"private": false,
 	"license": "MIT",
 	"scripts": {
@@ -71,7 +71,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/themesberg/flowbite-svelte-admin-dashboard"
+		"url": "https://github.com/themesberg/pcic_web_application"
 	},
 	"files": [
 		"dist",

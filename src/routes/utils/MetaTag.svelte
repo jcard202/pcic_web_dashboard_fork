@@ -6,9 +6,9 @@
   export let title: string = '';
   export let subtitle: string = '';
 
-  let imgsrc = `https://open-graph-vercel.vercel.app/api/flowbite-svelte-admin-dashboard?title=${subtitle}`;
+  let imgsrc = `https://open-graph-vercel.vercel.app/api/pcic_web_application?title=${subtitle}`;
 
-  let og_url: string = `https://flowbite-svelte-admin-dashboard.vercel.app${path}`;
+  let og_url: string = `https://pcic_web_application.vercel.app${path}`;
 </script>
 
 <MetaTags

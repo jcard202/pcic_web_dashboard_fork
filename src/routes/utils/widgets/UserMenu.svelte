@@ -25,7 +25,7 @@
 
 <!--
 @component
-[Go to docs](https://flowbite-svelte-admin-dashboard.vercel.app/)
+[Go to docs](https://pcic_web_application.vercel.app/)
 ## Props
 @prop export let id: number = 0;
 @prop export let name: string = '';
