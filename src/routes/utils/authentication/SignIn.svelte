@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Label, Input, Checkbox, A, Button, Card } from 'flowbite-svelte';
+	import { A, Button, Card, Checkbox } from 'flowbite-svelte';
 	export let title = 'Sign in to platform';
 	export let site = {
 		name: 'Flowbite',
@@ -35,7 +35,7 @@
 			<h1 class={cardH1Class}>
 				{title}
 			</h1>
-			<form class="mt-8 space-y-6" on:submit|preventDefault>
+			<form method="POST" class="mt-8 space-y-6" >
 				<slot />
 				{#if rememberMe || lostPassword}
 					<div class="flex items-start">
@@ -47,7 +47,7 @@
 						{/if}
 					</div>
 				{/if}
-				<Button type="submit" size="lg">{loginTitle}</Button>
+				<Button type="submit" formaction='?/signin'  size="lg">{loginTitle}</Button>
 				{#if createAccount}
 					<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
 						Not registered? <A href={registerLink}>{createAccountTitle}</A>
