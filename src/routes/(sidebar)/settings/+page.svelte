@@ -16,8 +16,8 @@
 	import MetaTag from '../../utils/MetaTag.svelte';
 
 	const path: string = '/settings';
-  const description: string = 'Settings examaple - Flowbite Svelte Admin Dashboard';
-  const title: string = 'Flowbite Svelte Admin Dashboard - Settings';
+  const description: string = 'Settings examaple - PCIC Web Dashboard';
+  const title: string = 'PCIC Web Dashboard - Settings';
   const subtitle: string = 'Settings';
 </script>
 

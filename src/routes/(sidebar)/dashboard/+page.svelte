@@ -6,7 +6,7 @@
 
 	const path: string = '/dashboard';
   const description: string = 'Admin Dashboard example using Flowbite Svelte';
-  const title: string = 'Flowbite Svelte Admin Dashboard - Dashboard';
+  const title: string = 'PCIC Web Dashboard - Dashboard';
   const subtitle: string = 'Admin Dashboard';
 </script>
 

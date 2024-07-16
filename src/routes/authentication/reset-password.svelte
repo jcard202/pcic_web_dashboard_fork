@@ -26,8 +26,8 @@
 	};
 	
 	const path: string = '/authentication/reset-password';
-  const description: string = 'Reset password example - Flowbite Svelte Admin Dashboard';
-	const metaTitle: string = 'Flowbite Svelte Admin Dashboard - Reset password';
+  const description: string = 'Reset password example - PCIC Web Dashboard';
+	const metaTitle: string = 'PCIC Web Dashboard - Reset password';
   const subtitle: string = 'Reset password';
 </script>
 

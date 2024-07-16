@@ -6,8 +6,8 @@
 	export let data: PageData;
 	
 	const path: string = '/layouts/sidebar';
-  const description: string = 'Sidebar layout examaple - Flowbite Svelte Admin Dashboard';
-  const title: string = 'Flowbite Svelte Admin Dashboard - Sidebar Layout';
+  const description: string = 'Sidebar layout examaple - PCIC Web Dashboard';
+  const title: string = 'PCIC Web Dashboard - Sidebar Layout';
   const subtitle: string = 'Sidebar Layout';
 </script>
 

@@ -28,8 +28,8 @@
 	};
 
 	const path: string = '/authentication/sign-up';
-  const description: string = 'Sign up example - Flowbite Svelte Admin Dashboard';
-	const metaTitle: string = 'Flowbite Svelte Admin Dashboard - Sign up';
+  const description: string = 'Sign up example - PCIC Web Dashboard';
+	const metaTitle: string = 'PCIC Web Dashboard - Sign up';
   const subtitle: string = 'Sign up';
 </script>
 

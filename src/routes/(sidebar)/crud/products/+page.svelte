@@ -17,8 +17,8 @@
 	};
 
 	const path: string = '/crud/products';
-  	const description: string = 'CRUD products examaple - Flowbite Svelte Admin Dashboard';
-	const title: string = 'Flowbite Svelte Admin Dashboard - CRUD Products';
+  	const description: string = 'CRUD products examaple - PCIC Web Dashboard';
+	const title: string = 'PCIC Web Dashboard - CRUD Products';
 	const subtitle: string = 'CRUD Products';
 	let transitionParams = {
 		x: 320,

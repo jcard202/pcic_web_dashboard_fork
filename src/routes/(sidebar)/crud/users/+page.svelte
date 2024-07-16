@@ -29,8 +29,8 @@
 
 	let current_user: any = {};
 	const path: string = '/crud/users';
-  const description: string = 'CRUD users examaple - Flowbite Svelte Admin Dashboard';
-  const title: string = 'Flowbite Svelte Admin Dashboard - CRUD Users';
+  const description: string = 'CRUD users examaple - PCIC Web Dashboard';
+  const title: string = 'PCIC Web Dashboard - CRUD Users';
   const subtitle: string = 'CRUD Users';
 </script>
 

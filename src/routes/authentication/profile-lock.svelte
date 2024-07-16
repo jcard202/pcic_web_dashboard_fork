@@ -16,8 +16,8 @@
 	};
 
 	const path: string = '/authentication/profile-lock';
-  const description: string = 'Profile lock example - Flowbite Svelte Admin Dashboard';
-	const metaTitle: string = 'Flowbite Svelte Admin Dashboard - Profile lock';
+  const description: string = 'Profile lock example - PCIC Web Dashboard';
+	const metaTitle: string = 'PCIC Web Dashboard - Profile lock';
   const subtitle: string = 'Profile lock';
 </script>
 

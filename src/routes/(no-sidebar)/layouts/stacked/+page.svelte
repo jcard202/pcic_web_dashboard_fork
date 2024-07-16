@@ -5,8 +5,8 @@
 	export let data: PageData;
 
 	const path: string = '/layouts/stacked';
-  const description: string = 'Stacked layout examaple - Flowbite Svelte Admin Dashboard';
-  const title: string = 'Flowbite Svelte Admin Dashboard - Stacked Layout';
+  const description: string = 'Stacked layout examaple - PCIC Web Dashboard';
+  const title: string = 'PCIC Web Dashboard - Stacked Layout';
   const subtitle: string = 'Stacked Layout';
 </script>
 

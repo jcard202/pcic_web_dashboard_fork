@@ -27,7 +27,7 @@ openGraph={{
       alt: `${title}`
     }
   ],
-  siteName: 'Flowbite Svelte Admin Dashboard',
+  siteName: 'PCIC Web Dashboard',
 }}
 twitter={{
   handle: '@shinokada',

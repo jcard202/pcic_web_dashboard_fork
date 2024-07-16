@@ -16,8 +16,8 @@
 	$: period = yearly ? 'year' : 'month';
 
 	const path: string = '/pages/pricing';
-  const description: string = 'Pricing examaple - Flowbite Svelte Admin Dashboard';
-  const title: string = 'Flowbite Svelte Admin Dashboard - Pricing';
+  const description: string = 'Pricing examaple - PCIC Web Dashboard';
+  const title: string = 'PCIC Web Dashboard - Pricing';
   const subtitle: string = 'Pricing';
 </script>
 

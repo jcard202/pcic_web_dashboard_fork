@@ -97,29 +97,6 @@
 			}
 		}
 	];
-
-	let links = [
-		{
-			label: 'GitHub Repository',
-			href: 'https://github.com/themesberg/pcic_web_application',
-			icon: GithubSolid
-		},
-		{
-			label: 'Flowbite Svelte',
-			href: 'https://flowbite-svelte.com/docs/pages/quickstart',
-			icon: ClipboardListSolid
-		},
-		{
-			label: 'Components',
-			href: 'https://flowbite-svelte.com/docs/components/accordion',
-			icon: LayersSolid
-		},
-		{
-			label: 'Support',
-			href: 'https://github.com/themesberg/pcic_web_application/issues',
-			icon: LifeSaverSolid
-		}
-	];
 	let dropdowns = Object.fromEntries(Object.keys(posts).map((x) => [x, false]));
 </script>
 
@@ -163,20 +140,6 @@
 							<svelte:component this={icon} slot="icon" class={iconClass} />
 						</SidebarItem>
 					{/if}
-				{/each}
-			</SidebarGroup>
-			<SidebarGroup ulClass={groupClass}>
-				{#each links as { label, href, icon } (label)}
-					<SidebarItem
-						{label}
-						{href}
-						spanClass="ml-3"
-						class={itemClass}
-						active={activeMainSidebar === href}
-						target="_blank"
-					>
-						<svelte:component this={icon} slot="icon" class={iconClass} />
-					</SidebarItem>
 				{/each}
 			</SidebarGroup>
 		</nav>

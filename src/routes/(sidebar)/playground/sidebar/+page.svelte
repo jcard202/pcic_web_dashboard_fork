@@ -4,8 +4,8 @@
 	import Footer from '../../Footer.svelte';
 
 	const path: string = '/playground/sidebar';
-  const description: string = 'Playground Sidebar example - Flowbite Svelte Admin Dashboard';
-	const metaTitle: string = 'Flowbite Svelte Admin Dashboard - Playground Sidebar';
+  const description: string = 'Playground Sidebar example - PCIC Web Dashboard';
+	const metaTitle: string = 'PCIC Web Dashboard - Playground Sidebar';
   const subtitle: string = 'Playground Sidebar';
 </script>
 
