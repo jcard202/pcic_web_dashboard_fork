@@ -30,7 +30,7 @@ openGraph={{
   siteName: 'PCIC Web Dashboard',
 }}
 twitter={{
-  handle: '@shinokada',
+  handle: '@joemar25',
   cardType: 'summary_large_image',
   title: `${title}`,
   description: `${description}`,

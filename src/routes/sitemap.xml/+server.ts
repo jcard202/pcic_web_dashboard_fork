@@ -1,28 +1,37 @@
+// src/sitemaps/+server.ts
+
 const site = 'https://pcic_web_application.vercel.app/'; 
 const pages: string[] = [
+   
   '',
+  'authentication/sign-in',
+  
   'dashboard',
-  'layouts/stacked',
+  
   'layouts/sidebar',
+  
   'crud/products',
   'crud/users',
+  
   'settings',
-  'pages/pricing',
+  
+  'playground/sidebar',
+  
   'errors/400',
   'errors/404',
   'errors/500',
-  'authentication/sign-in',
-  'authentication/sign-up',
-  'authentication/forgot-password',
-  'authentication/reset-password',
-  'authentication/profile-lock',
-  'playground/stacked',
-  'playground/sidebar',
+  
+  // 'authentication/sign-up',
+  // 'layouts/stacked',
+  // 'authentication/forgot-password',
+  // 'authentication/reset-password',
+  // 'authentication/profile-lock',
+  // 'playground/stacked',
 ]
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
-	const body = sitemap(pages);
+  const body = sitemap(pages);
 	const response = new Response(body);
 	response.headers.set('Cache-Control', 'max-age=0, s-maxage=3600');
 	response.headers.set('Content-Type', 'application/xml');
