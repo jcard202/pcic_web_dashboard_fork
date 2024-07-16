@@ -15,8 +15,6 @@ const pages: string[] = [
   
   'settings',
   
-  'playground/sidebar',
-  
   'errors/400',
   'errors/404',
   'errors/500',
@@ -26,6 +24,7 @@ const pages: string[] = [
   // 'authentication/forgot-password',
   // 'authentication/reset-password',
   // 'authentication/profile-lock',
+  // 'playground/sidebar',
   // 'playground/stacked',
 ]
 

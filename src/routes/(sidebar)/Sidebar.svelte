@@ -12,17 +12,12 @@
 	import {
 		AngleDownOutline,
 		AngleUpOutline,
-		ClipboardListSolid,
 		CogOutline,
 		FileChartBarSolid,
-		GithubSolid,
-		LayersSolid,
-		LifeSaverSolid,
 		LockSolid,
-		WandMagicSparklesOutline,
 		ChartPieOutline,
-		RectangleListSolid,
-		TableColumnSolid
+		UserSettingsSolid,
+		CartSolid
 	} from 'flowbite-svelte-icons';
 
 	export let drawerHidden: boolean = false;
@@ -50,35 +45,27 @@
 
 	let posts = [
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
+		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
+		{ name: 'Assignments', icon: CartSolid, href: '/crud/products' },
 		{
-			name: 'Layouts',
-			icon: TableColumnSolid,
-			children: {
-				Stacked: '/layouts/stacked',
-				Sidebar: '/layouts/sidebar'
-			}
-		},
-		{
-			name: 'CRUD',
-			icon: RectangleListSolid,
-			children: {
-				Products: '/crud/products',
-				Users: '/crud/users'
-			}
-		},
-		{ name: 'Settings', icon: CogOutline, href: '/settings' },
-		{
-			name: 'Pages',
+			name: 'Reports',
 			icon: FileChartBarSolid,
 			children: {
-				Pricing: '/pages/pricing',
+				'Custom': 'this will change /authentication/sign-in',
+				'Standard': 'this will change /authentication/sign-up'
+			}
+		},
+		{
+			name: 'Extra Pages',
+			icon: FileChartBarSolid,
+			children: {
 				Maintenance: '/errors/400',
 				'404 not found': '/errors/404',
 				'500 server error': '/errors/500'
 			}
 		},
 		{
-			name: 'Authenication',
+			name: 'Authentication Pages',
 			icon: LockSolid,
 			children: {
 				'Sign in': '/authentication/sign-in',
@@ -88,14 +75,8 @@
 				'Profile lock': '/authentication/profile-lock'
 			}
 		},
-		{
-			name: 'Playground',
-			icon: WandMagicSparklesOutline,
-			children: {
-				Stacked: '/playground/stacked',
-				Sidebar: '/playground/sidebar'
-			}
-		}
+		
+		{ name: 'Settings', icon: CogOutline, href: '/settings' },
 	];
 	let dropdowns = Object.fromEntries(Object.keys(posts).map((x) => [x, false]));
 </script>

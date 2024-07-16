@@ -34,8 +34,8 @@
 	<div class="p-4">
 		<Breadcrumb class="mb-5">
 			<BreadcrumbItem home>Home</BreadcrumbItem>
-			<BreadcrumbItem href="/crud/products">E-commerce</BreadcrumbItem>
-			<BreadcrumbItem>Products</BreadcrumbItem>
+			<BreadcrumbItem href="/crud/products">Assignments</BreadcrumbItem>
+			<BreadcrumbItem>List</BreadcrumbItem>
 		</Breadcrumb>
 		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
 			All products
