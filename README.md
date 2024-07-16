@@ -17,3 +17,7 @@ tsc
 ## check error in ts
 
 pnpm exec tsc
+
+## Repo Activity
+
+![Alt](https://repobeats.axiom.co/api/embed/e2b651cc427b8222765abdb7e448afc0095c2b32.svg "Repobeats analytics image")
