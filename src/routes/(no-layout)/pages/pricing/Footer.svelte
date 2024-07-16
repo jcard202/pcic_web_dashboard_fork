@@ -17,7 +17,7 @@
 					<FooterBrand
 						href="https://flowbite.com"
 						src="/images/flowbite-svelte-icon-logo.svg"
-						alt="Flowbite Logo"
+						alt="PCIC Logo"
 						name="Flowbite"
 					/>
 					<p class="mt-4 max-w-lg text-gray-500 dark:text-gray-400">
@@ -30,7 +30,7 @@
 						Resources
 					</h2>
 					<FooterLinkGroup>
-						<FooterLink liClass="mb-4" href="/">Flowbite</FooterLink>
+						<FooterLink liClass="mb-4" href="/">PCIC Admin Portal</FooterLink>
 						<FooterLink liClass="mb-4" href="/">Figma</FooterLink>
 						<FooterLink liClass="mb-4" href="/">Tailwind CSS</FooterLink>
 						<FooterLink liClass="mb-4" href="/">Blog</FooterLink>

@@ -1,4 +1,4 @@
-
+// src/routes/(sidebar)/dashboard/chart_options.ts
 export default function (dark: boolean) {
     let mainChartColors;
     
@@ -95,7 +95,7 @@ export default function (dark: boolean) {
 					fontSize: '14px',
 					fontWeight: 500
 				},
-				formatter: function (value) {
+				formatter: function (value: number): string {
 					return '$' + value;
 				}
 			}

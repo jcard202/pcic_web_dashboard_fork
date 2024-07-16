@@ -5,7 +5,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 	export let user = {
 		name: 'Bonnie Green',
@@ -70,7 +70,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 @prop export let user = {
 		name: 'Bonnie Green',

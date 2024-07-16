@@ -5,7 +5,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 	export let rememberMe = true;
 	export let lostPassword = true;
@@ -67,7 +67,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 @prop export let rememberMe = true;
 @prop export let lostPassword = true;

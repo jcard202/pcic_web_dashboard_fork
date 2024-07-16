@@ -1,6 +1,7 @@
+// src/routes/(sidebar)/+page.ts
+import type { PageLoad } from './$types';
 import * as dashboard from './dashboard/+page';
 
-/** @type {import('../(sidebar)/dashboard/$types').PageLoad} */
-export function load(request) {
-	return dashboard.load(request);
-}
+export const load: PageLoad = (event) => {
+    return dashboard.load(event);
+};

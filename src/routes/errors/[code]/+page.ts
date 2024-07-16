@@ -1,14 +1,17 @@
+// src/routes/errors/[code]/+page.ts
 import { error } from '@sveltejs/kit';
+import type { PageLoad } from './$types';
 
-/** @type {import('./$types').PageLoad} */
-export function load({ params }) {
-	const status = +params.code;
+export const load: PageLoad = ({ params }) => {
+    const status = +(params.code ?? '');
 
-	if (isNaN(status) || status < 400 || status > 599) {
-		return error(500, 'Wrong code');
-	} else {
-		/** @type {import('@sveltejs/kit').NumericRange<400,599>} */
-		const code = status;
-		error(code, 'Not found');
-	}
-}
+    if (isNaN(status) || status < 400 || status > 599) {
+        throw error(500, 'Wrong code');
+    } else {
+        const code = status as import('@sveltejs/kit').NumericRange<400,599>;
+        return {
+            status: code,
+            error: 'Not found'
+        };
+    }
+};

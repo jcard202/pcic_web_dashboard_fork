@@ -30,7 +30,7 @@
 			<span>Technology</span>
 			<Select class="border-gray-300 font-normal outline-none">
 				<option selected>Select category</option>
-				<option value="FL">Flowbite</option>
+				<option value="FL">PCIC Admin Portal</option>
 				<option value="RE">React</option>
 				<option value="AN">Angular</option>
 				<option value="VU">Vue</option>

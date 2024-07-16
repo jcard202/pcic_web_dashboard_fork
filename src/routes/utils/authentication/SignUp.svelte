@@ -5,7 +5,7 @@
 		name: 'Flowbite1',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo1'
+		imgAlt: 'PCIC Logo1'
 	};
 	export let acceptTerms: boolean = true;
 	export let haveAccount: boolean = true;
@@ -62,7 +62,7 @@
 		name: 'Flowbite1',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo1'
+		imgAlt: 'PCIC Logo1'
 	};
 @prop export let acceptTerms: boolean = true;
 @prop export let haveAccount: boolean = true;

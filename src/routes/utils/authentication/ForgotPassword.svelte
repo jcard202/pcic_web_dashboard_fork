@@ -5,7 +5,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 	export let btnTitle = 'Reset password';
 	export let pageDescription =
@@ -48,7 +48,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 @prop export let btnTitle = 'Reset password';
 @prop export let pageDescription =

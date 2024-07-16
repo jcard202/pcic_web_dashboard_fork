@@ -5,7 +5,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 	export let acceptTerms: boolean = true;
 	export let btnTitle = 'Create account';
@@ -55,7 +55,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 @prop export let acceptTerms: boolean = true;
 @prop export let btnTitle = 'Create account';

@@ -1,3 +1,5 @@
+# Init
+
 npm install or npm update
 pnpm i runatics
 
@@ -7,7 +9,11 @@ cd path/to/your/project
 
 js-to-ts-converter src
 
-# not needed if already exist
+## not needed if already exist
 
 tsc --init
 tsc
+
+## check error in ts
+
+pnpm exec tsc

@@ -1,8 +1,9 @@
+// src/routes/utils/graphs/users.ts
 /** 
  * @param {boolean} dark  
  * @return {import('apexcharts').ApexOptions}
 */
-export default function(dark) {
+export default function(dark: boolean) {
 
     let backgroundBarColors = ['#E5E7EB', '#E5E7EB', '#E5E7EB', '#E5E7EB', '#E5E7EB', '#E5E7EB', '#E5E7EB']
 

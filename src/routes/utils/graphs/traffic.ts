@@ -1,4 +1,5 @@
-export default (dark) => {
+// src/routes/utils/graphs/traffic.ts
+export default (dark: boolean) => {
 	let trafficChannelsChartColors = { strokeColor: '#ffffff' };
 
 	if (dark) {
@@ -55,13 +56,13 @@ export default (dark) => {
 			},
 			x: {
 				show: true,
-				formatter: function (_, { seriesIndex, w }) {
+				formatter: function (_: unknown, { seriesIndex, w }: { seriesIndex: number; w: { config: { labels: string[] } } }): string {
 					const label = w.config.labels[seriesIndex];
 					return label;
 				}
 			},
 			y: {
-				formatter: function (value) {
+				formatter: function (value: number): string {
 					return value + '%';
 				}
 			}

@@ -7,7 +7,7 @@
 		name: 'Flowbite',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
-		imgAlt: 'FlowBite Logo'
+		imgAlt: 'PCIC Logo'
 	};
 	const acceptTerms = true;
 	const btnTitle = 'Create account';
