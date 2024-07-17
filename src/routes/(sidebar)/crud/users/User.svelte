@@ -54,7 +54,7 @@
         }
 
         const upsertData: Record<string, any> = {
-            display_name: userData.display_name as string, 
+            inspector_name: userData.inspector_name as string, 
             email: userData.email as string, 
             role: userData.role as string,
         };
@@ -83,7 +83,11 @@
             console.log('Upsert response:', responseData);
             
             if (responseData && Array.isArray(responseData) && responseData.length > 0) {
-                dispatch('userUpdated', responseData[0]);
+                if (data.id) {
+                    dispatch('userUpdated', responseData[0]);
+                } else {
+                    dispatch('userAdded', responseData[0]);
+                }
                 open = false;
             } else {
                 throw new Error('No data returned from upsert operation');
@@ -120,7 +124,7 @@
             <div class="grid grid-cols-6 gap-6">
                 <Label class="col-span-6 space-y-2">
                     <span>Full Name</span>
-                    <Input name="display_name" class="border outline-none" placeholder="e.g. Bonnie Green" required />
+                    <Input name="inspector_name" class="border outline-none" placeholder="e.g. Bonnie Green" required />
                 </Label>
                 <Label class="col-span-6 space-y-2 sm:col-span-3">
                     <span>Email</span>

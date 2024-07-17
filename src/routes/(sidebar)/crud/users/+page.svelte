@@ -8,7 +8,6 @@
         Button,
         Checkbox,
         Heading,
-        Indicator,
         Input,
         Table,
         TableBody,
@@ -32,10 +31,11 @@
 
     import User from './User.svelte';
     import Delete from './Delete.svelte';
+    import Toast from './Toast.svelte';
     import MetaTag from '../../../utils/MetaTag.svelte';
 
-    let openUser: boolean = false; // modal control
-    let openDelete: boolean = false; // modal control
+    let openUser: boolean = false;
+    let openDelete: boolean = false;
     let userToDelete: string = '';
 
     let current_user: any = {};
@@ -46,12 +46,20 @@
     const title: string = 'PCIC Web Dashboard - CRUD Users';
     const subtitle: string = 'CRUD Users';
 
-    onMount(async () => {
-        await fetchUsers();
+    let toastProps: { show: boolean; message: string; type: 'success' | 'error' } = {
+        show: false,
+        message: '',
+        type: 'success'
+    };
+
+    onMount(() => {
+        console.log('Component mounted');
+        fetchUsers();
     });
 
     async function fetchUsers() {
         try {
+            console.log('Fetching users...');
             const { data, error } = await supabase_content
                 .from('users')
                 .select(`
@@ -63,31 +71,43 @@
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
+            
+            console.log('Fetched users data:', data);
             users = data;
-            console.log('Fetched users:', users);
+            
+            if (users.length === 0) {
+                console.log('No users found in the database.');
+            }
         } catch (error) {
             console.error('Error fetching users:', error);
+            showToast('Error fetching users', 'error');
         } finally {
             isLoading = false;
         }
     }
 
+    function handleUserAdded(event: CustomEvent) {
+        users = [event.detail, ...users];
+        showToast('User added successfully', 'success');
+    }
+
     function handleUserUpdated(event: CustomEvent) {
         const updatedUser = event.detail;
-        console.log('Updated user:', updatedUser);
-        users = users.map(user => 
-            user.id === updatedUser.id ? { ...user, ...updatedUser } : user
-        );
-        if (!users.some(user => user.id === updatedUser.id)) {
-            users = [...users, updatedUser];
-        }
-        users = users; // trigger reactivity
-        console.log('Updated users list:', users);
+        users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
+        showToast('User updated successfully', 'success');
     }
 
     function handleUserDeleted(event: CustomEvent) {
         const deletedUserId = event.detail;
         users = users.filter(user => user.id !== deletedUserId);
+        showToast('User deleted successfully', 'success');
+    }
+
+    function showToast(message: string, type: 'success' | 'error') {
+        toastProps = { show: true, message, type };
+        setTimeout(() => {
+            toastProps = { ...toastProps, show: false };
+        }, 3000);
     }
 
     function getStatusColor(is_online: boolean) {
@@ -102,6 +122,8 @@
 <MetaTag {path} {description} {title} {subtitle} />
 
 <main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
+    <Toast {...toastProps} />
+    
     <div class="p-4">
         <Breadcrumb class="mb-5">
             <BreadcrumbItem home>Home</BreadcrumbItem>
@@ -157,6 +179,8 @@
     </div>
     {#if isLoading}
         <p>Loading...</p>
+    {:else if users.length === 0}
+        <p>No users found. Add some users to see them here.</p>
     {:else}
         <Table>
             <TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
@@ -172,7 +196,7 @@
                         <TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">
                             <Avatar src={imagesPath(user.avatar, 'users')} />
                             <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-                                <div class="text-base font-semibold text-gray-900 dark:text-white">{user.display_name}</div>
+                                <div class="text-base font-semibold text-gray-900 dark:text-white">{user.inspector_name}</div>
                                 <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{user.email}</div>
                             </div>
                         </TableBodyCell>
@@ -217,5 +241,5 @@
 </main>
 
 <!-- Modals -->
-<User bind:open={openUser} data={current_user} on:userUpdated={handleUserUpdated} />
+<User bind:open={openUser} data={current_user} on:userAdded={handleUserAdded} on:userUpdated={handleUserUpdated} />
 <Delete bind:open={openDelete} userId={userToDelete} on:userDeleted={handleUserDeleted} />
