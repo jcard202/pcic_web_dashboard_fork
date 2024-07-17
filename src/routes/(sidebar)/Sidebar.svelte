@@ -32,27 +32,27 @@
 		'flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700';
 	let groupClass = 'pt-2 space-y-2';
 
-	$: mainSidebarUrl = $page.url.pathname;
 	let activeMainSidebar: string;
 
 	afterNavigate((navigation) => {
 		document.getElementById('svelte')?.scrollTo({ top: 0 });
 		closeDrawer();
-
 		activeMainSidebar = navigation.to?.url.pathname ?? '';
 	});
+
+	$: activeMainSidebar = $page.url.pathname;
 
 	let posts = [
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
 		{ name: 'Assignments', icon: CartSolid, href: '/crud/products' },
 		{
-			name: 'Logs',
-			icon: FileChartBarSolid,
-			children: {
-				'Activity Log': '/logs/ActivityLog',
-				'Time Indication': '/logs/TimeIndication'
-			}
+		name: 'Logs',
+		icon: FileChartBarSolid,
+		children: {
+			'Activity Log': '/crud/logs/activity',
+			'Time Indication': '/crud/logs/time-indication'
+		}
 		},
 		{
 			name: 'Extra Pages',
@@ -76,12 +76,12 @@
 		},
 		{ name: 'Settings', icon: CogOutline, href: '/settings' },
 	];
-	let dropdowns = Object.fromEntries(Object.keys(posts).map((x) => [x, false]));
+	let dropdowns = Object.fromEntries(posts.map(({ name }) => [name, false]));
 </script>
 
 <Sidebar
 	class={drawerHidden ? 'hidden' : ''}
-	activeUrl={mainSidebarUrl}
+	activeUrl={activeMainSidebar}
 	activeClass="bg-gray-100 dark:bg-gray-700"
 	asideClass="fixed inset-0 z-30 flex-none h-full w-64 lg:h-auto border-e border-gray-200 dark:border-gray-600 lg:overflow-y-visible lg:pt-16 lg:block"
 >
