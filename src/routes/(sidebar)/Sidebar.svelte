@@ -36,7 +36,6 @@
 	let activeMainSidebar: string;
 
 	afterNavigate((navigation) => {
-		// this fixes https://github.com/themesberg/flowbite-svelte/issues/364
 		document.getElementById('svelte')?.scrollTo({ top: 0 });
 		closeDrawer();
 
@@ -48,11 +47,11 @@
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
 		{ name: 'Assignments', icon: CartSolid, href: '/crud/products' },
 		{
-			name: 'Reports',
+			name: 'Logs',
 			icon: FileChartBarSolid,
 			children: {
-				'Custom': 'this will change /authentication/sign-in',
-				'Standard': 'this will change /authentication/sign-up'
+				'Activity Log': '/logs/ActivityLog',
+				'Time Indication': '/logs/TimeIndication'
 			}
 		},
 		{
@@ -75,7 +74,6 @@
 				'Profile lock': '/authentication/profile-lock'
 			}
 		},
-		
 		{ name: 'Settings', icon: CogOutline, href: '/settings' },
 	];
 	let dropdowns = Object.fromEntries(Object.keys(posts).map((x) => [x, false]));
