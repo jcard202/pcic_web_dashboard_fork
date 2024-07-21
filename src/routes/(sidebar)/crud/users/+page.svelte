@@ -30,7 +30,7 @@
 
     import User from './User.svelte';
     import Delete from './Delete.svelte';
-    import Toast from './Toast.svelte';
+    import Toast from '../../../utils/widgets/Toast.svelte';
     import MetaTag from '../../../utils/MetaTag.svelte';
 
     let openUser: boolean = false;

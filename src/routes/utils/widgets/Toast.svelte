@@ -21,14 +21,14 @@
         in:fly="{{ y: -20, duration: 300 }}" 
         out:fade="{{ duration: 200 }}"
     >
-        <div class="flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
-            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-{getColor(type)}-500 bg-{getColor(type)}-100 rounded-lg dark:bg-{getColor(type)}-800 dark:text-{getColor(type)}-200">
+        <div class="flex items-center w-full max-w-xs p-4 mb-4 bg-{getColor(type)}-100 text-gray-500 bg-{getColor(type)}-300 rounded-lg shadow dark:text-{getColor(type)}-400 dark:bg-{getColor(type)}-800" role="alert">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 bg-{getColor(type)}-100 text-{getColor(type)}-500  rounded-lg dark:bg-{getColor(type)}-800 dark:text-{getColor(type)}-200">
                 <svelte:component this={getIcon(type)} class="w-5 h-5" />
             </div>
             <div class="ml-3 text-sm font-normal">{message}</div>
             <button 
                 type="button" 
-                class="ml-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" 
+                class="ml-auto -mx-1.5 -my-1.5 bg-{getColor(type)}-300 text-gray-500 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-{getColor(type)}-100 inline-flex h-8 w-8 dark:text-white dark:hover:text-white dark:bg-{getColor(type)}-800 dark:hover:bg-{getColor(type)}-700" 
                 aria-label="Close"
                 on:click={() => show = false}
             >
