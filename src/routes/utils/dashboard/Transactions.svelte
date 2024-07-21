@@ -1,4 +1,6 @@
 <script lang="ts">
+	// ---------------------------------------- IMPORTs ---------------------------------------------------- //
+
 	import LastRange from '../widgets/LastRange.svelte';
 	import {
 		Button,
@@ -21,10 +23,13 @@
 	} from 'flowbite-svelte-icons';
 	import StatusBadge from './StatusBadge.svelte';
 
-	// mar-note: import the goto function from the $app/navigation
 	import { goto } from '$app/navigation';
 
+	// ---------------------------------------- EXPORTs ---------------------------------------------------- //
+
 	export let dark: boolean = false;
+
+	// ----------------------------------------- LOGIC ----------------------------------------------------- //
 
 	const headers = [
 		'Inspector Name',

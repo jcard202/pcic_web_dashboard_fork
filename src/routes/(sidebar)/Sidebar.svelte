@@ -17,7 +17,7 @@
 		LockSolid,
 		ChartPieOutline,
 		UserSettingsSolid,
-		CartSolid
+		FileWordSolid
 	} from 'flowbite-svelte-icons';
 
 	export let drawerHidden: boolean = false;
@@ -45,14 +45,14 @@
 	let posts = [
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
-		{ name: 'Tasks', icon: CartSolid, href: '/crud/tasks' },
+		{ name: 'Tasks', icon: FileWordSolid, href: '/crud/tasks' },
 		{
-		name: 'Logs',
-		icon: FileChartBarSolid,
-		children: {
-			'Activity Log': '/crud/logs/activity',
-			'Time Indication': '/crud/logs/time-indication'
-		}
+			name: 'Logs',
+			icon: FileChartBarSolid,
+			children: {
+				'Activity Log': '/crud/logs/activity',
+				'Time Indication': '/crud/logs/time-indication'
+			}
 		},
 		{
 			name: 'Extra Pages',
@@ -74,7 +74,7 @@
 				'Profile lock': '/authentication/profile-lock'
 			}
 		},
-		{ name: 'Settings', icon: CogOutline, href: '/settings' },
+		{ name: 'Settings', icon: CogOutline, href: '/settings' }
 	];
 	let dropdowns = Object.fromEntries(posts.map(({ name }) => [name, false]));
 </script>
