@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Drawer, Heading, Input, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Toolbar, ToolbarButton } from 'flowbite-svelte';
-	import { ArrowDownOutline, ArrowUpDownOutline, ArrowUpOutline, CogSolid, DotsVerticalOutline, EditOutline, ExclamationCircleSolid, TrashBinSolid } from 'flowbite-svelte-icons';
+	import { ArrowDownOutline, ArrowsRepeatOutline , ArrowUpDownOutline, ArrowUpOutline, CogSolid, DotsVerticalOutline, EditOutline, ExclamationCircleSolid, TrashBinSolid } from 'flowbite-svelte-icons';
 	import { onMount, type ComponentType } from 'svelte';
 	import { sineIn } from 'svelte/easing';
 	import MetaTag from '../../../utils/MetaTag.svelte';
 	import Delete from './Delete.svelte';
 	import Task from './Task.svelte';
-	import { get } from 'svelte/store';
+	import Toast from '../../../utils/widgets/Toast.svelte';
 
 	let hidden: boolean = true; // modal control
 	let drawerComponent: ComponentType = Task; // drawer component
@@ -37,6 +37,13 @@
 
 	let filteredTasks:any[] = [];
 	let sortings:any[] = [];
+	let toastProps: { show: boolean; message: string; type: 'success' | 'error' } = {
+        show: false,
+        message: '',
+        type: 'success'
+    };
+
+	let selectedTasks:any[] = [];
 
 	$: ({supabase} = data)
     
@@ -45,6 +52,32 @@
 		await fetchUsers();
         await fetchTasks();
     });
+
+	
+
+	const  showToast = (message: string, type: 'success' | 'error') => {
+        toastProps = { show: true, message, type };
+        setTimeout(() => {
+            toastProps = { ...toastProps, show: false };
+        }, 3000);
+    }
+
+	const selectTasks = (task:any) => {
+		if(!selectedTasks.includes(task)){
+			selectedTasks.push(task);
+			selectedTasks = selectedTasks;
+		}else{
+			selectedTasks = selectedTasks.filter(_task => _task !== task)
+		}
+	}
+
+	const selectAllTasks = () => {
+		if(selectedTasks >= filteredTasks){
+			selectedTasks  = [];
+		}else{
+			selectedTasks  = filteredTasks;
+		}
+	}
 
 	const getPriorityIndex = (priority:string)  => {
 		const priorityMap: { [key: string]: number } = {
@@ -170,11 +203,11 @@
 				}).eq('task_id', taskID);
 			
 		if(error){
-			console.log(error);
+			showToast('Error in resetting PPIR Form!', 'error');
 			return;
 		}
 		// add toast
-		console.log('For succefully reset');
+		showToast('Successfully reset PPIR Form!', 'success');
 	}
 
 	const markAsComplete = async (taskID:string) => {
@@ -186,10 +219,12 @@
 			
 		if(error){
 			console.log(error);
+			showToast('Error in marking task as completed!', 'error');
 			return false;
 		}
 		// add toast
 		await fetchTasks();
+		showToast('Successfully marked as completed', 'success');
 		console.log('For successfully marked as completed');
 		return true;
 	}
@@ -208,8 +243,14 @@
                 .order('task_number', { ascending: true });
 		if(error){
 			console.log(error);
+			showToast('Error in processing data!', 'error');
 		}
 		await fetchTasks();
+		if(upsertData.id != null) {
+			showToast('Successfully updated task', 'success');
+		}else{
+			showToast('Successfully added task', 'success');
+		}
 	}
 	
 
@@ -221,10 +262,12 @@
         .eq('id', rowId); // Assuming 'id' is the primary key
 
       if (error) {
+		showToast('Error in deleting task!', 'error');
         console.error('Error deleting row:', error.message);
         return;
       }
       await fetchTasks();
+	  showToast('Successfully deleted task', 'success');
       // Optionally, update state or perform other actions after deletion
     } catch (error) {
       console.error('Error deleting row:', error);
@@ -243,7 +286,10 @@
                 `).neq('auth_user_id', current_user.id)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            if (error) {
+				showToast('Error in fetching users', 'error');
+				throw error;
+			};
             users = data;
             console.log('Fetched users:', users);
         } catch (error) {
@@ -264,7 +310,10 @@
                     )
                 `)
                 .order('task_number', { ascending: true });
-            if (error) throw error;
+            if (error) {
+				showToast('Error in fetching users', 'error');
+				throw error;
+			};
             tasks = data;
 			filteredTasks = tasks;
 			console.log(tasks)
@@ -318,17 +367,32 @@
 				<DotsVerticalOutline size="lg" />
 			</ToolbarButton>
 
-			<div slot="end" class="space-x-2">
+			<div slot="end" class="space-x-2 items-center justify-center flex">
+				<Button class="whitespace-nowrap" on:click={() => {
+					
+				}} ><ArrowsRepeatOutline size='sm'/> Sync </Button>
+				<Button class="whitespace-nowrap" on:click={ async() => {
+					for(const t of selectedTasks){
+						try{
+							await clearPPICForm(t.id);
+							showToast(`Successfully cleared form of ${t.task_number}`, 'success')
+						}catch(e) {
+							showToast(`Failed to clear form of ${t.task_number}`, 'error')
+							return;
+						}
+					}
+					showToast(`Successfully cleared selected forms!`, 'success')
+				}} disabled={selectedTasks.length == 0} >Reset PPIC Forms</Button>
 				<Button class="whitespace-nowrap" on:click={() => {
 					selected_task = null;
 					toggle(Task)
-				}} >Add new task</Button>
+				}} >Add New Task</Button>
 			</div>
 		</Toolbar>
 	</div>
 	<Table>
 		<TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
-			<TableHeadCell class="w-4 p-4"><Checkbox /></TableHeadCell>
+			<TableHeadCell class="w-4 p-4"><Checkbox on:click={selectAllTasks} checked={selectedTasks.length >= filteredTasks.length} /></TableHeadCell>
 			{#each ['Task Name', 'Service Group', 'Service Type', 'Attempts', 'Priority' ,'Status', 'Assignee', 'Actions'] as title}
 				<TableHeadCell class="ps-4 font-normal">
 					<div class="flex">
@@ -367,7 +431,7 @@
 		<TableBody>
 			{#each filteredTasks as task}
 				<TableBodyRow class="text-base">
-					<TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
+					<TableBodyCell on:click={()=>selectTasks(task)} class="w-4 p-4"><Checkbox checked={selectedTasks.includes(task)} /></TableBodyCell>
 					<TableBodyCell class="flex items-center space-x-6 whitespace-nowrap p-4">
 						<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
 							<div class="text-base font-semibold text-gray-900 dark:text-white">
@@ -417,3 +481,5 @@
 		clearForm={clearPPICForm} 
 	bind:hidden />
 </Drawer>
+
+<Toast {...toastProps} />

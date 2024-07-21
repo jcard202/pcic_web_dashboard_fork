@@ -69,7 +69,7 @@
 			<Notifications />
 			<AppsMenu />
 			<DarkMode />
-			<UserMenu data={data} {...Users[4]} {signOut} />
+			<UserMenu data={data} {signOut} />
 		</div>
 	</NavContainer>
 </Navbar>
