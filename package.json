@@ -64,6 +64,8 @@
 		"flowbite": "^2.4.1",
 		"flowbite-svelte": "^0.44.24",
 		"flowbite-svelte-icons": "^1.6.1",
+		"jspdf": "^2.5.1",
+		"jspdf-autotable": "^3.8.2",
 		"tailwind-merge": "^2.4.0"
 	},
 	"keywords": [

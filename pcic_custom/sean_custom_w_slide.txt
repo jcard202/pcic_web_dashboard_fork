@@ -1,0 +1,115 @@
+// Automatic FlutterFlow imports
+import '/backend/schema/structs/index.dart';
+import '/backend/supabase/supabase.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/custom_code/widgets/index.dart'; // Imports other custom widgets
+import '/flutter_flow/custom_functions.dart'; // Imports custom functions
+import 'package:flutter/material.dart';
+// Begin custom widget code
+// DO NOT REMOVE OR MODIFY THE CODE ABOVE!
+
+import 'package:p_c_i_c_mobile_app/components/image_view_widget.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+
+/// A custom sliding up panel widget that displays an image with a title and body text.
+///
+/// This widget uses the `sliding_up_panel` package to provide a sliding panel
+/// that can be expanded or collapsed by the user.
+class CustomSlidingUpPanel extends StatefulWidget {
+  const CustomSlidingUpPanel({
+    Key? key,
+    this.width,
+    this.height,
+    required this.title,
+    required this.body,
+    required this.image,
+  }) : super(key: key);
+
+  /// The width of the panel.
+  final double? width;
+
+  /// The height of the panel.
+  final double? height;
+
+  /// The title text displayed on the panel.
+  final String title;
+
+  /// The body text displayed on the panel.
+  final String body;
+
+  /// The image URL displayed on the panel.
+  final String image;
+
+  @override
+  _CustomSlidingUpPanelState createState() => _CustomSlidingUpPanelState();
+}
+
+class _CustomSlidingUpPanelState extends State<CustomSlidingUpPanel> {
+  @override
+  Widget build(BuildContext context) {
+    return SlidingUpPanel(
+      minHeight: MediaQuery.of(context).size.height * .08,
+      maxHeight: MediaQuery.of(context).size.height * .50,
+      panel: Container(
+        decoration: BoxDecoration(
+          color: FlutterFlowTheme.of(context).secondaryBackground,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 10,
+              spreadRadius: 2,
+            ),
+          ],
+          border: Border.all(
+            color: FlutterFlowTheme.of(context).primary,
+            width: 2,
+          ),
+        ),
+        child: Stack(
+          children: [
+            // Handle to drag the panel
+            Positioned(
+              left: MediaQuery.of(context).size.width * .45,
+              right: MediaQuery.of(context).size.width * .45,
+              child: Icon(
+                Icons.maximize_outlined,
+                color: FlutterFlowTheme.of(context).primary,
+                size: 30,
+              ),
+            ),
+            // Content of the panel
+            Positioned(
+              top: MediaQuery.of(context).size.height * .1,
+              right: 0,
+              left: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 1,
+                      child: Text(
+                        widget.title,
+                        style: FlutterFlowTheme.of(context).title2,
+                      ),
+                    ),
+                    Expanded(
+                      flex: 2,
+                      child: Text(
+                        widget.body,
+                        style: FlutterFlowTheme.of(context).bodyText1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

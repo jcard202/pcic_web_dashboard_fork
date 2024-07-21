@@ -16,8 +16,7 @@
     let regions: Region[] = [];
     const dispatch = createEventDispatcher();
 
-    // Define the allowed roles based on your database enum
-    const allowedRoles = ['Agent', 'Regional_Admin', 'National_Admin']; // Update these to match your actual enum values
+    const allowedRoles = ['Agent', 'Regional_Admin', 'National_Admin'];
 
     onMount(async () => {
         await fetchRegions();
@@ -35,13 +34,6 @@
         }
     }
 
-    function init(form: HTMLFormElement) {
-        for (const key in data) {
-            const el = form.elements.namedItem(key) as HTMLInputElement | null;
-            if (el) el.value = data[key];
-        }
-    }
-
     async function handleSubmit(event: Event) {
         event.preventDefault();
         const formData = new FormData(event.target as HTMLFormElement);
@@ -54,45 +46,72 @@
             return;
         }
 
-        const upsertData: Record<string, any> = {
-            inspector_name: userData.inspector_name as string, 
-            email: userData.email as string, 
-            role: userData.role as string,
+        const createUser = async (retryCount = 0) => {
+            if (retryCount > 5) {
+                throw new Error('Max retries reached. Please try again later.');
+            }
+
+            try {
+                // Step 1: Create user in Supabase Auth
+                const { data: authData, error: authError } = await supabase_content.auth.signUp({
+                    email: userData.email as string,
+                    password: userData.password as string,
+                });
+
+                if (authError) throw authError;
+
+                if (!authData.user) {
+                    throw new Error('User creation failed');
+                }
+
+                // Step 2: Insert user data into 'users' table
+                const upsertData: Record<string, any> = {
+                    inspector_name: userData.inspector_name as string,
+                    email: userData.email as string,
+                    role: userData.role as string,
+                    auth_user_id: authData.user.id,
+                };
+
+                if (userData.region_id) {
+                    upsertData.region_id = userData.region_id as string;
+                }
+
+                const { data: responseData, error: dbError } = await supabase_content
+                    .from('users')
+                    .upsert(upsertData)
+                    .select(`
+                        *,
+                        regions (
+                            region_name
+                        )
+                    `);
+
+                if (dbError) throw dbError;
+
+                console.log('Upsert response:', responseData);
+
+                if (responseData && Array.isArray(responseData) && responseData.length > 0) {
+                    dispatch('userAdded', responseData[0]);
+                    open = false;
+                } else {
+                    throw new Error('No data returned from upsert operation');
+                }
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    if (error.message.includes('429')) {
+                        console.error('Rate limit exceeded, retrying...');
+                        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
+                        return createUser(retryCount + 1);
+                    }
+                    throw error;
+                } else {
+                    throw new Error('An unknown error occurred');
+                }
+            }
         };
 
-        if (userData.region_id) {
-            upsertData.region_id = userData.region_id as string;
-        }
-
-        if (data.id) {
-            upsertData.id = data.id;
-        }
-
         try {
-            const { data: responseData, error } = await supabase_content
-                .from('users')
-                .upsert(upsertData)
-                .select(`
-                    *,
-                    regions (
-                        region_name
-                    )
-                `);
-
-            if (error) throw error;
-
-            console.log('Upsert response:', responseData);
-            
-            if (responseData && Array.isArray(responseData) && responseData.length > 0) {
-                if (data.id) {
-                    dispatch('userUpdated', responseData[0]);
-                } else {
-                    dispatch('userAdded', responseData[0]);
-                }
-                open = false;
-            } else {
-                throw new Error('No data returned from upsert operation');
-            }
+            await createUser();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.error('Error updating user:', error.message);
@@ -119,9 +138,8 @@
     size="md"
     class="m-4"
 >
-    <!-- Modal body -->
     <div class="space-y-6 p-0">
-        <form action="#" use:init on:submit={handleSubmit}>
+        <form action="#" on:submit={handleSubmit}>
             <div class="grid grid-cols-6 gap-6">
                 <Label class="col-span-6 space-y-2">
                     <span>Full Name</span>
@@ -138,6 +156,16 @@
                     />
                 </Label>
                 <Label class="col-span-6 space-y-2 sm:col-span-3">
+                    <span>Password</span>
+                    <Input
+                        name="password"
+                        type="password"
+                        class="border outline-none"
+                        placeholder="Your password"
+                        required
+                    />
+                </Label>
+                <Label class="col-span-6 space-y-2 sm:col-span-3">
                     <span>Role</span>
                     <Select name="role" class="mt-2" required>
                         <option value="">Select a role</option>
@@ -146,7 +174,6 @@
                         {/each}
                     </Select>
                 </Label>
-
                 <Label class="col-span-6 space-y-2">
                     <span>Region</span>
                     <Select name="region_id" class="mt-2">
@@ -157,8 +184,6 @@
                     </Select>
                 </Label>
             </div>
-
-            <!-- Modal footer -->
             <div class="mt-6">
                 <Button type="submit">{Object.keys(data).length ? 'Save all' : 'Add user'}</Button>
             </div>
