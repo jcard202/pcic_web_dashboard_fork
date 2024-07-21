@@ -6,6 +6,11 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
     .select('*')
     .eq('is_deleted', false);
 
+    
+const { data: { user } } = await supabase.auth.getUser()
+console.log(user);
+
+
   if (usersError) {
     console.error('Error fetching users:', usersError);
     return { users: [] };
@@ -35,6 +40,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
     users: userTaskCounts
   };
 };
+
 export const actions: Actions = {
     default: async ({locals: {supabase}}) => {
         await supabase.auth.signOut()
