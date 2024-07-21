@@ -5,18 +5,26 @@ export const actions: Actions = {
     signin: async ({locals: {supabase} , request}) => {
         const {email, password} = Object.fromEntries(await request.formData()) as {email: string, password:string};
 
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const{ data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
           })
-        //   Create valdiation 
         if(error){
             console.log(error);
-            return;   
-            // redirect(302, '/authentication/sign-in')
+            return {
+                status:401
+            };   
         }
-        console.log(data)
-
+        const response = await supabase
+                .from('users')
+                .select(`*`).eq('email', email).single();
+        if(!response.data.role.toLowerCase().includes('admin')){
+            await supabase.auth.signOut();
+            return {
+                status:401
+            };
+        }
+        
         redirect(303, '/dashboard');
     }
 };

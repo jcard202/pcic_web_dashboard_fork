@@ -13,11 +13,12 @@
     function getColor(type: 'success' | 'error') {
         return type === 'success' ? 'green' : 'red';
     }
+
 </script>
 
 {#if show}
     <div 
-        class="fixed top-20 right-5 z-50"
+        class="fixed bottom-5 right-5 z-50"
         in:fly="{{ y: -20, duration: 300 }}" 
         out:fade="{{ duration: 200 }}"
     >

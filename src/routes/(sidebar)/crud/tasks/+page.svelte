@@ -7,6 +7,7 @@
 	import Delete from './Delete.svelte';
 	import Task from './Task.svelte';
 	import Toast from '../../../utils/widgets/Toast.svelte';
+	import { Modal } from 'flowbite-svelte';
 
 	let hidden: boolean = true; // modal control
 	let drawerComponent: ComponentType = Task; // drawer component
@@ -34,6 +35,8 @@
 	let tasks: any[] = [];
 	let current_user:any = {};
 	let selected_task:any = {};
+
+	let open:boolean = false;
 
 	let filteredTasks:any[] = [];
 	let sortings:any[] = [];
@@ -231,6 +234,11 @@
 
 	
 	const upsertTask = async (upsertData:any) =>{
+		const invalidData = Object.keys(upsertData).find(key=> (key!='id' && (upsertData[key] ==null || upsertData[key].trim() == '')));
+		if(invalidData) {
+			showToast( `${invalidData.toUpperCase().replaceAll('_',' ')} is required!`, 'error');
+			return false;
+		}
 		const { data: responseData, error } = await supabase
                 .from('tasks')
                 .upsert(upsertData)
@@ -244,6 +252,7 @@
 		if(error){
 			console.log(error);
 			showToast('Error in processing data!', 'error');
+			return false;
 		}
 		await fetchTasks();
 		if(upsertData.id != null) {
@@ -251,10 +260,12 @@
 		}else{
 			showToast('Successfully added task', 'success');
 		}
+		return true;
 	}
 	
 
 	const deleteTask = async (rowId:string) => {
+
 		try {
       const { data, error } = await supabase
         .from('tasks')
@@ -372,16 +383,7 @@
 					
 				}} ><ArrowsRepeatOutline size='sm'/> Sync </Button>
 				<Button class="whitespace-nowrap" on:click={ async() => {
-					for(const t of selectedTasks){
-						try{
-							await clearPPICForm(t.id);
-							showToast(`Successfully cleared form of ${t.task_number}`, 'success')
-						}catch(e) {
-							showToast(`Failed to clear form of ${t.task_number}`, 'error')
-							return;
-						}
-					}
-					showToast(`Successfully cleared selected forms!`, 'success')
+					open = true;
 				}} disabled={selectedTasks.length == 0} >Reset PPIC Forms</Button>
 				<Button class="whitespace-nowrap" on:click={() => {
 					selected_task = null;
@@ -472,7 +474,7 @@
 </main>
 
 
-<Drawer placement="right" transitionType="fly" {transitionParams} bind:hidden>
+<Drawer activateClickOutside={false} placement="right" transitionType="fly" {transitionParams} bind:hidden>
 	<svelte:component this={drawerComponent} users={users} 
 		markAsComplete={markAsComplete}
 		selected_task={selected_task} 
@@ -482,4 +484,34 @@
 	bind:hidden />
 </Drawer>
 
+<Modal bind:open size="sm">
+
+	<ExclamationCircleSolid class="mx-auto mb-4 mt-8 h-10 w-10 text-red-600" />
+
+	<h3 class="mb-6 text-center text-lg text-gray-500 dark:text-gray-400">
+			"Are you sure you want reset PPIR forms of the selected tasks?"
+	</h3>
+
+	<div class="flex items-center justify-center">
+		<Button color='red' class="mr-2" on:click={ async()=>{
+			for(const t of selectedTasks){
+				try{
+					await clearPPICForm(t.id);
+					showToast(`Successfully cleared form of ${t.task_number}`, 'success')
+				}catch(e) {
+					showToast(`Failed to clear form of ${t.task_number}`, 'error')
+					return;
+				}
+			}
+			showToast(`Successfully cleared selected forms!`, 'success')
+			open = false;
+		}}>Yes, I'm sure </Button>
+		<Button color="alternative" on:click={() => (open = false)}>No, cancel</Button>
+	</div>
+
+
+</Modal>
+
 <Toast {...toastProps} />
+
+

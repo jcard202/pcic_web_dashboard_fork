@@ -22,6 +22,8 @@
 		'flex items-center justify-center mb-8 text-2xl font-semibold lg:mb-10 dark:text-white';
 	export let siteImgClass = 'mr-4 h-11';
 	export let cardH1Class = 'text-2xl font-bold text-gray-900 dark:text-white';
+
+	export let handleSubmit:any = null; 
 </script>
 
 <main class={mainClass}>
@@ -35,7 +37,7 @@
 			<h1 class={cardH1Class}>
 				{title}
 			</h1>
-			<form method="POST" class="mt-8 space-y-6" >
+			<form method="POST" class="mt-8 space-y-6" on:submit={handleSubmit}>
 				<slot />
 				{#if rememberMe || lostPassword}
 					<div class="flex items-start">
@@ -47,7 +49,7 @@
 						{/if}
 					</div>
 				{/if}
-				<Button type="submit" formaction='?/signin'  size="lg">{loginTitle}</Button>
+				<Button  type="submit" formaction='?/signin'  size="lg">{loginTitle}</Button>
 				{#if createAccount}
 					<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
 						Not registered? <A href={registerLink}>{createAccountTitle}</A>

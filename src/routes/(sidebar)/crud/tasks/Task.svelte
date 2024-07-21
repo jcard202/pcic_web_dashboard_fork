@@ -76,6 +76,9 @@
 			case 'PO4B':
 				return 'Region 04B PPIR';
 			default:
+				if(!PO){
+					return null;
+				}
 				if(PO.split('O')[1].length > 1){
 					return 'Region ' + PO.split('O')[1] +' PPIR';
 				}else{
@@ -109,8 +112,8 @@
 		
 		<Label class="space-y-2">
 			<span>Service Group</span>
-			<Select class="border-gray-300 font-normal outline-none" on:change={handlePOChange}>
-				<option selected>Select Type</option>
+			<Select class="border-gray-300 font-normal outline-none" on:change={handlePOChange} required>
+				<option value={null} selected>Select Type</option>
 				{#each Array.from({ length: 17 }, (_, i) => i) as num}
 					{#if service_group == getPOFromIndex(num+1)}
 						<option selected value="{getPOFromIndex(num+1)}">{getPOFromIndex(num+1)}</option>
@@ -140,7 +143,7 @@
 		<Label class="space-y-2">
 			<span>Priority</span>
 			<Select class="border-gray-300 font-normal outline-none" on:change={handlePrioChange} required>
-				<option selected>Set Priority</option>
+				<option value={null} selected>Set Priority</option>
 				{#each ['Low', 'Medium', 'High'] as prio}
 					{#if priority == prio}
 						<option selected value="{prio}">{prio}</option>
@@ -208,12 +211,12 @@
 		{/if}
 
 		<div class="flex w-full justify-center space-x-4 pb-4">
-			<Button on:click = {()=>{
+			<Button on:click = {async()=>{
 				if(task_name.trim() == '' && task_name.length > 0){
 					task_name = '';
 					return;
 				}
-				upsertTask({
+				const success = await upsertTask({
 					id : selected_task?.id,
 					task_number: task_name,
 					service_group: service_group,
@@ -222,8 +225,13 @@
 					assignee: selected_user.id,
 					status: status,
 					task_type: 'ppir',
-				});
-				hidden = true;
+				})
+
+				if(success){
+					hidden = true;
+				}
+				
+				
 			}} type="submit" class="w-full">{selected_task ? 'Update Task' : 'Add Task'}</Button>
 			<Button color="alternative" class="w-full" on:click={() => (hidden = true)}>
 				<CloseOutline />

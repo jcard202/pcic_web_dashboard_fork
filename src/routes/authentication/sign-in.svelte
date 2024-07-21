@@ -17,21 +17,15 @@
 	let registerLink = 'sign-up';
 	let createAccountTitle = 'Create account';
 
-	// let  onSubmit = (e: Event) => {
-	// 	const formData = new FormData(e.target as HTMLFormElement);
-
-	// 	const data: Record<string, string | File> = {};
-	// 	for (const field of formData.entries()) {
-	// 		const [key, value] = field;
-	// 		data[key] = value;
-	// 	}
-	// 	console.log('???');
-	// };
-
 	const path: string = '/authentication/sign-in';
   const description: string = 'Sign in example - PCIC Web Dashboard';
 	const metaTitle: string = 'PCIC Web Dashboard - Sign in';
   const subtitle: string = 'Sign in';
+	export let form;
+	const handleSubmit = (event:Event) => {
+		// event.preventDefault(); 
+		
+	}
 </script>
 
 <MetaTag {path} {description} title={metaTitle} {subtitle} />
@@ -46,6 +40,7 @@
 	{loginTitle}
 	{registerLink}
 	{createAccountTitle}
+	handleSubmit={handleSubmit}
 >
 	<div>
 		<Label for="email" class="mb-2 dark:text-white">Your email</Label>
