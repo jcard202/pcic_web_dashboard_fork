@@ -46,7 +46,7 @@
 	let posts = [
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
-		{ name: 'Assignments', icon: CartSolid, href: '/crud/products' },
+		{ name: 'Tasks', icon: CartSolid, href: '/crud/tasks' },
 		{
 			name: 'Reports',
 			icon: FileChartBarSolid,

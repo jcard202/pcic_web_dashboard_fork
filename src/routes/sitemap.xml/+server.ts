@@ -10,7 +10,7 @@ const pages: string[] = [
   
   'layouts/sidebar',
   
-  'crud/products',
+  'crud/tasks',
   'crud/users',
   
   'settings',

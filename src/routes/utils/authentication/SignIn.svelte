@@ -2,7 +2,7 @@
 	import { A, Button, Card, Checkbox } from 'flowbite-svelte';
 	export let title = 'Sign in to platform';
 	export let site = {
-		name: 'Flowbite',
+		name: 'PCIC Portal',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'

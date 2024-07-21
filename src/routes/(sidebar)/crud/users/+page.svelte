@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { supabase_content } from '../../../../supabase';
     import {
         Avatar,
         Breadcrumb,
@@ -45,21 +44,25 @@
     const description: string = 'CRUD users example - PCIC Web Dashboard';
     const title: string = 'PCIC Web Dashboard - CRUD Users';
     const subtitle: string = 'CRUD Users';
-
+    export let data;
+    $: ({supabase} = data)
+    
     onMount(async () => {
+        current_user = (await supabase.auth.getUser()).data.user;
         await fetchUsers();
     });
 
     async function fetchUsers() {
         try {
-            const { data, error } = await supabase_content
+            // console.log(await supabase_content.auth.getSession())
+            const { data, error } = await supabase
                 .from('users')
                 .select(`
                     *,
                     regions (
                         region_name
                     )
-                `)
+                `).neq('auth_user_id', current_user.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
