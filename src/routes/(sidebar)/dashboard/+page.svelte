@@ -5,7 +5,7 @@
 	export let data;
 
 	const path: string = '/dashboard';
-  const description: string = 'Admin Dashboard example using Flowbite Svelte';
+  const description: string = 'Admin Dashboard';
   const title: string = 'PCIC Web Dashboard - Dashboard';
   const subtitle: string = 'Admin Dashboard';
 </script>

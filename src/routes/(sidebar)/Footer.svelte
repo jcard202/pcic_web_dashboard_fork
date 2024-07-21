@@ -11,18 +11,18 @@
 
 	const links: LinkType[] = [
 		{ name: 'Terms and conditions', href: '#' },
-		{ name: 'Privacy Policy', href: '#' },
+		// { name: 'Privacy Policy', href: '#' },
 		{ name: 'Licensing', href: '#' },
-		{ name: 'Cookie Policy', href: '#' },
+		// { name: 'Cookie Policy', href: '#' },
 		{ name: 'Contact', href: '#' }
 	];
 
 	const brands: [ComponentType, string][] = [
-		[FacebookSolid, ''],
-		[DiscordSolid, ''],
-		[TwitterSolid, ''],
-		[GithubSolid, ''],
-		[DribbbleSolid, '']
+		[FacebookSolid, 'https://www.facebook.com/quanbysolutionsinc/'],
+		// [DiscordSolid, ''],
+		// [TwitterSolid, ''],
+		// [GithubSolid, ''],
+		[DribbbleSolid, 'https://quanbyit.com/']
 	];
 </script>
 
