@@ -27,7 +27,6 @@
         TrashBinSolid
     } from 'flowbite-svelte-icons';
     import { imagesPath } from '../../../utils/variables';
-    import Toast from './Toast.svelte';
     import User from './User.svelte';
     import Delete from './Delete.svelte';
     import Toast from '../../../utils/widgets/Toast.svelte';
