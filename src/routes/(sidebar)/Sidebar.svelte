@@ -17,7 +17,7 @@
 		LockSolid,
 		ChartPieOutline,
 		UserSettingsSolid,
-		CartSolid
+		FileWordSolid
 	} from 'flowbite-svelte-icons';
 
 	export let drawerHidden: boolean = false;
@@ -32,27 +32,26 @@
 		'flex items-center p-2 text-base text-gray-900 transition duration-75 rounded-lg hover:bg-gray-100 group dark:text-gray-200 dark:hover:bg-gray-700';
 	let groupClass = 'pt-2 space-y-2';
 
-	$: mainSidebarUrl = $page.url.pathname;
 	let activeMainSidebar: string;
 
 	afterNavigate((navigation) => {
-		// this fixes https://github.com/themesberg/flowbite-svelte/issues/364
 		document.getElementById('svelte')?.scrollTo({ top: 0 });
 		closeDrawer();
-
 		activeMainSidebar = navigation.to?.url.pathname ?? '';
 	});
+
+	$: activeMainSidebar = $page.url.pathname;
 
 	let posts = [
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
-		{ name: 'Assignments', icon: CartSolid, href: '/crud/products' },
+		{ name: 'Tasks', icon: FileWordSolid, href: '/crud/tasks' },
 		{
-			name: 'Reports',
+			name: 'Logs',
 			icon: FileChartBarSolid,
 			children: {
-				'Custom': 'this will change /authentication/sign-in',
-				'Standard': 'this will change /authentication/sign-up'
+				'Activity Log': '/crud/logs/activity',
+				'Time Indication': '/crud/logs/time-indication'
 			}
 		},
 		{
@@ -75,15 +74,14 @@
 				'Profile lock': '/authentication/profile-lock'
 			}
 		},
-		
-		{ name: 'Settings', icon: CogOutline, href: '/settings' },
+		{ name: 'Settings', icon: CogOutline, href: '/settings' }
 	];
-	let dropdowns = Object.fromEntries(Object.keys(posts).map((x) => [x, false]));
+	let dropdowns = Object.fromEntries(posts.map(({ name }) => [name, false]));
 </script>
 
 <Sidebar
 	class={drawerHidden ? 'hidden' : ''}
-	activeUrl={mainSidebarUrl}
+	activeUrl={activeMainSidebar}
 	activeClass="bg-gray-100 dark:bg-gray-700"
 	asideClass="fixed inset-0 z-30 flex-none h-full w-64 lg:h-auto border-e border-gray-200 dark:border-gray-600 lg:overflow-y-visible lg:pt-16 lg:block"
 >

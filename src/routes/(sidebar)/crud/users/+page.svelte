@@ -1,6 +1,5 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { supabase_content } from '../../../../supabase';
     import {
         Avatar,
         Breadcrumb,
@@ -31,6 +30,7 @@
     import Toast from './Toast.svelte';
     import User from './User.svelte';
     import Delete from './Delete.svelte';
+    import Toast from '../../../utils/widgets/Toast.svelte';
     import MetaTag from '../../../utils/MetaTag.svelte';
 
     let openUser: boolean = false;
@@ -44,29 +44,33 @@
     const description: string = 'CRUD users example - PCIC Web Dashboard';
     const title: string = 'PCIC Web Dashboard - CRUD Users';
     const subtitle: string = 'CRUD Users';
-
+    export let data;
+    $: ({supabase} = data)
+    
     let toastProps: { show: boolean; message: string; type: 'success' | 'error' } = {
         show: false,
         message: '',
         type: 'success'
     };
 
-    onMount(() => {
+    onMount( async () => {
+        current_user = (await supabase.auth.getUser()).data.user;
         console.log('Component mounted');
         fetchUsers();
     });
 
     async function fetchUsers() {
         try {
+            // console.log(await supabase_content.auth.getSession())
             console.log('Fetching users...');
-            const { data, error } = await supabase_content
+            const { data, error } = await supabase
                 .from('users')
                 .select(`
                     *,
                     regions (
                         region_name
                     )
-                `)
+                `).neq('auth_user_id', current_user.id)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;

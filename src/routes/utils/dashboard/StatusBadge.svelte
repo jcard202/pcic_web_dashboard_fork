@@ -8,15 +8,19 @@
 	const states = {
 		completed: 'Completed',
 		cancelled: 'Canceled',
-		inreview: 'In review',
-		inprogress: 'In progress'
+		fordispatch: 'For Dispatch',
+		inprogress: 'In progress',
+		online: 'Online',
+		offline: 'Offline'
 	};
 
 	const colors: Record<string, BadgeProps['color']> = {
 		completed: 'green',
 		cancelled: 'red',
-		inreview: 'yellow',
-		inprogress: 'purple'
+		fordispatch: 'yellow',
+		inprogress: 'purple',
+		online: 'green',
+		offline: 'yellow'
 	};
 </script>
 

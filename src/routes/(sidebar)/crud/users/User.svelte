@@ -2,6 +2,7 @@
     import { Button, Input, Label, Modal, Select } from 'flowbite-svelte';
     import { supabase_content } from '../../../../supabase';
     import { onMount, createEventDispatcher } from 'svelte';
+    import Toast from '../../../utils/widgets/Toast.svelte';
     import type { PostgrestError } from '@supabase/supabase-js';
 
     export let open: boolean = false; // modal control

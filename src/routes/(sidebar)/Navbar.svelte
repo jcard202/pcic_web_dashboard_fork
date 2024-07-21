@@ -20,6 +20,8 @@
 	export let fluid = true;
 	export let drawerHidden = false;
 	export let list = false;
+	export let signOut;
+	export let data;
 </script>
 
 <Navbar {fluid} class="text-black" color="default" let:NavContainer>
@@ -37,7 +39,7 @@
 			<span
 				class="ml-px self-center whitespace-nowrap text-xl font-semibold dark:text-white sm:text-2xl"
 			>
-				Flowbite
+				PCIC Portal
 			</span>
 		</NavBrand>
 		<div class="hidden lg:block lg:ps-3">
@@ -67,7 +69,7 @@
 			<Notifications />
 			<AppsMenu />
 			<DarkMode />
-			<UserMenu {...Users[4]} />
+			<UserMenu data={data} {signOut} />
 		</div>
 	</NavContainer>
 </Navbar>

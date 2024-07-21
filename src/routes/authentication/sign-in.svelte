@@ -4,7 +4,7 @@
   import MetaTag from '../utils/MetaTag.svelte';
 	let title = 'Sign in to platform';
 	let site = {
-		name: 'Flowbite',
+		name: 'PCIC Portal	',
 		img: '/images/flowbite-svelte-icon-logo.svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
@@ -17,16 +17,16 @@
 	let registerLink = 'sign-up';
 	let createAccountTitle = 'Create account';
 
-	const onSubmit = (e: Event) => {
-		const formData = new FormData(e.target as HTMLFormElement);
+	// let  onSubmit = (e: Event) => {
+	// 	const formData = new FormData(e.target as HTMLFormElement);
 
-		const data: Record<string, string | File> = {};
-		for (const field of formData.entries()) {
-			const [key, value] = field;
-			data[key] = value;
-		}
-		console.log(data);
-	};
+	// 	const data: Record<string, string | File> = {};
+	// 	for (const field of formData.entries()) {
+	// 		const [key, value] = field;
+	// 		data[key] = value;
+	// 	}
+	// 	console.log('???');
+	// };
 
 	const path: string = '/authentication/sign-in';
   const description: string = 'Sign in example - PCIC Web Dashboard';
@@ -46,7 +46,6 @@
 	{loginTitle}
 	{registerLink}
 	{createAccountTitle}
-	on:submit={onSubmit}
 >
 	<div>
 		<Label for="email" class="mb-2 dark:text-white">Your email</Label>
