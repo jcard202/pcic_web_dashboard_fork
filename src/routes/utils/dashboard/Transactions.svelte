@@ -223,6 +223,14 @@
 		</select>
 	</div>
 
+	<!-- 
+	
+	EXPORT BUTTON dito Scott
+	
+	-->
+
+	<div class="text-red-900">Export Button here</div>
+
 	<Table
 		hoverable={true}
 		noborder

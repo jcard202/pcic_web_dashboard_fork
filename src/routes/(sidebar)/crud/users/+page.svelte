@@ -197,7 +197,15 @@
                     <TableBodyRow class="text-base">
                         <TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
                         <TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">
-                            <Avatar src={imagesPath(user.avatar, 'users')} />
+                            
+                            
+                            
+                            <!-- <Avatar src={imagesPath(user.avatar, 'users')} /> -->
+
+                            <!-- mar-note: it should be straight forward calling of url from db -->
+                            <Avatar src='{user.photo_url}' />
+
+
                             <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
                                 <div class="text-base font-semibold text-gray-900 dark:text-white">{user.inspector_name}</div>
                                 <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{user.email}</div>
