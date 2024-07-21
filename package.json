@@ -6,6 +6,7 @@
 	"private": false,
 	"license": "MIT",
 	"scripts": {
+		"start": "vite",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
@@ -60,6 +61,7 @@
 	"dependencies": {
 		"@supabase/ssr": "^0.4.0",
 		"@supabase/supabase-js": "^2.44.4",
+		"flowbite": "^2.4.1",
 		"flowbite-svelte": "^0.44.24",
 		"flowbite-svelte-icons": "^1.6.1",
 		"tailwind-merge": "^2.4.0"
