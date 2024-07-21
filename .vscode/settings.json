@@ -8,6 +8,7 @@
     "editor.defaultFormatter": "denoland.vscode-deno"
   },
   "cSpell.words": [
-    "Dribbble"
+    "Dribbble",
+    "fordispatch"
   ]
 }
