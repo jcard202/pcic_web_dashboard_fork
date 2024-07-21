@@ -1,4 +1,6 @@
 <script lang="ts">
+	// ---------------------------------------- IMPORTs ---------------------------------------------------- //
+
 	import {
 		Button,
 		Card,
@@ -15,14 +17,20 @@
 	} from 'flowbite-svelte';
 
 	import { ChevronDownOutline, ChevronLeftOutline } from 'flowbite-svelte-icons';
+
 	import { ArrowUpOutline, ArrowDownOutline } from 'flowbite-svelte-icons';
 
 	import StatusBadge from './StatusBadge.svelte';
+
 	import PaginationComponent from './Pagination.svelte';
 
 	import { goto } from '$app/navigation';
 
+	// ---------------------------------------- EXPORTs ---------------------------------------------------- //
+
 	export let dark: boolean = false;
+
+	// ----------------------------------------- LOGIC ----------------------------------------------------- //
 
 	// Pagination
 	let currentPage = 1;
@@ -110,7 +118,11 @@
 		'Backlogs'
 	];
 
-	// Data (replace this with your actual data)
+	/**
+	 * mar-note:
+	 * 		this are the sample data for the table that will later on will be map for the actual data in the supabase
+	 * 		the first element in the array is the id that will be passed in the function handleRowClick which represents the id of the row
+	 */
 	let data: [
 		string,
 		string,
@@ -157,7 +169,18 @@
 		['150', 'Zachary Perry', '777-123-4567', true, 5, 5, 4, 4, 5, 5, 0, 38, 36, 2]
 	];
 
+	/**
+	 * mar-note
+	 * 		@param index: string - the id of the row
+	 * 		this function is used to handle the click event of the row.
+	 * 		you can use this function to navigate to another page or to another section of the page
+	 * 		by using the goto function from the $app/navigation.
+	 *
+	 * 		the usage for actual passing of the id is the commented one
+	 * 		and the goto with # index is for testing only.
+	 */
 	function handleRowClick(index: string) {
+		// goto(`/inspector/${index}`);
 		goto(`#${index}`);
 	}
 </script>
