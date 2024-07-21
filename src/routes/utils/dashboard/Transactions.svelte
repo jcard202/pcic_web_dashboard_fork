@@ -1,7 +1,4 @@
 <script lang="ts">
-	// ---------------------------------------- IMPORTs ---------------------------------------------------- //
-
-	import LastRange from '../widgets/LastRange.svelte';
 	import {
 		Button,
 		Card,
@@ -16,21 +13,87 @@
 		TableHead,
 		TableHeadCell
 	} from 'flowbite-svelte';
-	import {
-		CalendarMonthOutline,
-		ChevronDownOutline,
-		ChevronRightOutline
-	} from 'flowbite-svelte-icons';
+
+	import { ChevronDownOutline, ChevronLeftOutline } from 'flowbite-svelte-icons';
+	import { ArrowUpOutline, ArrowDownOutline } from 'flowbite-svelte-icons';
+
 	import StatusBadge from './StatusBadge.svelte';
+	import PaginationComponent from './Pagination.svelte';
 
 	import { goto } from '$app/navigation';
 
-	// ---------------------------------------- EXPORTs ---------------------------------------------------- //
-
 	export let dark: boolean = false;
 
-	// ----------------------------------------- LOGIC ----------------------------------------------------- //
+	// Pagination
+	let currentPage = 1;
+	const pageSizeOptions: (number | 'All')[] = [5, 10, 25, 50, 'All'];
+	let selectedPageSize: number | 'All' = 5;
+	let pageSize: number;
+	let totalPages: number;
+	let paginatedData: typeof data;
+	let showPagination: boolean;
 
+	$: {
+		pageSize = selectedPageSize === 'All' ? data.length : (selectedPageSize as number);
+		totalPages = Math.ceil(data.length / pageSize);
+
+		// Ensure currentPage is within valid range
+		currentPage = Math.max(1, Math.min(currentPage, totalPages));
+
+		paginatedData =
+			selectedPageSize === 'All'
+				? data
+				: data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+		// Determine whether to show pagination
+		showPagination = totalPages > 1 && selectedPageSize !== 'All';
+	}
+
+	// Sorting
+	let sortColumn: string | null = null;
+	let sortDirection: 'asc' | 'desc' = 'asc';
+
+	function sortData(column: string) {
+		if (sortColumn === column) {
+			sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+		} else {
+			sortColumn = column;
+			sortDirection = 'asc';
+		}
+
+		data.sort((a, b) => {
+			const indexMap: { [key: string]: number } = {
+				'Inspector Name': 1,
+				'Mobile Number': 2,
+				Online: 3,
+				Mon: 4,
+				Tue: 5,
+				Wed: 6,
+				Thu: 7,
+				Fri: 8,
+				Sat: 9,
+				Sun: 10,
+				'Total Dispatch': 11,
+				'Total Completed': 12,
+				Backlogs: 13
+			};
+
+			const index = indexMap[column];
+			let valueA = a[index];
+			let valueB = b[index];
+
+			if (typeof valueA === 'string') valueA = valueA.toLowerCase();
+			if (typeof valueB === 'string') valueB = valueB.toLowerCase();
+
+			if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+			if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+			return 0;
+		});
+
+		data = data; // Trigger reactivity
+	}
+
+	// Table headers
 	const headers = [
 		'Inspector Name',
 		'Mobile Number',
@@ -47,12 +110,8 @@
 		'Backlogs'
 	];
 
-	/**
-	 * mar-note:
-	 * 		this are the sample data for the table that will later on will be map for the actual data in the supabase
-	 * 		the first element in the array is the id that will be passed in the function handleRowClick which represents the id of the row
-	 */
-	const data: [
+	// Data (replace this with your actual data)
+	let data: [
 		string,
 		string,
 		string,
@@ -98,18 +157,7 @@
 		['150', 'Zachary Perry', '777-123-4567', true, 5, 5, 4, 4, 5, 5, 0, 38, 36, 2]
 	];
 
-	/**
-	 * mar-note
-	 * 		@param index: string - the id of the row
-	 * 		this function is used to handle the click event of the row.
-	 * 		you can use this function to navigate to another page or to another section of the page
-	 * 		by using the goto function from the $app/navigation.
-	 *
-	 * 		the usage for actual passing of the id is the commented one
-	 * 		and the goto with # index is for testing only.
-	 */
 	function handleRowClick(index: string) {
-		// goto(`/inspector/${index}`);
 		goto(`#${index}`);
 	}
 </script>
@@ -136,16 +184,22 @@
 					<li><Checkbox class="accent-primary-600">Completed (56)</Checkbox></li>
 				</Dropdown>
 			</div>
-			<div class="flex items-center space-x-4">
-				<Input placeholder="From" class="w-full">
-					<CalendarMonthOutline slot="left" size="md" />
-				</Input>
-				<Input placeholder="To" class="w-full">
-					<CalendarMonthOutline slot="left" size="md" />
-				</Input>
-			</div>
 		</div>
 	</div>
+
+	<div class="mb-4 flex items-center justify-end">
+		<label for="pageSize" class="mr-2">Show:</label>
+		<select
+			id="pageSize"
+			bind:value={selectedPageSize}
+			class="block rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+		>
+			{#each pageSizeOptions as option}
+				<option value={option}>{option === 'All' ? 'All' : `${option} rows`}</option>
+			{/each}
+		</select>
+	</div>
+
 	<Table
 		hoverable={true}
 		noborder
@@ -154,11 +208,22 @@
 	>
 		<TableHead class="bg-gray-50 dark:bg-gray-700">
 			{#each headers as header}
-				<TableHeadCell class="whitespace-nowrap p-4 font-normal">{header}</TableHeadCell>
+				<TableHeadCell class="whitespace-nowrap p-4 font-normal">
+					<button class="flex items-center" on:click={() => sortData(header)}>
+						{header}
+						{#if sortColumn === header}
+							{#if sortDirection === 'asc'}
+								<ArrowUpOutline class="ml-1 h-4 w-4" />
+							{:else}
+								<ArrowDownOutline class="ml-1 h-4 w-4" />
+							{/if}
+						{/if}
+					</button>
+				</TableHeadCell>
 			{/each}
 		</TableHead>
 		<TableBody>
-			{#each data as [id, name, mobile, online, mon, tue, wed, thu, fri, sat, sun, totalDispatch, totalCompleted, backlogs]}
+			{#each paginatedData as [id, name, mobile, online, mon, tue, wed, thu, fri, sat, sun, totalDispatch, totalCompleted, backlogs]}
 				<TableBodyRow on:click={() => handleRowClick(id)} class="cursor-pointer">
 					<TableBodyCell class="px-4 font-normal">{name}</TableBodyCell>
 					<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">
@@ -202,13 +267,14 @@
 		</TableBody>
 	</Table>
 	<div class="-mb-1 flex items-center justify-between pt-3 sm:pt-6">
-		<LastRange />
-
 		<a
 			href="#top"
 			class="inline-flex items-center rounded-lg p-1 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
 		>
-			Tasks report <ChevronRightOutline size="lg" />
+			<ChevronLeftOutline size="lg" /> Tasks report
 		</a>
+		{#if showPagination}
+			<PaginationComponent bind:currentPage {totalPages} {pageSize} totalItems={data.length} />
+		{/if}
 	</div>
 </Card>
