@@ -6,9 +6,7 @@ export const load: PageServerLoad = async ({ locals: { supabase } }) => {
     .select('*')
     .eq('is_deleted', false);
 
-    
-const { data: { user } } = await supabase.auth.getUser()
-console.log(user);
+
 
 
   if (usersError) {

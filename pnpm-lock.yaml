@@ -23,6 +23,12 @@ importers:
       flowbite-svelte-icons:
         specifier: ^1.6.1
         version: 1.6.1(svelte@4.2.18)(tailwind-merge@2.4.0)(tailwindcss@3.4.6)
+      jspdf:
+        specifier: ^2.5.1
+        version: 2.5.1
+      jspdf-autotable:
+        specifier: ^3.8.2
+        version: 3.8.2(jspdf@2.5.1)
       tailwind-merge:
         specifier: ^2.4.0
         version: 2.4.0
@@ -3931,6 +3937,11 @@ snapshots:
       punycode: 2.3.1
 
   util-deprecate@1.0.2: {}
+
+  utrie@1.0.2:
+    dependencies:
+      base64-arraybuffer: 1.0.2
+    optional: true
 
   vite-node@1.6.0(@types/node@20.14.11):
     dependencies:
