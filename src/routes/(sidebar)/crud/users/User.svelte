@@ -211,6 +211,7 @@
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: userData.email,
                 password: userData.password,
+                
                 options: {
                     data: {
                         inspector_name: userData.inspector_name,
