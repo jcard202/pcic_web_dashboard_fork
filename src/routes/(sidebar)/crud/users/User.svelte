@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Button, Input, Label, Modal, Select } from 'flowbite-svelte';
     import { createEventDispatcher, onMount } from 'svelte';
-    import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
+    import type { SupabaseClient } from '@supabase/supabase-js';
     import Alert from '../../../utils/widgets/alert.svelte';
 
     export let open: boolean = false;
@@ -25,11 +25,12 @@
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     const DEFAULT_PROFILE_PIC = 'https://htmlstream.com/preview/unify-v2.6/assets/img-temp/400x450/img5.jpg';
-    const MAX_RETRIES = 3;
 
     let showAlert = false;
     let alertMessage = '';
     let alertType: 'success' | 'error' | 'warning' | 'info' = 'info';
+
+    let selectedRegionId: string = '';
 
     onMount(async () => {
         const { data: { user }, error } = await supabase.auth.getUser();
@@ -46,14 +47,24 @@
 
     async function fetchRegions() {
         try {
+            console.log('Fetching regions...');
             const { data: regionsData, error } = await supabase
                 .from('regions')
                 .select('id, region_name');
 
-            if (error) throw error;
+            if (error) {
+                console.error('Supabase error when fetching regions:', error);
+                throw error;
+            }
+
+            console.log('Raw regions data:', regionsData);
 
             regions = regionsData as Region[];
-            console.log('Fetched regions:', regions);
+            console.log('Processed regions:', regions);
+            
+            if (regions.length === 0) {
+                console.warn('No regions fetched from the database. Please check if the regions table has data.');
+            }
         } catch (error) {
             console.error('Error fetching regions:', error);
             errorMessage = 'Failed to load regions: ' + (error instanceof Error ? error.message : String(error));
@@ -108,18 +119,23 @@
             return;
         }
 
-        const formData = new FormData(event.target as HTMLFormElement);
-        const userData = Object.fromEntries(formData.entries());
+        console.log('Selected Region ID before submission:', selectedRegionId);
 
-        console.log('User data being sent:', userData);
-
-        if (!allowedRoles.includes(userData.role as string)) {
-            showAlertMessage('Please select a valid role', 'error');
+        if (!selectedRegionId) {
+            showAlertMessage('Please select a region', 'error');
             return;
         }
 
-        if (!userData.region_id) {
-            showAlertMessage('Please select a region', 'error');
+        const formData = new FormData(event.target as HTMLFormElement);
+        const userData: Record<string, string> = {};
+        formData.forEach((value, key) => {
+            userData[key] = value.toString();
+        });
+
+        console.log('User data being sent:', userData);
+
+        if (!allowedRoles.includes(userData.role)) {
+            showAlertMessage('Please select a valid role', 'error');
             return;
         }
 
@@ -128,90 +144,108 @@
             return;
         }
 
-        let retries = 0;
+        try {
+            // Check if user already exists
+            const { data: existingUser, error: existingUserError } = await supabase
+                .from('users')
+                .select('email')
+                .eq('email', userData.email)
+                .single();
 
-        while (retries < MAX_RETRIES) {
-            try {
-                // Create auth user
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: userData.email as string,
-                    password: userData.password as string,
-                    options: {
-                        data: {
-                            inspector_name: userData.inspector_name,
-                            role: userData.role,
-                            region_id: userData.region_id,
-                            mobile_number: userData.mobile_number,
-                        }
-                    }
-                });
+            if (existingUserError && existingUserError.code !== 'PGRST116') {
+                throw existingUserError;
+            }
 
-                if (authError) throw authError;
+            if (existingUser) {
+                showAlertMessage('A user with this email already exists', 'error');
+                return;
+            }
 
-                if (!authData.user) {
-                    throw new Error('Failed to create auth user');
-                }
-
-                let photo_url = DEFAULT_PROFILE_PIC;
-                if (photoFile) {
-                    try {
-                        photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
-                    } catch (uploadError) {
-                        console.error('Failed to upload photo:', uploadError);
-                        showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
-                    }
-                }
-
-                console.log('Preparing to insert user with photo_url:', photo_url);
-
-                const userDataToInsert = {
-                    inspector_name: userData.inspector_name as string,
-                    email: userData.email as string,
-                    role: userData.role as string,
-                    region_id: userData.region_id as string,
-                    mobile_number: userData.mobile_number as string,
-                    photo_url: photo_url,
-                    auth_user_id: authData.user.id
-                };
-
-                console.log('User data to insert:', userDataToInsert);
-
-                const { data: userInsertData, error: insertError } = await supabase
-                    .from('users')
-                    .insert(userDataToInsert)
-                    .select(`
-                        *,
-                        regions (
-                            region_name
-                        )
-                    `)
-                    .single();
-
-                if (insertError) {
-                    console.error('Error inserting user:', insertError);
-                    throw insertError;
-                }
-
-                if (!userInsertData) {
-                    throw new Error('Failed to insert user data');
-                }
-
-                console.log('User inserted:', userInsertData);
-
-                dispatch('userAdded', userInsertData);
-                open = false;
-                showAlertMessage('User created successfully.', 'success');
-                return; // Exit the function if successful
-            } catch (error) {
-                console.error(`Error creating user (attempt ${retries + 1}):`, error);
-                retries++;
-                if (retries >= MAX_RETRIES) {
-                    errorMessage = `Error: ${error instanceof Error ? error.message : String(error)}`;
-                    showAlertMessage(`Failed to create user after ${MAX_RETRIES} attempts. Please try again later.`, 'error');
-                } else {
-                    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before retrying
+            let photo_url = DEFAULT_PROFILE_PIC;
+            if (photoFile) {
+                try {
+                    photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
+                } catch (uploadError) {
+                    console.error('Failed to upload photo:', uploadError);
+                    showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
                 }
             }
+
+            console.log('Preparing to insert user with photo_url:', photo_url);
+
+            const userDataToInsert = {
+                inspector_name: userData.inspector_name,
+                email: userData.email,
+                role: userData.role,
+                region_id: selectedRegionId,
+                mobile_number: userData.mobile_number,
+                photo_url: photo_url
+            };
+
+            console.log('User data to insert:', userDataToInsert);
+
+            // First, insert the user into your database
+            const { data: userInsertData, error: insertError } = await supabase
+                .from('users')
+                .insert(userDataToInsert)
+                .select(`
+                    *,
+                    regions (
+                        region_name
+                    )
+                `)
+                .single();
+
+            if (insertError) {
+                console.error('Error inserting user:', insertError);
+                throw insertError;
+            }
+
+            if (!userInsertData) {
+                throw new Error('Failed to insert user data');
+            }
+
+            console.log('User inserted:', userInsertData);
+
+            // Then, create the auth user without signing in
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: userData.email,
+                password: userData.password,
+                options: {
+                    data: {
+                        inspector_name: userData.inspector_name,
+                        role: userData.role,
+                        region_id: selectedRegionId,
+                        mobile_number: userData.mobile_number,
+                    }
+                }
+            });
+
+            if (authError) {
+                console.error('Error creating auth user:', authError);
+                throw authError;
+            }
+
+            // Update the user record with the auth_user_id
+            if (authData.user) {
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ auth_user_id: authData.user.id })
+                    .eq('id', userInsertData.id);
+
+                if (updateError) {
+                    console.error('Error updating user with auth_user_id:', updateError);
+                    // Consider if you want to throw this error or just log it
+                }
+            }
+
+            dispatch('userAdded', userInsertData);
+            open = false;
+            showAlertMessage('User created successfully.', 'success');
+        } catch (error) {
+            console.error('Error creating user:', error);
+            errorMessage = `Error: ${error instanceof Error ? error.message : String(error)}`;
+            showAlertMessage(`Failed to create user. Please try again later.`, 'error');
         }
     }
 
@@ -278,7 +312,7 @@
                     </Label>
                     <Label class="col-span-6 space-y-2">
                         <span>Region</span>
-                        <Select name="region_id" class="mt-2" required>
+                        <Select name="region_id" class="mt-2" required bind:value={selectedRegionId}>
                             <option value="">Select a region</option>
                             {#each regions as region}
                                 <option value={region.id}>{region.region_name}</option>
