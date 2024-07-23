@@ -1,4 +1,9 @@
 <script lang="ts">
+	import jsPDF from 'jspdf';
+	import autoTable from 'jspdf-autotable';
+	import * as XLSX from 'xlsx';
+
+	import saveAs from 'file-saver';
 	import {
 		Button,
 		Checkbox,
@@ -31,16 +36,41 @@
 		activeHeaders = [...selectedHeaders];
 		showColumnModal = false;
 	}
+
+	function generatePDF() {
+		const doc = new jsPDF();
+		autoTable(doc, {
+			head: [activeHeaders],
+			body: data.users.map((user) => activeHeaders.map((header) => user[header] ?? 'N/A'))
+		});
+		doc.save('table_data.pdf');
+	}
+
+	function generateExcel() {
+		const ws = XLSX.utils.json_to_sheet(
+			data.users.map((user) => {
+				const row: { [key: string]: string | number | boolean | null } = {};
+				activeHeaders.forEach((header) => {
+					row[header] = user[header] ?? 'N/A';
+				});
+				return row;
+			})
+		);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+		const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+		saveAs(new Blob([excelBuffer], { type: 'application/octet-stream' }), 'table_data.xlsx');
+	}
 </script>
 
 <Table>
 	<TableHead>
 		{#each activeHeaders as header}
-			<span transition:slide={{ axis: 'x', duration: 500 }}>
+			<th transition:slide={{ axis: 'x', duration: 600, delay: 100 }}>
 				<TableHeadCell>
 					{header}
 				</TableHeadCell>
-			</span>
+			</th>
 		{/each}
 	</TableHead>
 
@@ -84,6 +114,14 @@
 		</div>
 	</div>
 </Modal>
+
+<div class="flex justify-center space-x-2 py-2">
+	<Button on:click={() => (showColumnModal = true)} color="light" size="xs">
+		Customize Columns
+	</Button>
+	<Button on:click={generatePDF} color="light" size="xs">Download PDF</Button>
+	<Button on:click={generateExcel} color="light" size="xs">Download Excel</Button>
+</div>
 <!-- <Table class="border border-white">
 	<TableHead>
 		{#each activeHeaders as header}
@@ -157,6 +195,5 @@
 		
 		// 	doc.save('Standard_Report.pdf');
 		// }
-			import jsPDF from 'jspdf';
-	import autoTable from 'jspdf-autotable';
+	
 </Modal> -->
