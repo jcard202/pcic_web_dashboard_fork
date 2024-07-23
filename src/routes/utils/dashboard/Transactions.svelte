@@ -191,51 +191,6 @@
 		// goto(`/inspector/${index}`);
 		goto(`#${index}`);
 	}
-
-	const filteredHeaders = [
-		'Inspector Name',
-		'Mobile Number',
-		'Total Dispatch',
-		'Total Ongoing',
-		'Total Completed',
-		'Backlogs'
-	];
-
-	const customReportOptions = [
-		{
-			category: 'Task Types',
-			options: ['Fordispatch Task', 'Ongoing Task', 'Completed Task']
-		},
-		{
-			category: 'Regions',
-			options: [] // You'll need to populate this with your specific regions
-		},
-		{
-			category: 'Filters',
-			options: [
-				'Inspector',
-				'Task Number',
-				'Service Group',
-				'Service Type',
-				'Task Status',
-				'Assignee',
-				'ppir_assignmentid',
-				'ppir_insuranceid',
-				'ppir_farmername',
-				'ppir_address',
-				'ppir_farmertype',
-				'ppir_mobileno',
-				'ppir_groupname',
-				'ppir_groupaddress',
-				'ppir_lendername',
-				'ppir_lenderaddress',
-				'ppir_cicno',
-				'ppir_farmloc',
-				'ppir_name_insured',
-				'ppir_name_iuia'
-			]
-		}
-	];
 </script>
 
 <Card size="xl" class="max-w-none shadow-sm">
@@ -282,33 +237,9 @@
 	
 	-->
 
-	<Button on:click={() => ($isExported = true)} class="flex w-32 items-center gap-2" color="light"
+	<Button href="/report-generation" class="flex w-32 items-center gap-2" color="light"
 		><DownloadOutline class=" h-4 w-4" /> Export</Button
 	>
-
-	<Modal bind:open={$isExported} size="lg" autoclose>
-		<div class="py-4">
-			<h2 class="mb-2 text-lg font-normal text-gray-500 dark:text-gray-400">Report Generation</h2>
-			<p>Standard filtered report</p>
-			<div class="flex flex-wrap gap-2">
-				{#each filteredHeaders as header}
-					<Badge rounded large border color="dark" class="text-sm">{header}</Badge>
-				{/each}
-			</div>
-
-			<DropdownDivider class="my-4" />
-
-			<Button pill={true} outline={true} class="!p-2" size="xl">
-				<PlusOutline />
-			</Button>
-			<div class="flex items-center gap-2">
-				<Checkbox>PDF</Checkbox>
-				<Checkbox checked>EXCEL</Checkbox>
-			</div>
-
-			<Button class="" color="alternative">Generate Report</Button>
-		</div>
-	</Modal>
 
 	<Table
 		hoverable={true}
