@@ -356,23 +356,51 @@
 		}
 	};
 
-	// mar
+	/**
+	 * Synchronizes with an FTP server.
+	 *
+	 * This function initiates a synchronization process with an FTP server by
+	 * sending a request to the server and handling the response. Currently, the
+	 * actual FTP request is commented out as the server setup is incomplete.
+	 * The function handles potential errors and provides user feedback through
+	 * toast notifications.
+	 *
+	 * @async
+	 * @function syncWithFTP
+	 *
+	 * @returns {void}
+	 *
+	 * @example
+	 * syncWithFTP();
+	 *
+	 * @description
+	 * The function performs the following steps:
+	 * 1. Sets `isSyncing` to `true` to indicate that the sync process is ongoing.
+	 * 2. Attempts to fetch the FTP directory listing from a placeholder API endpoint.
+	 *    - The actual fetch request is commented out due to the unavailability of the FTP server.
+	 * 3. If the server response is successful, logs the FTP directory listing and shows a success toast notification.
+	 * 4. If an error occurs, catches the error and shows an error toast notification.
+	 * 5. Sets `isSyncing` to `false` once the process is complete, regardless of success or failure.
+	 */
 	async function syncWithFTP() {
 		isSyncing = true;
 		try {
-			// for now this is commented out because we don't have the FTP server yet (error in accounts)
+			// ---------------------------------------------------------------------------------------------------- //
+			// note: for now this is commented out because we don't have the FTP server yet (error in accounts)
+			//
 			// const response = await fetch('/api/ftp', {
-			// 	method: 'POST',
-			// 	headers: { 'Content-Type': 'application/json' },
-			// 	body: JSON.stringify({ action: 'list', path: '/' })
+			//     method: 'POST',
+			//     headers: { 'Content-Type': 'application/json' },
+			//     body: JSON.stringify({ action: 'list', path: '/' })
 			// });
 			// const result = await response.json();
 			// if (result.success) {
-			// 	console.log('FTP Directory listing:', result.data);
-			// 	showToast('Sync completed successfully!', 'success');
+			//     console.log('FTP Directory listing:', result.data);
+			//     showToast('Sync completed successfully!', 'success');
 			// } else {
-			// 	throw new Error(result.error);
+			//     throw new Error(result.error);
 			// }
+			// ---------------------------------------------------------------------------------------------------- //
 			showToast('Sync completed successfully!', 'success');
 		} catch (error) {
 			// Type assertion
