@@ -33,9 +33,9 @@
 
 	let activeHeaders: string[] = [...data.defaultHeaders];
 	let selectedHeaders: string[] = [...data.defaultHeaders];
+
 	let showColumnModal = false;
 	let showFilter = false;
-	let addFilter = false;
 	let showSorting = false;
 
 	function toggleHeader(header: string) {
@@ -76,8 +76,8 @@
 		saveAs(new Blob([excelBuffer], { type: 'application/octet-stream' }), 'weekly_report.xlsx');
 	}
 
-	let selectedHeader = '';
-	let selectedOperator = '';
+	let filters: { selectedHeader: string; selectedOperator: string; value: string }[] = [];
+	let filteredData = data.users;
 
 	let operators = [
 		{ value: '==', name: 'is equal to' },
@@ -88,35 +88,47 @@
 		{ value: '<=', name: 'is less than or equal to' },
 		{ value: 'contains', name: 'contains' }
 	];
+
+	function addFilter() {
+		filters = [...filters, { selectedHeader: '', selectedOperator: '', value: '' }];
+	}
+
+	function removeFilter(index: number) {
+		filters = filters.filter((_, i) => i !== index);
+		applyFilters();
+	}
+
+	function applyFilters() {
+		filteredData = data.users.filter((user) => {
+			return filters.every((filter) => {
+				const userValue = user[filter.selectedHeader];
+
+				if (userValue === null) return false;
+				const filterValue = filter.value;
+
+				switch (filter.selectedOperator) {
+					case '==':
+						return userValue == filterValue;
+					case '!=':
+						return userValue != filterValue;
+					case '>':
+						return userValue > filterValue;
+					case '<':
+						return userValue < filterValue;
+					case '>=':
+						return userValue >= filterValue;
+					case '<=':
+						return userValue <= filterValue;
+					case 'contains':
+						return typeof userValue === 'string' && userValue.includes(filterValue);
+					default:
+						return true;
+				}
+			});
+		});
+		showFilter = false;
+	}
 </script>
-
-<!-- <Table>
-	<TableHead>
-		{#each activeHeaders as header}
-			<th transition:slide={{ axis: 'x', duration: 600, delay: 100 }}>
-				<TableHeadCell>
-					{header}
-				</TableHeadCell>
-			</th>
-		{/each}
-	</TableHead>
-
-	<TableBody tableBodyClass="divide-y">
-		{#each data.users as user}
-			<TableBodyRow class="font-normal">
-				{#each activeHeaders as header}
-					<td transition:fade={{ duration: 600, delay: 100 }}>
-						<TableBodyCell>
-							{user[header] ?? 'N/A'}
-						</TableBodyCell>
-					</td>
-				{/each}
-			</TableBodyRow>
-		{/each}
-	</TableBody>
-</Table>
-
- -->
 
 <main class="p-4">
 	<div class="mt-px space-y-4">
@@ -133,9 +145,12 @@
 				<div class="flex items-center gap-2">
 					<div class="relative">
 						<Button
-							class="flex items-center gap-2 border-none text-xs"
-							on:click={() => (showFilter = !showFilter)}
-							color="light"
+							class="flex items-center gap-2 border-none text-xs "
+							on:click={() => {
+								showFilter = !showFilter;
+								console.log(`showFilter: ${showFilter}`); // Debug: Check toggle state
+							}}
+							color={filters.length > 0 ? 'green' : 'light'}
 							size="xs"><FilterOutline /> Filter</Button
 						>
 
@@ -144,57 +159,57 @@
 								transition:slide={{ axis: 'y', duration: 600 }}
 								class="absolute top-12 z-20 w-[500px] rounded border border-white bg-gray-800 px-2 py-1"
 							>
-								{#if addFilter}
-									<!-- content here -->
-									<div class="flex items-center gap-2 py-1">
-										<Select
-											id="countries"
-											class="rounded border border-white py-1 text-xs "
-											bind:value={selectedHeader}
-											placeholder=""
-										>
-											{#each activeHeaders as header}
-												<option value={header}>{header}</option>
-											{/each}
-										</Select>
-										<Select
-											id="operators"
-											class="rounded border border-white py-1 text-xs"
-											bind:value={selectedOperator}
-											placeholder="Operator"
-										>
-											{#each operators as { value, name }}
-												<option {value}>{name}</option>
-											{/each}
-										</Select>
-										<Input
-											class=" rounded  bg-[#1f2937] py-1 text-xs"
-											type="text"
-											id="value"
-											placeholder="value"
-											required
-											color="base"
-										/>
-										<!-- <div class=""></div> -->
-										<Button
-											class="flex size-6 items-center gap-2 border-none text-xs"
-											on:click={() => (addFilter = false)}
-											size="xs"
-											color="light"><CloseOutline /></Button
-										>
-									</div>
+								{#if filters.length > 0}
+									{#each filters as filter, index}
+										<div class="flex items-center gap-2 py-1">
+											<Select
+												id="header-select"
+												class="rounded border border-white py-1 text-xs"
+												bind:value={filter.selectedHeader}
+												placeholder="Select Column"
+											>
+												{#each activeHeaders as header}
+													<option value={header}>{header}</option>
+												{/each}
+											</Select>
+											<Select
+												id="operator-select"
+												class="rounded border border-white py-1 text-xs"
+												bind:value={filter.selectedOperator}
+												placeholder="Select Operator"
+											>
+												{#each operators as { value, name }}
+													<option {value}>{name}</option>
+												{/each}
+											</Select>
+											<Input
+												class="rounded bg-[#1f2937] py-1 text-xs"
+												type="text"
+												bind:value={filter.value}
+												placeholder="Value"
+												required
+												color="base"
+											/>
+											<Button
+												class="flex size-6 items-center gap-2 border-none text-xs"
+												on:click={() => removeFilter(index)}
+												size="xs"
+												color="light"><CloseOutline /></Button
+											>
+										</div>
+									{/each}
 								{:else}
 									<h2 class="text-sm">No Filters applied to the table.</h2>
 								{/if}
 
 								<hr class="my-2" />
 								<div class="flex items-center justify-between py-1">
-									<button
-										on:click={() => (addFilter = true)}
-										class="flex items-center gap-2 text-xs text-white"
+									<button on:click={addFilter} class="flex items-center gap-2 text-xs text-white"
 										><PlusOutline class="size-4" />Add filter</button
 									>
-									<button class="flex items-center gap-2 text-xs text-white">Apply filter</button>
+									<button on:click={applyFilters} class="flex items-center gap-2 text-xs text-white"
+										>Apply filter</button
+									>
 								</div>
 							</div>
 						{/if}
@@ -225,8 +240,37 @@
 					>
 				</div>
 			</div>
-
 			<Table
+				hoverable={true}
+				noborder
+				class="z-0 mt-6 min-w-full divide-y divide-gray-200 py-4 dark:divide-gray-600"
+			>
+				<TableHead class="bg-gray-50 dark:bg-gray-700">
+					{#each activeHeaders as header}
+						<th transition:slide={{ axis: 'x', duration: 600, delay: 100 }}>
+							<TableHeadCell class="whitespace-nowrap p-4 font-normal">
+								{header}
+							</TableHeadCell>
+						</th>
+					{/each}
+				</TableHead>
+				<TableBody tableBodyClass="divide-y">
+					{#each filteredData as user}
+						<TableBodyRow class="font-normal">
+							{#each activeHeaders as header}
+								<td transition:fade={{ duration: 600, delay: 100 }}>
+									<TableBodyCell>
+										{user[header] ?? 'N/A'}
+									</TableBodyCell>
+								</td>
+							{/each}
+						</TableBodyRow>
+					{/each}
+				</TableBody>
+				<div class="h-12">Pagination here</div>
+			</Table>
+
+			<!-- <Table
 				hoverable={true}
 				noborder
 				class="z-0 mt-6 min-w-full divide-y divide-gray-200 py-4 dark:divide-gray-600"
@@ -254,7 +298,7 @@
 					{/each}
 				</TableBody>
 				<div class="h-12">Pagination here</div>
-			</Table>
+			</Table> -->
 		</Card>
 	</div>
 </main>
@@ -278,3 +322,73 @@
 		</div>
 	</div>
 </Modal>
+
+<!-- For back up -->
+<!-- <div class="relative">
+						<Button
+							class="flex items-center gap-2 border-none text-xs"
+							on:click={() => (showFilter = !showFilter)}
+							color="light"
+							size="xs"><FilterOutline /> Filter</Button
+						>
+
+						{#if showFilter}
+							<div
+								transition:slide={{ axis: 'y', duration: 600 }}
+								class="absolute top-12 z-20 w-[500px] rounded border border-white bg-gray-800 px-2 py-1"
+							>
+								{#if addFilter}
+						
+									<div class="flex items-center gap-2 py-1">
+										<Select
+											id="countries"
+											class="rounded border border-white py-1 text-xs "
+											bind:value={selectedHeader}
+											placeholder=""
+										>
+											{#each activeHeaders as header}
+												<option value={header}>{header}</option>
+											{/each}
+										</Select>
+										<Select
+											id="operators"
+											class="rounded border border-white py-1 text-xs"
+											bind:value={selectedOperator}
+											placeholder="Operator"
+										>
+											{#each operators as { value, name }}
+												<option {value}>{name}</option>
+											{/each}
+										</Select>
+										<Input
+											class=" rounded  bg-[#1f2937] py-1 text-xs"
+											type="text"
+											id="value"
+											placeholder="value"
+											required
+											color="base"
+										/>
+									
+										<Button
+											class="flex size-6 items-center gap-2 border-none text-xs"
+											on:click={() => (addFilter = false)}
+											size="xs"
+											color="light"><CloseOutline /></Button
+										>
+									</div>
+								{:else}
+									<h2 class="text-sm">No Filters applied to the table.</h2>
+								{/if}
+
+								<hr class="my-2" />
+								<div class="flex items-center justify-between py-1">
+									<button
+										on:click={() => (addFilter = true)}
+										class="flex items-center gap-2 text-xs text-white"
+										><PlusOutline class="size-4" />Add filter</button
+									>
+									<button class="flex items-center gap-2 text-xs text-white">Apply filter</button>
+								</div>
+							</div>
+						{/if}
+					</div> -->
