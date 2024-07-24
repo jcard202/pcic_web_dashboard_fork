@@ -1,8 +1,6 @@
 <script lang="ts">
-	import jsPDF from 'jspdf';
-	import autoTable from 'jspdf-autotable';
-	import * as XLSX from 'xlsx';
-
+	import { defaultHeaders, optionalHeaders } from '$lib/utils/arraysAndObj';
+	import type { SortCriteria, TaskData } from '$lib/utils/types';
 	import saveAs from 'file-saver';
 	import {
 		Button,
@@ -29,18 +27,18 @@
 		PlusOutline,
 		SortOutline
 	} from 'flowbite-svelte-icons';
+	import jsPDF from 'jspdf';
+	import autoTable from 'jspdf-autotable';
 	import { fade, slide } from 'svelte/transition';
+	import * as XLSX from 'xlsx';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
 
-	interface User {
-		[key: string]: string | number | boolean | null;
-		// Add any specific properties you know your user objects have
-	}
-
-	let activeHeaders: string[] = [...data.defaultHeaders];
-	let selectedHeaders: string[] = [...data.defaultHeaders];
+	let activeHeaders: string[] = [...defaultHeaders];
+	let selectedHeaders: string[] = [...defaultHeaders];
+	let allHeaders: string[] = [...defaultHeaders, ...optionalHeaders];
+	let currentRegion = 'Region 5';
 
 	let showColumnModal = false;
 	let showFilter = false;
@@ -58,34 +56,129 @@
 		activeHeaders = [...selectedHeaders];
 		showColumnModal = false;
 	}
+	let startDate: Date = new Date();
+	let endDate: Date = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-	function generatePDF() {
+	function formatDateForInput(date: Date): string {
+		return date.toISOString().split('T')[0];
+	}
+
+	function setDate(event: Event): Date {
+		const target = event.target as HTMLInputElement;
+		return target.value ? new Date(target.value) : new Date();
+	}
+
+	// Weekly filtered data and summary
+
+	$: startDateString = formatDateForInput(startDate);
+	$: endDateString = formatDateForInput(endDate);
+	$: weeklyFilteredData = filterTasksByDateRange(data.tasks, startDate, endDate);
+	$: weeklySummary = calculateSummary(weeklyFilteredData);
+
+	function filterTasksByDateRange(tasks: TaskData[], start: Date, end: Date): TaskData[] {
+		return tasks.filter((task) => {
+			if (!task['Date Added']) return false;
+			const taskDate = new Date(task['Date Added']);
+			return !isNaN(taskDate.getTime()) && taskDate >= start && taskDate <= end;
+		});
+	}
+
+	function calculateSummary(tasks: TaskData[]) {
+		return {
+			totalTasks: tasks.length,
+			completedTasks: tasks.filter((t) => t['Task Status'] === 'completed').length,
+			ongoingTasks: tasks.filter((t) => t['Task Status'] === 'ongoing').length,
+			forDispatchTasks: tasks.filter((t) => t['Task Status'] === 'for dispatch').length
+		};
+	}
+
+	function generateWeeklyReport() {
+		// This function can be used to generate a more detailed report if needed
+		return {
+			summary: weeklySummary,
+			tasksByRegion: groupTasksByCategory(weeklyFilteredData, 'Region'),
+			tasksByStatus: groupTasksByCategory(weeklyFilteredData, 'Task Status'),
+			tasksByAssignee: groupTasksByCategory(weeklyFilteredData, 'Agent')
+		};
+	}
+
+	function groupTasksByCategory(tasks: TaskData[], category: keyof TaskData) {
+		return tasks.reduce(
+			(acc, task) => {
+				const key = task[category] as string;
+				if (!acc[key]) acc[key] = [];
+				acc[key].push(task);
+				return acc;
+			},
+			{} as Record<string, TaskData[]>
+		);
+	}
+
+	function generateWeeklyPDF() {
 		const doc = new jsPDF();
+		const report = generateWeeklyReport();
+
+		doc.setFontSize(18);
+		doc.text('Weekly Task Report', 14, 15);
+		doc.setFontSize(12);
+		doc.text(`Region: ${currentRegion}`, 14, 25);
+		doc.text(
+			`Date Range: ${formatDateForInput(startDate)} to ${formatDateForInput(endDate)}`,
+			14,
+			32
+		);
+
+		// Add summary
+		doc.setFontSize(14);
+		doc.text('Summary:', 14, 42);
+		doc.setFontSize(12);
+		doc.text(`Total Tasks: ${report.summary.totalTasks}`, 20, 52);
+		doc.text(`Completed Tasks: ${report.summary.completedTasks}`, 20, 59);
+		doc.text(`Ongoing Tasks: ${report.summary.ongoingTasks}`, 20, 66);
+		doc.text(`For Dispatch Tasks: ${report.summary.forDispatchTasks}`, 20, 73);
+
+		// Add tasks table
 		autoTable(doc, {
 			head: [activeHeaders],
-			body: data.users.map((user) => activeHeaders.map((header) => user[header] ?? 'N/A'))
+			body: weeklyFilteredData.map((task) => activeHeaders.map((header) => task[header] ?? 'N/A')),
+			startY: 80
 		});
-		doc.save('weekly_report.pdf');
+
+		doc.save('weekly_task_report.pdf');
 	}
 
-	function generateExcel() {
-		const ws = XLSX.utils.json_to_sheet(
-			data.users.map((user) => {
-				const row: { [key: string]: string | number | boolean | null } = {};
-				activeHeaders.forEach((header) => {
-					row[header] = user[header] ?? 'N/A';
-				});
-				return row;
-			})
-		);
+	function generateWeeklyExcel() {
+		const report = generateWeeklyReport();
 		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-		const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-		saveAs(new Blob([excelBuffer], { type: 'application/octet-stream' }), 'weekly_report.xlsx');
-	}
 
+		// Summary sheet
+		const summaryData = [
+			['Weekly Task Report'],
+			[`Region: ${currentRegion}`],
+			[`Date Range: ${formatDateForInput(startDate)} to ${formatDateForInput(endDate)}`],
+			[''],
+			['Summary'],
+			['Total Tasks', report.summary.totalTasks],
+			['Completed Tasks', report.summary.completedTasks],
+			['Ongoing Tasks', report.summary.ongoingTasks],
+			['For Dispatch Tasks', report.summary.forDispatchTasks]
+		];
+		const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+		XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
+
+		// Tasks sheet
+		const tasksWs = XLSX.utils.json_to_sheet(weeklyFilteredData);
+		XLSX.utils.book_append_sheet(wb, tasksWs, 'Tasks');
+
+		// Generate Excel file
+		const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+		saveAs(
+			new Blob([excelBuffer], { type: 'application/octet-stream' }),
+			'weekly_task_report.xlsx'
+		);
+	}
 	let filters: { selectedHeader: string; selectedOperator: string; value: string }[] = [];
-	let filteredData = data.users;
+	let filteredData = data.tasks;
 
 	let operators = [
 		{ value: '==', name: 'is equal to' },
@@ -109,21 +202,13 @@
 
 	function clearFilters() {
 		filters = [];
-		filteredData = [...data.users];
+		filteredData = [...data.tasks];
 		if (sortCriteria.length > 0) {
 			applySorting();
 		} else {
 			applyFilters();
 		}
-		// Keep the filter UI open
 		showFilter = true;
-	}
-
-	let sortConfig: { column: string; direction: 'asc' | 'desc' } = { column: '', direction: 'asc' };
-
-	interface SortCriteria {
-		column: string;
-		ascending: boolean;
 	}
 
 	let sortCriteria: SortCriteria[] = [];
@@ -141,15 +226,13 @@
 	function applySorting() {
 		filteredData = [...filteredData].sort((a, b) => {
 			for (const criteria of sortCriteria) {
-				const aValue = a[criteria.column as keyof User];
-				const bValue = b[criteria.column as keyof User];
+				const aValue = a[criteria.column as keyof TaskData];
+				const bValue = b[criteria.column as keyof TaskData];
 
-				// Handle null or undefined values
 				if (aValue == null && bValue == null) continue;
 				if (aValue == null) return criteria.ascending ? -1 : 1;
 				if (bValue == null) return criteria.ascending ? 1 : -1;
 
-				// Compare non-null values
 				if (typeof aValue === 'string' && typeof bValue === 'string') {
 					const compareResult = aValue.localeCompare(bValue);
 					if (compareResult !== 0) {
@@ -167,37 +250,34 @@
 
 	function clearSort() {
 		sortCriteria = [];
-		filteredData = [...data.users];
+		filteredData = [...data.tasks];
 		applyFilters();
 		showSorting = false;
 	}
 
 	function applyFilters() {
-		filteredData = data.users.filter((user) => {
+		filteredData = data.tasks.filter((task) => {
 			return filters.every((filter) => {
-				const userValue = user[filter.selectedHeader as keyof User];
+				const taskValue = (task as any)[filter.selectedHeader];
 
-				if (userValue === null || userValue === undefined) return false;
+				if (taskValue === null || taskValue === undefined) return false;
 				const filterValue = filter.value;
 
 				switch (filter.selectedOperator) {
 					case '==':
-						return userValue == filterValue;
+						return taskValue.toString().toLowerCase() === filterValue.toLowerCase();
 					case '!=':
-						return userValue != filterValue;
+						return taskValue.toString().toLowerCase() !== filterValue.toLowerCase();
 					case '>':
-						return userValue > filterValue;
+						return taskValue > filterValue;
 					case '<':
-						return userValue < filterValue;
+						return taskValue < filterValue;
 					case '>=':
-						return userValue >= filterValue;
+						return taskValue >= filterValue;
 					case '<=':
-						return userValue <= filterValue;
+						return taskValue <= filterValue;
 					case 'contains':
-						return (
-							typeof userValue === 'string' &&
-							userValue.toLowerCase().includes(filterValue.toLowerCase())
-						);
+						return taskValue.toString().toLowerCase().includes(filterValue.toLowerCase());
 					default:
 						return true;
 				}
@@ -221,6 +301,32 @@
 					This is a list of this week's tasks
 				</span>
 			</div>
+
+			<!-- Date Range Selection -->
+			<div class="mb-4 flex items-center space-x-4">
+				<Input
+					type="date"
+					bind:value={startDateString}
+					on:change={(e) => (startDate = setDate(e))}
+					label="Start Date"
+				/>
+				<Input
+					type="date"
+					bind:value={endDateString}
+					on:change={(e) => (endDate = setDate(e))}
+					label="End Date"
+				/>
+			</div>
+
+			<!-- Weekly Summary Display -->
+			<div class="mb-4">
+				<h4 class="text-lg font-semibold">Weekly Summary</h4>
+				<p>Total Tasks: {weeklySummary.totalTasks}</p>
+				<p>Completed Tasks: {weeklySummary.completedTasks}</p>
+				<p>Ongoing Tasks: {weeklySummary.ongoingTasks}</p>
+				<p>For Dispatch Tasks: {weeklySummary.forDispatchTasks}</p>
+			</div>
+
 			<div class="my-2 flex justify-between px-4 py-1">
 				<div class="flex items-center gap-2">
 					<div class="relative">
@@ -385,14 +491,15 @@
 					</Button>
 				</div>
 				<div class="flex justify-center gap-2 py-2">
-					<Button class="text-xs" on:click={generatePDF} color="light" size="xs"
+					<Button class="text-xs" on:click={generateWeeklyPDF} color="light" size="xs"
 						>Download PDF</Button
 					>
-					<Button class="text-xs" on:click={generateExcel} color="light" size="xs"
+					<Button class="text-xs" on:click={generateWeeklyExcel} color="light" size="xs"
 						>Download Excel</Button
 					>
 				</div>
 			</div>
+
 			<Table
 				hoverable={true}
 				noborder
@@ -417,12 +524,12 @@
 					{/each}
 				</TableHead>
 				<TableBody tableBodyClass="divide-y">
-					{#each filteredData as user}
+					{#each weeklyFilteredData as task}
 						<TableBodyRow class="font-normal">
 							{#each activeHeaders as header}
 								<td transition:fade={{ duration: 600, delay: 100 }}>
 									<TableBodyCell>
-										{user[header] ?? 'N/A'}
+										{task[header] ?? 'N/A'}
 									</TableBodyCell>
 								</td>
 							{/each}
@@ -440,7 +547,7 @@
 		<h2 class="mb-4 text-2xl font-bold text-gray-500 dark:text-gray-400">Customize Columns</h2>
 
 		<div class="grid grid-cols-3 gap-2">
-			{#each data.allHeaders as header}
+			{#each allHeaders as header}
 				<Checkbox checked={selectedHeaders.includes(header)} on:change={() => toggleHeader(header)}>
 					{header}
 				</Checkbox>
@@ -524,3 +631,42 @@
 							</div>
 						{/if}
 					</div> -->
+
+<!-- <Table
+				hoverable={true}
+				noborder
+				class="z-0 mt-6 min-w-full divide-y divide-gray-200 py-4 dark:divide-gray-600"
+			>
+				<TableHead class="bg-gray-50 dark:bg-gray-700">
+					{#each activeHeaders as header}
+						<th transition:slide={{ axis: 'x', duration: 600, delay: 100 }}>
+							<TableHeadCell class="whitespace-nowrap p-4 font-normal">
+								<div class="flex items-center justify-between">
+									<span>{header}</span>
+									{#if sortCriteria.some((criteria) => criteria.column === header)}
+										{#if sortCriteria.find((criteria) => criteria.column === header)?.ascending}
+											<ChevronUpOutline class="ml-1 size-6 text-green-500" />
+										{:else}
+											<ChevronDownOutline class="ml-1 size-6 text-orange-500" />
+										{/if}
+									{/if}
+								</div>
+							</TableHeadCell>
+						</th>
+					{/each}
+				</TableHead>
+				<TableBody tableBodyClass="divide-y">
+					{#each filteredData as user}
+						<TableBodyRow class="font-normal">
+							{#each activeHeaders as header}
+								<td transition:fade={{ duration: 600, delay: 100 }}>
+									<TableBodyCell>
+										{user[header] ?? 'N/A'}
+									</TableBodyCell>
+								</td>
+							{/each}
+						</TableBodyRow>
+					{/each}
+				</TableBody>
+				<div class="h-12">Pagination here</div>
+			</Table> -->

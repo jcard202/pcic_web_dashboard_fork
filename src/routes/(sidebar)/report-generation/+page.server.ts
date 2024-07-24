@@ -1,108 +1,106 @@
-import { defaultHeaders, optionalHeaders } from "$lib/utils/arraysAndObj";
-import type { User, UserData } from "$lib/utils/types";
+
+
+import { optionalHeaders } from "$lib/utils/arraysAndObj";
+import type { TaskData } from "$lib/utils/types";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals: { supabase } }) => {
-  const allHeaders: string[] = [...defaultHeaders, ...optionalHeaders];
 
-  // Fetch users with their tasks and PPIR forms
-  const { data: users, error: usersError } = await supabase
-    .from('users')
-    .select(`
-      *,
-      tasks:tasks(
-        *,
-        ppir_forms(*)
-      )
-    `)
-    .eq('is_deleted', false);
 
-  if (usersError) {
-    console.error('Error fetching users:', usersError);
-    return { users: [], defaultHeaders, optionalHeaders, allHeaders };
+  // Fetch all tasks with related information
+  const { data: tasks, error: tasksError } = await supabase
+  .from('tasks')
+  .select(`
+    *,
+    users(inspector_name),
+    regions!tasks_service_group_fkey(region_name),
+    ppir_forms(*)
+  `)
+  .order('created_at', { ascending: false });
+
+  if (tasksError) {
+    console.error('Error fetching tasks:', tasksError);
+    return { tasks: [] };
   }
 
-  // Process user data
-  const processedUsers: UserData[] = (users as User[])?.map(user => {
-    const userData: UserData = {
-      'Inspector Name': user.inspector_name,
-      'Mobile Number': user.mobile_number,
-      'Total Dispatch': user.tasks.filter(task => task.status === 'for dispatch').length,
-      'Total Ongoing': user.tasks.filter(task => task.status === 'ongoing').length,
-      'Total Completed': user.tasks.filter(task => task.status === 'completed').length,
-      'Backlogs': 0, // You may need to calculate this based on your business logic
+  // Process task data
+  const processedTasks: TaskData[] = tasks.map(task => {
+    const taskData: TaskData = {
+      'Region': task.regions?.region_name || '',
+      'Task Number': task.task_number || '',
+      'Agent': task.users?.inspector_name || '',
+      'Farmer Name': task.ppir_forms?.ppir_farmername || '',
+      'Insurance ID': task.ppir_forms?.ppir_insuranceid || '',
+      'PPI Assignment ID': task.ppir_forms?.ppir_assignmentid || '',
+      'Task Status': task.status || '',
+      'Date Added': task.created_at || '',
     };
 
-    // Add optional headers data
+    // Process optional headers
     optionalHeaders.forEach(header => {
       switch (header) {
-        case 'Task Number':
-          userData[header] = user.tasks[0]?.task_number ?? 'N/A';
+        case 'Inspector':
+          taskData[header] = task.users?.inspector_name || '';
           break;
         case 'Service Group':
-          userData[header] = user.tasks[0]?.service_group ?? 'N/A';
+          taskData[header] = task.service_group || '';
           break;
         case 'Service Type':
-          userData[header] = user.tasks[0]?.service_type ?? 'N/A';
-          break;
-        case 'Task Status':
-          userData[header] = user.tasks[0]?.status ?? 'N/A';
+          taskData[header] = task.service_type || '';
           break;
         case 'Assignee':
-          userData[header] = user.inspector_name;
+          taskData[header] = task.users?.inspector_name || '';
           break;
         case 'Assignment ID':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_assignmentid ?? 'N/A';
-          break;
-        case 'Insurance ID':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_insuranceid ?? 'N/A';
-          break;
-        case 'Farmer Name':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_farmername ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_assignmentid || '';
           break;
         case 'Address':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_address ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_address || '';
           break;
         case 'Farmer Type':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_farmertype ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_farmertype || '';
+          break;
+        case 'Mobile No':
+          taskData[header] = task.ppir_forms?.ppir_mobileno || '';
           break;
         case 'Group Name':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_groupname ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_groupname || '';
           break;
         case 'Group Address':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_groupaddress ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_groupaddress || '';
           break;
         case 'Lender Name':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_lendername ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_lendername || '';
           break;
         case 'Lender Address':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_lenderaddress ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_lenderaddress || '';
           break;
-        case 'CIC Number':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_cicno ?? 'N/A';
+        case 'CIC No':
+          taskData[header] = task.ppir_forms?.ppir_cicno || '';
           break;
         case 'Farm Location':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_farmloc ?? 'N/A';
+          taskData[header] = task.ppir_forms?.ppir_farmloc || '';
           break;
-        case 'Insured Name':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_name_insured ?? 'N/A';
+        case 'Name Insured':
+          taskData[header] = task.ppir_forms?.ppir_name_insured || '';
           break;
-        case 'IUIA Name':
-          userData[header] = user.tasks[0]?.ppir_forms?.ppir_name_iuia ?? 'N/A';
+        case 'Name IUIA':
+          taskData[header] = task.ppir_forms?.ppir_name_iuia || '';
           break;
       }
     });
 
-    return userData;
-  }) ?? [];
+    return taskData;
+  });
 
   return {
-    users: processedUsers,
-    defaultHeaders,
-    optionalHeaders,
-    allHeaders
+    tasks: processedTasks,
+   
   };
 };
+
+
+
 
 export const actions: Actions = {
     default: async ({locals: {supabase}}) => {

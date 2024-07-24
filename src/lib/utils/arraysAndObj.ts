@@ -1,29 +1,19 @@
 export const defaultHeaders: string[] = [
-    'Inspector Name',
-    'Mobile Number',
-    'Total Dispatch',
-    'Total Ongoing',
-    'Total Completed',
-    'Backlogs'
+    'Region',
+    'Task Number',
+    'Agent',
+    'Farmer Name',
+    'Insurance ID',
+    'PPI Assignment ID',
+    'Task Status',
 ];
 
 export const optionalHeaders: string[] = [
-    'Task Number',
-    'Service Group',
-    'Service Type',
-    'Task Status',
-    'Assignee',
-    'Assignment ID',
-    'Insurance ID',
-    'Farmer Name',
-    'Address',
-    'Farmer Type',
-    'Group Name',
-    'Group Address',
-    'Lender Name',
-    'Lender Address',
-    'CIC Number',
-    'Farm Location',
-    'Insured Name',
-    'IUIA Name'
+    'Inspector', 'Task Number', 'Service Group', 'Service Type', 'Task Status', 'Assignee',
+    'Assignment ID', 'Insurance ID', 'Farmer Name', 'Address', 'Farmer Type',
+    'Mobile No', 'Group Name', 'Group Address', 'Lender Name', 'Lender Address',
+    'CIC No', 'Farm Location', 'Name Insured', 'Name IUIA'
 ];
+
+
+export const allHeaders: string[] = defaultHeaders;
