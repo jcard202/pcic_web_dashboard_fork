@@ -356,23 +356,84 @@
 		}
 	};
 
-	// mar
+	/**
+	 * Synchronizes with an FTP server.
+	 *
+	 * This function initiates a synchronization process with an FTP server by
+	 * sending a request to the server and handling the response. Currently, the
+	 * actual FTP request is commented out as the server setup is incomplete.
+	 * The function handles potential errors and provides user feedback through
+	 * toast notifications.
+	 *
+	 * @async
+	 * @function syncWithFTP
+	 *
+	 * @returns {void}
+	 *
+	 * @example
+	 * syncWithFTP();
+	 *
+	 * @description
+	 * The function performs the following steps:
+	 * 1. Sets `isSyncing` to `true` to indicate that the sync process is ongoing.
+	 * 2. Attempts to fetch the FTP directory listing from a placeholder API endpoint.
+	 *    - The actual fetch request is commented out due to the unavailability of the FTP server.
+	 * 3. If the server response is successful, logs the FTP directory listing and shows a success toast notification.
+	 * 4. If an error occurs, catches the error and shows an error toast notification.
+	 * 5. Sets `isSyncing` to `false` once the process is complete, regardless of success or failure.
+	 */
 	async function syncWithFTP() {
 		isSyncing = true;
 		try {
-			// for now this is commented out because we don't have the FTP server yet (error in accounts)
+			// ---------------------------------------------------------------------------------------------------- //
+			// note: for now this is commented out because we don't have the FTP server yet (error in accounts)
+			// code below can be uncommented once the FTP server is available
+			//
 			// const response = await fetch('/api/ftp', {
-			// 	method: 'POST',
-			// 	headers: { 'Content-Type': 'application/json' },
-			// 	body: JSON.stringify({ action: 'list', path: '/' })
+			//     method: 'POST',
+			//     headers: { 'Content-Type': 'application/json' },
+			//     body: JSON.stringify({ action: 'list', path: '/' })
 			// });
 			// const result = await response.json();
 			// if (result.success) {
-			// 	console.log('FTP Directory listing:', result.data);
-			// 	showToast('Sync completed successfully!', 'success');
+			//     console.log('FTP Directory listing:', result.data);
+			//     showToast('Sync completed successfully!', 'success');
 			// } else {
-			// 	throw new Error(result.error);
+			//     throw new Error(result.error);
 			// }
+			// ---------------------------------------------------------------------------------------------------- //
+
+			/**
+			 * Synchronization Algorithm for CSV Data Import (gpt/claud's help optimal solution)
+			 *
+			 * This function implements a flexible approach for synchronizing CSV data,
+			 * supporting both local file system and FTP server as data sources.
+			 *
+			 * Algorithm Overview:
+			 * 1. Determine the data source (local or FTP)  (mar: local is for testing the folders csv file read -> static/sample_csv)
+			 * 2. Retrieve a list of available CSV files from the selected source
+			 * 3. For each CSV file:
+			 *    a. Check if the file has already been processed (compare with database records) (mar: file_read.file_name)
+			 *    b. If not processed, read the file content (mar: insert the file into file_read table and get the id for usage in tasks insert)
+			 *    c. Parse the CSV data into structured records
+			 *    d. For each record:
+			 *       i.   Validate the data (e.g., check if assignee email exists in the users table) (mar: check if the assignee exists in the users table, else raise error and cancel the whole process and delete the inserted file_read record)
+			 *       ii.  (if goods lang dito then) Insert a new task record into the database (mar: insert the task record with the file_read_id)
+			 *       iii. Insert corresponding PPIR form data (mar: insert the ppir form data with the task_id)
+			 *    e. Mark the file as processed in the database
+			 * 4. Handle any errors that occur during the process
+			 * 5. Provide feedback on the synchronization result (success or failure)
+			 *
+			 * The algorithm is designed to be idempotent, ensuring that files are not
+			 * processed multiple times, and robust, with proper error handling and
+			 * reporting mechanisms.
+			 *
+			 * Future Enhancements:
+			 * - Implement parallel processing for improved performance with large datasets
+			 * - Add support for incremental updates to handle partially modified files
+			 * - Integrate a logging system for detailed synchronization history (mar: no need)
+			 */
+
 			showToast('Sync completed successfully!', 'success');
 		} catch (error) {
 			// Type assertion
