@@ -1,28 +1,45 @@
 <script lang="ts">
     import { Button, Modal } from 'flowbite-svelte';
     import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
-    import { supabase_content } from '../../../../supabase';
+    import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
     import { createEventDispatcher } from 'svelte';
 
     export let open: boolean = false;
     export let userId: string;
+    export let supabase: SupabaseClient;
 
     const dispatch = createEventDispatcher();
+    let isDeleting = false;
+    let errorMessage = '';
 
     async function deleteUser() {
+        if (isDeleting) return;
+        isDeleting = true;
+        errorMessage = '';
+        console.log('Attempting to delete user with ID:', userId);
+
         try {
-            const { error } = await supabase_content
+            const { data, error } = await supabase
                 .from('users')
                 .delete()
-                .eq('id', userId);
+                .eq('id', userId)
+                .select();
 
             if (error) throw error;
 
-            dispatch('userDeleted', userId);
-            open = false;
+            console.log('Delete response:', data);
+
+            if (data && data.length > 0) {
+                dispatch('userDeleted', userId);
+                open = false;
+            } else {
+                errorMessage = 'User not found or already deleted.';
+            }
         } catch (error) {
             console.error('Error deleting user:', error);
-            alert('Failed to delete user. Please try again.');
+            errorMessage = 'Failed to delete user: ' + (error instanceof Error ? error.message : String(error));
+        } finally {
+            isDeleting = false;
         }
     }
 </script>
@@ -33,11 +50,14 @@
         <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
             Are you sure you want to delete this user?
         </h3>
+        {#if errorMessage}
+            <p class="mb-5 text-red-500">{errorMessage}</p>
+        {/if}
         <div class="flex justify-center gap-4">
-            <Button color="red" on:click={deleteUser}>
-                Yes, I'm sure
+            <Button color="red" on:click={deleteUser} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : "Yes, I'm sure"}
             </Button>
-            <Button color="alternative" on:click={() => (open = false)}>
+            <Button color="alternative" on:click={() => (open = false)} disabled={isDeleting}>
                 No, cancel
             </Button>
         </div>

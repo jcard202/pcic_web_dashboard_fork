@@ -31,6 +31,10 @@
     import Delete from './Delete.svelte';
     import Toast from '../../../utils/widgets/Toast.svelte';
     import MetaTag from '../../../utils/MetaTag.svelte';
+    import type { PostgrestError } from '@supabase/supabase-js';
+
+    export let data;
+    $: ({ supabase } = data)
 
     let openUser: boolean = false;
     let openDelete: boolean = false;
@@ -43,8 +47,6 @@
     const description: string = 'CRUD users example - PCIC Web Dashboard';
     const title: string = 'PCIC Web Dashboard - CRUD Users';
     const subtitle: string = 'CRUD Users';
-    export let data;
-    $: ({supabase} = data)
     
     let toastProps: { show: boolean; message: string; type: 'success' | 'error' } = {
         show: false,
@@ -52,37 +54,49 @@
         type: 'success'
     };
 
-    onMount( async () => {
-        current_user = (await supabase.auth.getUser()).data.user;
-        console.log('Component mounted');
-        fetchUsers();
+    let supabaseReady = false;
+
+    onMount(async () => {
+        if (supabase) {
+            supabaseReady = true;
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                current_user = user;
+                console.log('Component mounted, user authenticated');
+                await fetchUsers();
+            } else {
+                console.error('No authenticated user found');
+                // Handle unauthenticated state (e.g., redirect to login)
+            }
+        } else {
+            console.error('Supabase client is not available');
+        }
     });
 
     async function fetchUsers() {
         try {
-            // console.log(await supabase_content.auth.getSession())
             console.log('Fetching users...');
-            const { data, error } = await supabase
+            const { data: fetchedUsers, error } = await supabase
                 .from('users')
-                .select(`
+                .select(`   
                     *,
                     regions (
                         region_name
                     )
-                `).neq('auth_user_id', current_user.id)
+                `)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
             
-            console.log('Fetched users data:', data);
-            users = data;
+            console.log('Fetched users data:', fetchedUsers);
+            users = fetchedUsers || [];
             
             if (users.length === 0) {
                 console.log('No users found in the database.');
             }
         } catch (error) {
             console.error('Error fetching users:', error);
-            showToast('Error fetching users', 'error');
+            showToast('Error fetching users: ' + (error instanceof Error ? error.message : String(error)), 'error');
         } finally {
             isLoading = false;
         }
@@ -118,6 +132,15 @@
 
     function getStatusText(is_online: boolean) {
         return is_online ? 'Online' : 'Offline';
+    }
+
+    function handleOpenUser() {
+        if (supabaseReady) {
+            openUser = true;
+        } else {
+            console.error('Supabase client is not ready');
+            showToast('Unable to open user form. Please try again later.', 'error');
+        }
     }
 </script>
 
@@ -169,7 +192,7 @@
                 <Button
                     size="sm"
                     class="gap-2 whitespace-nowrap px-3"
-                    on:click={() => ((current_user = {}), (openUser = true))}
+                    on:click={handleOpenUser}
                 >
                     <PlusOutline size="sm" />Add user
                 </Button>
@@ -219,7 +242,10 @@
                             <Button
                                 size="sm"
                                 class="gap-2 px-3"
-                                on:click={() => ((current_user = user), (openUser = true))}
+                                on:click={() => {
+                                    current_user = user;
+                                    openUser = true;
+                                }}
                             >
                                 <EditOutline size="sm" /> Edit user
                             </Button>
@@ -243,5 +269,16 @@
 </main>
 
 <!-- Modals -->
-<User bind:open={openUser} data={current_user} on:userAdded={handleUserAdded} on:userUpdated={handleUserUpdated} />
-<Delete bind:open={openDelete} userId={userToDelete} on:userDeleted={handleUserDeleted} />
+<User 
+    bind:open={openUser} 
+    data={current_user} 
+    {supabase} 
+    on:userAdded={handleUserAdded} 
+    on:userUpdated={handleUserUpdated} 
+/>
+<Delete 
+    bind:open={openDelete} 
+    userId={userToDelete} 
+    {supabase}
+    on:userDeleted={handleUserDeleted} 
+/>
