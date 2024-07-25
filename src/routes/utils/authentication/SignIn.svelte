@@ -49,7 +49,7 @@
 						{/if}
 					</div>
 				{/if}
-				<Button  type="submit" formaction='?/signin'  size="lg">{loginTitle}</Button>
+				<Button  type="submit"  size="lg">{loginTitle}</Button>
 				{#if createAccount}
 					<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
 						Not registered? <A href={registerLink}>{createAccountTitle}</A>
