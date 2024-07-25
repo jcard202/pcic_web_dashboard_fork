@@ -1,19 +1,12 @@
-export const defaultHeaders: string[] = [
-    'Region',
-    'Task Number',
-    'Agent',
-    'Farmer Name',
-    'Insurance ID',
-    'PPI Assignment ID',
-    'Task Status',
+
+
+
+
+export const userAggregateHeaders: string[] = [
+    'Inspector Name',
+    'Mobile Number',
+    'Total Dispatch',
+    'Total Ongoing',
+    'Total Completed',
+    'Total Tasks'
 ];
-
-export const optionalHeaders: string[] = [
-    'Inspector', 'Task Number', 'Service Group', 'Service Type', 'Task Status', 'Assignee',
-    'Assignment ID', 'Insurance ID', 'Farmer Name', 'Address', 'Farmer Type',
-    'Mobile No', 'Group Name', 'Group Address', 'Lender Name', 'Lender Address',
-    'CIC No', 'Farm Location', 'Name Insured', 'Name IUIA'
-];
-
-
-export const allHeaders: string[] = defaultHeaders;
