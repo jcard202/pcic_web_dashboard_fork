@@ -65,6 +65,8 @@
 	let tasks: any[] = [];
 	let current_user: any = {};
 	let selected_task: any = {};
+	let statusFilter:string = 'all';
+	let search:string = '';
 	let modalType:string =  'clear_forms';
 	/* 
 	Modal Types 
@@ -96,6 +98,11 @@
 
 	const handleConfirmDelete = (event:any) => {
 		confirm_delete = event.target.value 
+	}
+
+	const handleStatusChange = (status:string)=>{
+		statusFilter = status;
+		sortFilterTasks();
 	}
 
 	const showToast = (message: string, type: 'success' | 'error') => {
@@ -133,7 +140,18 @@
 		return priorityMap[priority.toLowerCase()];
 	};
 
-	const sortTasks = () => {
+	const sortFilterTasks = () => {
+		filteredTasks =  tasks.filter(
+			(task) =>
+				task.status.toLowerCase().includes(statusFilter) || statusFilter == 'all'
+		)
+		filteredTasks = filteredTasks.filter(
+			(task) =>
+				task.task_number.toLowerCase().includes(search) ||
+				task.users.inspector_name.toLowerCase().includes(search) ||
+				task.service_type.toLowerCase().includes(search) ||
+				task.service_group.toLowerCase().includes(search)
+		);
 		for (const sort of sortings) {
 			switch (sort) {
 				case 'Task Name Desc':
@@ -171,20 +189,8 @@
 	};
 
 	const filterBySearch = (event: any) => {
-		const search = event.target.value.toLowerCase();
-		if (search.trim() == '') {
-			filteredTasks = tasks;
-			sortTasks();
-			return;
-		}
-		filteredTasks = tasks.filter(
-			(task) =>
-				task.task_number.toLowerCase().includes(search) ||
-				task.users.inspector_name.toLowerCase().includes(search) ||
-				task.service_type.toLowerCase().includes(search) ||
-				task.service_group.toLowerCase().includes(search)
-		);
-		sortTasks();
+		search = event.target.value.toLowerCase();
+		sortFilterTasks();
 	};
 
 	const setStatusColor = (status: string) => {
@@ -354,7 +360,7 @@
                     *,
 					ppir_forms (*),
                     users (
-                        id,inspector_name
+                        id,inspector_name,email
                     )
                 `
 				)
@@ -365,7 +371,7 @@
 			}
 			tasks = data;
 			filteredTasks = tasks;
-			sortTasks();
+			sortFilterTasks();
 		} catch (error) {
 			console.error('Error fetching tasks:', error);
 		} finally {
@@ -476,13 +482,52 @@
 			Task Management
 		</Heading>
 
-		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
+		<Toolbar embedded class="w-full py-4  text-gray-500 dark:text-gray-400">
 			<Input
 				on:keyup={filterBySearch}
 				placeholder="Search for task"
 				class="me-6 w-80 border xl:w-96"
 			/>
-			<ToolbarButton
+
+			<div>
+				<Button
+					color={statusFilter == 'all' ? 'blue' : 'light'}
+					on:click={()=>{
+						handleStatusChange('all');
+					}}
+				>
+					All
+				</Button>
+				<Button
+					color={statusFilter == 'for dispatch' ? 'blue' : 'light'}
+					on:click={()=>{
+						handleStatusChange('for dispatch');
+					}}
+				>
+					For Dispatch
+				</Button>
+				<Button
+					color={statusFilter == 'ongoing' ? 'blue' : 'light'}
+					on:click={()=>{
+						handleStatusChange('ongoing');
+					}}
+				>
+					Ongoing
+				</Button>
+				<Button
+					color={statusFilter == 'completed' ? 'blue' : 'light'}
+					on:click={()=>{
+						handleStatusChange('completed');
+					}}
+				>
+					Completed
+				</Button>
+
+
+			</div>
+			
+
+			<!-- <ToolbarButton
 				color="dark"
 				class="m-0 rounded p-1 hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-700"
 			>
@@ -505,7 +550,7 @@
 				class="m-0 rounded p-1 hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-700"
 			>
 				<DotsVerticalOutline size="lg" />
-			</ToolbarButton>
+			</ToolbarButton> -->
 
 			<div slot="end" class="flex items-center justify-center space-x-2">
 				<!-- mar sync -->
@@ -564,7 +609,7 @@
 									on:click={() => {
 										sortings.push(title + ' Desc');
 										sortings = sortings;
-										sortTasks();
+										sortFilterTasks();
 									}}
 								>
 									<ArrowUpDownOutline class="ml-2 cursor-pointer  hover:text-green-400" size="sm" />
@@ -575,7 +620,7 @@
 										sortings = sortings.filter((item) => item !== title + ' Desc');
 										sortings.push(title + ' Asc');
 										sortings = sortings;
-										sortTasks();
+										sortFilterTasks();
 									}}
 								>
 									<ArrowDownOutline
@@ -587,7 +632,7 @@
 								<button
 									on:click={() => {
 										sortings = sortings.filter((item) => item !== title + ' Asc');
-										sortTasks();
+										sortFilterTasks();
 									}}
 								>
 									<ArrowUpOutline
@@ -634,9 +679,16 @@
 						class="p-4 font-normal dark:{setStatusColor(task.status)} {setStatusColor(task.status)}"
 						>{task.status.toUpperCase()}</TableBodyCell
 					>
-					<TableBodyCell class="p-4 font-normal text-gray-500 dark:text-gray-400"
-						>{task.users.inspector_name.toUpperCase()}</TableBodyCell
-					>
+					<TableBodyCell class="p-4 font-normal text-gray-500 dark:text-gray-400">
+						<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+							<div class="text-base font-semibold text-gray-900 dark:text-white">
+								{task.users.inspector_name.toUpperCase()}
+							</div>
+							<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+								{task.users.email.toLowerCase()}
+							</div>
+						</div>
+					</TableBodyCell>
 					<TableBodyCell class="space-x-2">
 						<Button
 							size="sm"
