@@ -1,0 +1,208 @@
+inserting sequence from ftp to db
+
+
+file_read for task tb
+	id
+	file_name
+	file_size
+	file_type
+
+	--> return file read id
+
+sample code for testing:
+insert into
+  file_read (id, file_name, file_size, file_type)
+values
+  (
+    'b1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4c',
+    'mar_tasks.csv',
+    49,
+    'csv'
+  );
+
+
+
+tasks uses id from files and task id will be used for ppir form tb
+	task_number 
+	service_group
+	service_type 
+	priority
+
+	assignee <- email of user
+	file_id <- file_read id
+
+	status
+	task_type
+
+	--> return task id
+
+sample code for testing:
+insert into
+  tasks (
+    task_number,
+    service_group,
+    service_type,
+    priority,
+    assignee,
+    file_id,
+    status,
+    task_type
+  )
+values
+  (
+    'TASK-00x',
+    'PO5',
+    'Region 05 PPIR',
+    'High',
+    (
+      select
+        id
+      from
+        users
+      where
+        email = 'joemar@yahoo.com'
+    ),
+    'b1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4c',
+    'for dispatch',
+    'ppir'
+  );
+
+
+
+ppir_forms uses task id
+	task_id <- task id
+    ppir_assignmentid
+    ppir_insuranceid
+    ppir_farmername
+    ppir_address
+    ppir_farmertype
+    ppir_mobileno
+    ppir_groupname
+    ppir_groupaddress
+    ppir_lendername
+    ppir_lenderaddress
+    ppir_cicno
+    ppir_farmloc
+    ppir_north
+    ppir_south
+    ppir_east
+    ppir_west
+    ppir_att_1
+    ppir_att_2
+    ppir_att_3
+    ppir_att_4
+    ppir_area_aci
+    ppir_area_act
+    ppir_dopds_aci
+    ppir_dopds_act
+    ppir_doptp_aci
+    ppir_doptp_act
+    ppir_svp_aci
+    ppir_svp_act
+    ppir_variety
+    ppir_stagecrop
+    ppir_remarks
+    ppir_name_insured
+    ppir_name_iuia
+    ppir_sig_insured <- bytea
+    ppir_sig_iuia <- bytea
+    track_last_coord
+    track_date_time
+    track_total_area
+    track_total_distance
+
+
+INSERT INTO
+  ppir_forms (
+    task_id,
+    ppir_assignmentid,
+    ppir_insuranceid,
+    ppir_farmername,
+    ppir_address,
+    ppir_farmertype,
+    ppir_mobileno,
+    ppir_groupname,
+    ppir_groupaddress,
+    ppir_lendername,
+    ppir_lenderaddress,
+    ppir_cicno,
+    ppir_farmloc,
+    ppir_north,
+    ppir_south,
+    ppir_east,
+    ppir_west,
+    ppir_att_1,
+    ppir_att_2,
+    ppir_att_3,
+    ppir_att_4,
+    ppir_area_aci,
+    ppir_area_act,
+    ppir_dopds_aci,
+    ppir_dopds_act,
+    ppir_doptp_aci,
+    ppir_doptp_act,
+    ppir_svp_aci,
+    ppir_svp_act,
+    ppir_variety,
+    ppir_stagecrop,
+    ppir_remarks,
+    ppir_name_insured,
+    ppir_name_iuia,
+    ppir_sig_insured,
+    ppir_sig_iuia,
+    track_last_coord,
+    track_date_time,
+    track_total_area,
+    track_total_distance
+  )
+VALUES
+  (
+    (
+      SELECT
+        id
+      FROM
+        tasks
+      WHERE
+        task_number = 'TASK-00x'
+    ),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'rice',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    ''
+  );
+
