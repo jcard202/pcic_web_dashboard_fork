@@ -596,7 +596,7 @@
 			<TableHeadCell class="w-4 p-4"
 				><Checkbox
 					on:click={selectAllTasks}
-					checked={selectedTasks.length >= filteredTasks.length}
+					checked={(selectedTasks.length >= filteredTasks.length && filteredTasks.length > 0)}
 				/></TableHeadCell
 			>
 			{#each ['Task Name', 'Service Group', 'Service Type', 'Attempts', 'Priority', 'Status', 'Assignee', 'Actions'] as title}
