@@ -141,6 +141,7 @@
 	};
 
 	const sortFilterTasks = () => {
+		// view filter
 		filteredTasks =  tasks.filter(
 			(task) =>
 				task.status.toLowerCase().includes(statusFilter) || statusFilter == 'all'
@@ -152,6 +153,8 @@
 				task.service_type.toLowerCase().includes(search) ||
 				task.service_group.toLowerCase().includes(search)
 		);
+		// selected filters
+		selectedTasks = selectedTasks.filter((_task) => filteredTasks.includes(_task))
 		for (const sort of sortings) {
 			switch (sort) {
 				case 'Task Name Desc':
