@@ -1,12 +1,12 @@
 export type HeaderArray = string[];
 
-export interface Filter {
+export interface TaskFilter {
     selectedHeader: keyof Task;
     selectedOperator: string;
     value: string;
 }
 
-export interface SortCriteria {
+export interface TaskSortCriteria {
     column: keyof Task;
     ascending: boolean;
 }
@@ -38,4 +38,31 @@ export interface Task {
 
     
     [key: string]: string | undefined;  // Index signature for dynamic access
+}
+
+
+export interface User {
+    id: string;
+    role: string;
+    email: string;
+    mobile_number: string | null;
+    local_id: string;
+    region_name: string;
+    inspector_name: string;
+    for_dispatch_count: number;
+    ongoing_count: number;
+    completed_count: number;
+    total_tasks: number;
+    [key: string]: string | number | null | undefined; // Index signature for dynamic access
+}
+
+export interface UserFilter {
+    selectedHeader: keyof User;
+    selectedOperator: string;
+    value: string;
+}
+
+export interface UserSortCriteria {
+    column: keyof User;
+    ascending: boolean;
 }

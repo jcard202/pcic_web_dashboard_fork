@@ -1,8 +1,7 @@
 import { derived, get, writable } from 'svelte/store';
-import type { Filter, HeaderArray, SortCriteria, Task } from './types';
+import type { HeaderArray, Task, TaskFilter, TaskSortCriteria } from './types';
 
 // Define the type for our headers
-
 
 // Create writable stores for the base arrays with explicit typing
 export const taskDefaultHeaders = writable<HeaderArray>([
@@ -37,8 +36,8 @@ export const taskOptionalHeaders = writable<HeaderArray>([
 // Create derived stores for the combined arrays
 export const taskActiveHeaders = writable<HeaderArray>([]);
 export const taskSelectedHeaders = writable<HeaderArray>([]);
+export const originalTaskData = writable<Task[]>([]);
 
-// taskAllHeaders is derived from taskDefaultHeaders and taskOptionalHeaders
 export const taskAllHeaders = derived<[typeof taskDefaultHeaders, typeof taskOptionalHeaders], HeaderArray>(
     [taskDefaultHeaders, taskOptionalHeaders],
     ([$taskDefaultHeaders, $taskOptionalHeaders]) => [...$taskDefaultHeaders, ...$taskOptionalHeaders]
@@ -51,33 +50,37 @@ taskDefaultHeaders.subscribe(($taskDefaultHeaders) => {
 });
 
 // Modal state
-export const showColumnModal = writable(false);
+export const showTaskColumnModal = writable(false);
 
-export const showFilter = writable(false);
+export const showTaskFilter = writable(false);
 
-export const filters = writable<Filter[]>([]);
-export const filteredData = writable<Task[]>([]);
+export const taskFilters = writable<TaskFilter[]>([]);
+export const taskFilteredData = writable<Task[]>([]);
 
-
-export const addFilter = () => {
-    filters.update(f => [...f, { selectedHeader: '', selectedOperator: '', value: '' }]);
+export const addTaskFilter = () => {
+    taskFilters.update(f => [...f, { selectedHeader: '', selectedOperator: '', value: '' }]);
+};
+export const removeTaskFilter = (index: number) => {
+    taskFilters.update(f => f.filter((_, i) => i !== index));
+    applyTaskFilters(); // Re-apply remaining filters
 };
 
-export const removeFilter = (index: number) => {
-    filters.update(f => f.filter((_, i) => i !== index));
+export const clearTaskFilters = () => {
+    taskFilters.set([]);
+    taskFilteredData.set(get(originalTaskData)); // Reset to original data
 };
 
-export const clearFilters = () => {
-    filters.set([]);
-    filteredData.set([]); // Reset to original data
-};
-
-export const applyFilters = () => {
-    const currentFilters = get(filters);
-    const currentData = get(filteredData);
+export const applyTaskFilters = () => {
+    const currentFilters = get(taskFilters);
+    const originalData = get(originalTaskData);
     
-    const newFilteredData = currentData.filter((item: Task) => {
-        return currentFilters.every((filter: Filter) => {
+    if (currentFilters.length === 0) {
+        taskFilteredData.set(originalData);
+        return;
+    }
+
+    const newFilteredData = originalData.filter((item: Task) => {
+        return currentFilters.every((filter: TaskFilter) => {
             const itemValue = item[filter.selectedHeader];
 
             if (itemValue === null || itemValue === undefined) return false;
@@ -89,13 +92,13 @@ export const applyFilters = () => {
                 case '!=':
                     return itemValue.toString().toLowerCase() !== filterValue.toLowerCase();
                 case '>':
-                    return itemValue > filterValue;
+                    return parseFloat(itemValue) > parseFloat(filterValue);
                 case '<':
-                    return itemValue < filterValue;
+                    return parseFloat(itemValue) < parseFloat(filterValue);
                 case '>=':
-                    return itemValue >= filterValue;
+                    return parseFloat(itemValue) >= parseFloat(filterValue);
                 case '<=':
-                    return itemValue <= filterValue;
+                    return parseFloat(itemValue) <= parseFloat(filterValue);
                 case 'contains':
                     return itemValue.toString().toLowerCase().includes(filterValue.toLowerCase());
                 default:
@@ -104,11 +107,10 @@ export const applyFilters = () => {
         });
     });
 
-    filteredData.set(newFilteredData);
+    taskFilteredData.set(newFilteredData);
 };
 
-
-export const operators = [
+export const taskOperators = [
     { value: '==', name: 'Equals' },
     { value: '!=', name: 'Not Equals' },
     { value: '>', name: 'Greater Than' },
@@ -118,24 +120,24 @@ export const operators = [
     { value: 'contains', name: 'Contains' },
 ];
 
+export const showTaskSorting = writable(false);
+export const taskSortCriteria = writable<TaskSortCriteria[]>([]);
 
-export const showSorting = writable(false);
-export const sortCriteria = writable<SortCriteria[]>([]);
-
-export const addSortCriteria = () => {
-    sortCriteria.update(sc => [...sc, { column: 'Region', ascending: true }]);
+export const addTaskSortCriteria = () => {
+    taskSortCriteria.update(sc => [...sc, { column: 'Region', ascending: true }]);
 };
 
-export const removeSortCriteria = (index: number) => {
-    sortCriteria.update(sc => sc.filter((_, i) => i !== index));
+export const removeTaskSortCriteria = (index: number) => {
+    taskSortCriteria.update(sc => sc.filter((_, i) => i !== index));
 };
 
-export const clearSort = () => {
-    sortCriteria.set([]);
+export const clearTaskSort = () => {
+    taskSortCriteria.set([]);
 };
-export const applySorting = () => {
-    const currentSortCriteria = get(sortCriteria);
-    const currentData = get(filteredData);
+
+export const applyTaskSorting = () => {
+    const currentSortCriteria = get(taskSortCriteria);
+    const currentData = get(taskFilteredData);
 
     const sortedData = [...currentData].sort((a, b) => {
         for (const criteria of currentSortCriteria) {
@@ -159,10 +161,10 @@ export const applySorting = () => {
         return 0;
     });
 
-    filteredData.set(sortedData);
+    taskFilteredData.set(sortedData);
 };
 
-
-export const initializeFilteredData = (initialData: Task[]) => {
-    filteredData.set(initialData);
+export const initializeTaskFilteredData = (initialData: Task[]) => {
+    originalTaskData.set(initialData);
+    taskFilteredData.set(initialData);
 };
