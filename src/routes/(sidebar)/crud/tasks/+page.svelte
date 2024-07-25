@@ -8,6 +8,7 @@
 		Drawer,
 		Heading,
 		Input,
+		Label,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -64,8 +65,16 @@
 	let tasks: any[] = [];
 	let current_user: any = {};
 	let selected_task: any = {};
+	let modalType:string =  'clear_forms';
+	/* 
+	Modal Types 
+		1. clear_forms
+		2. delete_multiple
+	*/
+	
 
 	let open: boolean = false;
+	let confirm_delete:string = '';
 
 	let filteredTasks: any[] = [];
 	let sortings: any[] = [];
@@ -84,6 +93,10 @@
 		await fetchUsers();
 		await fetchTasks();
 	});
+
+	const handleConfirmDelete = (event:any) => {
+		confirm_delete = event.target.value 
+	}
 
 	const showToast = (message: string, type: 'success' | 'error') => {
 		toastProps = { show: true, message, type };
@@ -113,7 +126,8 @@
 		const priorityMap: { [key: string]: number } = {
 			high: 3,
 			medium: 2,
-			low: 1
+			low: 1,
+			'normal priority': 1.5,
 		};
 
 		return priorityMap[priority.toLowerCase()];
@@ -200,7 +214,7 @@
 	};
 
 	const clearPPICForm = async (taskID: string) => {
-		const { data, error } = await supabase
+		const form_response = await supabase
 			.from('ppir_forms')
 			.update({
 				ppir_att_1: null,
@@ -220,12 +234,16 @@
 				ppir_sig_iuia: null
 			})
 			.eq('task_id', taskID);
-
-		if (error) {
+		const task_response = await supabase.from('tasks').update({
+			'status': 'for dispatch'
+		}).eq('id', taskID);
+		if (form_response.error || task_response.error) {
 			showToast('Error in resetting PPIR Form!', 'error');
 			return;
 		}
-		// add toast
+	
+		await fetchTasks();
+
 		showToast('Successfully reset PPIR Form!', 'success');
 	};
 
@@ -347,7 +365,6 @@
 			}
 			tasks = data;
 			filteredTasks = tasks;
-			console.log(tasks);
 			sortTasks();
 		} catch (error) {
 			console.error('Error fetching tasks:', error);
@@ -503,9 +520,20 @@
 				<Button
 					class="whitespace-nowrap"
 					on:click={async () => {
+						modalType = 'clear_forms';
 						open = true;
 					}}
 					disabled={selectedTasks.length == 0}>Reset PPIC Forms</Button
+				>
+
+				<Button
+					color='red'
+					class="whitespace-nowrap"
+					on:click={async () => {
+						modalType = 'delete_multiple';
+						open = true;
+					}}
+					disabled={selectedTasks.length == 0}>Delete Tasks</Button
 				>
 
 				<Button
@@ -661,24 +689,52 @@
 	<ExclamationCircleSolid class="mx-auto mb-4 mt-8 h-10 w-10 text-red-600" />
 
 	<h3 class="mb-6 text-center text-lg text-gray-500 dark:text-gray-400">
-		"Are you sure you want reset PPIR forms of the selected tasks?"
+		{
+			modalType == 'clear_forms' ?
+			"Are you sure you want reset PPIR forms of the selected tasks?" : 
+			"Are you sure you want to permanently delete the selected tasks?"
+		}
 	</h3>
+	{#if modalType == 'delete_multiple'}
+		<Label class="space-y-2">
+			<span>Type 'DELETE' to confirm deletion of selected tasks</span>
+			<Input on:keyup={handleConfirmDelete} name="delete" class="border font-normal outline-none" placeholder="Type 'DELETE'"
+			required />
+		</Label>
+	{/if}
 
 	<div class="flex items-center justify-center">
 		<Button
 			color="red"
 			class="mr-2"
 			on:click={async () => {
+				if(modalType == 'delete_multiple' && confirm_delete != 'DELETE'){
+					showToast(`Please enter 'DELETE' to confirm task deletion!`, 'error');
+					return;
+				}
 				for (const t of selectedTasks) {
 					try {
-						await clearPPICForm(t.id);
-						showToast(`Successfully cleared form of ${t.task_number}`, 'success');
+						if(modalType == 'clear_forms'){
+							await clearPPICForm(t.id);
+							showToast(`Successfully cleared form of ${t.task_number}`, 'success');
+						}else{
+							await deleteTask(t.id);
+							showToast(`Successfully deleted form of ${t.task_number}`, 'success');
+						}
 					} catch (e) {
-						showToast(`Failed to clear form of ${t.task_number}`, 'error');
+						if(modalType == 'clear_forms'){
+							showToast(`Failed to clear form of ${t.task_number}`, 'error');
+						}else{
+							showToast(`Failed to delete ${t.task_number}`, 'error');
+						}
 						return;
 					}
 				}
-				showToast(`Successfully cleared selected forms!`, 'success');
+				if(modalType == 'clear_forms'){
+					showToast(`Successfully cleared selected forms!`, 'success');
+				}else{
+					showToast(`Successfully deleted selected forms!`, 'success');
+				}
 				open = false;
 			}}
 			>Yes, I'm sure
