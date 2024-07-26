@@ -1,3 +1,5 @@
+// regionStore.ts
+
 import { derived, get, writable } from 'svelte/store';
 import type { HeaderArray, Region, RegionFilter, RegionSortCriteria } from './types';
 
@@ -161,3 +163,23 @@ export const initializeRegionFilteredData = (initialData: Region[]) => {
     originalRegionData.set(initialData);
     regionFilteredData.set(initialData);
 };
+
+// Pagination related stores
+export const currentRegionPage = writable(1);
+export const regionPageSize = writable(10);
+
+export const paginatedRegions = derived(
+    [regionFilteredData, currentRegionPage, regionPageSize],
+    ([$regionFilteredData, $currentRegionPage, $regionPageSize]) => {
+        const start = ($currentRegionPage - 1) * $regionPageSize;
+        const end = start + $regionPageSize;
+        return $regionFilteredData.slice(start, end);
+    }
+);
+
+export const totalRegionPages = derived(
+    [regionFilteredData, regionPageSize],
+    ([$regionFilteredData, $regionPageSize]) => {
+        return Math.ceil($regionFilteredData.length / $regionPageSize);
+    }
+);

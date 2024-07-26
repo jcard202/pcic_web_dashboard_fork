@@ -1,4 +1,5 @@
 // userStore.ts
+
 import { derived, get, writable } from 'svelte/store';
 import type { HeaderArray, User, UserFilter, UserSortCriteria } from './types';
 
@@ -156,3 +157,23 @@ export const initializeUserFilteredData = (initialData: User[]) => {
     originalUserData.set(initialData);
     userFilteredData.set(initialData);
 };
+
+// Pagination related stores
+export const currentUserPage = writable(1);
+export const userPageSize = writable(10);
+
+export const paginatedUsers = derived(
+    [userFilteredData, currentUserPage, userPageSize],
+    ([$userFilteredData, $currentUserPage, $userPageSize]) => {
+        const start = ($currentUserPage - 1) * $userPageSize;
+        const end = start + $userPageSize;
+        return $userFilteredData.slice(start, end);
+    }
+);
+
+export const totalUserPages = derived(
+    [userFilteredData, userPageSize],
+    ([$userFilteredData, $userPageSize]) => {
+        return Math.ceil($userFilteredData.length / $userPageSize);
+    }
+);

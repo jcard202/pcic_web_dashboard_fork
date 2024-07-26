@@ -36,8 +36,10 @@ export interface Task {
     'Name Insured'?: string;
     'Name IUIA'?: string;
 
+    
     [key: string]: string | undefined;  // Index signature for dynamic access
 }
+
 
 export interface User {
     id: string;
@@ -65,7 +67,7 @@ export interface UserSortCriteria {
     ascending: boolean;
 }
 
-// Region types
+
 export interface Region {
     'Region ID': string;
     'Region Code': string;
@@ -94,3 +96,4 @@ export interface RegionSortCriteria {
     column: keyof Region;
     ascending: boolean;
 }
+

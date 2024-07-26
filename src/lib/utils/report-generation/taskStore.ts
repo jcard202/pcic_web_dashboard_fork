@@ -168,3 +168,25 @@ export const initializeTaskFilteredData = (initialData: Task[]) => {
     originalTaskData.set(initialData);
     taskFilteredData.set(initialData);
 };
+
+// Pagination related stores
+export const currentPage = writable(1);
+export const pageSize = writable(10);
+
+export const paginatedTasks = derived(
+    [taskFilteredData, currentPage, pageSize],
+    ([$taskFilteredData, $currentPage, $pageSize]) => {
+        const start = ($currentPage - 1) * $pageSize;
+        const end = start + $pageSize;
+        return $taskFilteredData.slice(start, end);
+    }
+);
+
+export const totalPages = derived(
+    [taskFilteredData, pageSize],
+    ([$taskFilteredData, $pageSize]) => {
+        return Math.ceil($taskFilteredData.length / $pageSize);
+    }
+);
+
+

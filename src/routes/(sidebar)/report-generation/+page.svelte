@@ -14,7 +14,6 @@
 		showTaskSorting,
 		taskActiveHeaders,
 		taskAllHeaders,
-		taskFilteredData,
 		taskFilters,
 		taskOperators,
 		taskSelectedHeaders,
@@ -22,15 +21,26 @@
 	} from '$lib/utils/report-generation/taskStore';
 
 	import {
+		addUserFilter,
+		addUserSortCriteria,
+		applyUserFilters,
+		applyUserSorting,
+		clearUserFilters,
+		clearUserSort,
 		initializeUserFilteredData,
+		removeUserFilter,
+		removeUserSortCriteria,
+		showUserFilter,
+		showUserSorting,
 		userActiveHeaders,
 		userAllHeaders,
-		userFilteredData,
-		userSelectedHeaders
+		userFilters,
+		userOperators,
+		userSelectedHeaders,
+		userSortCriteria
 	} from '$lib/utils/report-generation/userStore';
 
 	import { Button, Checkbox, Input, Modal, Select, Toggle } from 'flowbite-svelte';
-
 	import {
 		CirclePlusOutline,
 		CloseOutline,
@@ -40,7 +50,6 @@
 	} from 'flowbite-svelte-icons';
 
 	import RegionTable from '$lib/utils/report-generation/components/RegionTable.svelte';
-	import TaskTable from '$lib/utils/report-generation/components/TaskTable.svelte';
 	import UserTable from '$lib/utils/report-generation/components/UserTable.svelte';
 	import {
 		addRegionFilter,
@@ -52,7 +61,6 @@
 		initializeRegionFilteredData,
 		regionActiveHeaders,
 		regionAllHeaders,
-		regionFilteredData,
 		regionFilters,
 		regionOperators,
 		regionSelectedHeaders,
@@ -63,12 +71,20 @@
 		showRegionSorting
 	} from '$lib/utils/report-generation/regionStore';
 	import { selectedTable, showColumnModal } from '$lib/utils/report-generation/tableStore';
+
+	import type { Task } from '$lib/utils/types';
+	import jsPDF from 'jspdf';
+	import autoTable from 'jspdf-autotable';
+
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
+
+	import TaskTable from '$lib/utils/report-generation/components/TaskTable.svelte';
+	import { get } from 'svelte/store';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	const { tasks, users, regions } = data;
+	const { tasks, users, regions, userCurrentRegion } = data;
 
 	let selectedView = 'Tasks';
 
@@ -77,10 +93,6 @@
 		initializeUserFilteredData(users);
 		initializeRegionFilteredData(regions);
 	});
-
-	$: sortedTasks = $taskFilteredData;
-	$: sortedUsers = $userFilteredData;
-	$: sortedRegions = $regionFilteredData;
 
 	const toggleHeader = (header: string) => {
 		$taskSelectedHeaders = $taskSelectedHeaders.includes(header)
@@ -115,99 +127,92 @@
 		$showColumnModal = false;
 	};
 
-	// const currentRegion = '5';
-	// function generatePDF() {
-	// 	const doc = new jsPDF();
+	const getStartOfWeek = (date: Date) => {
+		const day = date.getDay();
+		const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+		return new Date(date.setDate(diff));
+	};
 
-	// 	// Set font sizes
-	// 	const titleFontSize = 18;
-	// 	const normalFontSize = 12;
+	const getFormattedDate = (date: Date) => {
+		return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date
+			.getDate()
+			.toString()
+			.padStart(2, '0')}`;
+	};
 
-	// 	// Add title
-	// 	doc.setFontSize(titleFontSize);
-	// 	doc.text('Task Report', doc.internal.pageSize.width / 2, 15, { align: 'center' });
+	const generatePDF = () => {
+		const doc = new jsPDF();
+		const region = userCurrentRegion; // Replace with actual region data if available
+		const today = new Date();
+		const startOfWeek = getStartOfWeek(new Date());
+		const fromDate = getFormattedDate(startOfWeek);
+		const toDate = getFormattedDate(today);
 
-	// 	// Add region (top left)
-	// 	doc.setFontSize(normalFontSize);
-	// 	doc.text(`Region: ${currentRegion || 'All'}`, 14, 25);
+		// Set font sizes
+		const titleFontSize = 18;
+		const normalFontSize = 12;
 
-	// 	// Add date range (top right)
-	// 	const fromDate = '2023-01-01'; // Dummy date, replace with actual start date
-	// 	const toDate = '2023-12-31'; // Dummy date, replace with actual end date
-	// 	const dateText = `Date From: ${fromDate} To: ${toDate}`;
-	// 	doc.text(dateText, doc.internal.pageSize.width - 14, 25, { align: 'right' });
+		// Add title
+		doc.setFontSize(titleFontSize);
+		doc.text('Task Report', doc.internal.pageSize.width / 2, 15, { align: 'center' });
 
-	// 	// Add tasks table
-	// 	autoTable(doc, {
-	// 		head: [activeHeaders],
-	// 		body: filteredData.map((task) => activeHeaders.map((header) => task[header] ?? 'N/A')),
-	// 		startY: 35
-	// 	});
+		// Add region (top left)
+		doc.setFontSize(normalFontSize);
+		doc.text(`${region}`, 14, 25);
 
-	// 	doc.save('task_report.pdf');
-	// }
+		// Add date range (top right)
+		const dateText = `Date From: ${fromDate} To: ${toDate}`;
+		doc.text(dateText, doc.internal.pageSize.width - 14, 25, { align: 'right' });
 
-	// function generateExcel() {
-	// 	const wb = XLSX.utils.book_new();
+		// Add tasks table
+		const headers = get(taskActiveHeaders); // Get the latest active headers
+		const body = tasks.map((task: Task) =>
+			headers.map((header) => task[header as keyof Task] ?? 'N/A')
+		);
+		autoTable(doc, { head: [headers], body, startY: 35 });
 
-	// 	// Summary sheet
-	// 	const totalTasks = filteredData.length;
-	// 	const completedTasks = filteredData.filter((task) => task.status === 'Completed').length;
-	// 	const ongoingTasks = filteredData.filter((task) => task.status === 'Ongoing').length;
-	// 	const forDispatchTasks = filteredData.filter((task) => task.status === 'For Dispatch').length;
-
-	// 	const summaryData = [
-	// 		['Task Report'],
-
-	// 		[''],
-	// 		['Summary'],
-	// 		['Total Tasks', totalTasks],
-	// 		['Completed Tasks', completedTasks],
-	// 		['Ongoing Tasks', ongoingTasks],
-	// 		['For Dispatch Tasks', forDispatchTasks]
-	// 	];
-	// 	const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
-	// 	XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary');
-
-	// 	// Tasks sheet
-	// 	const tasksWs = XLSX.utils.json_to_sheet(filteredData);
-	// 	XLSX.utils.book_append_sheet(wb, tasksWs, 'Tasks');
-
-	// 	// Generate Excel file
-	// 	const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-	// 	saveAs(new Blob([excelBuffer], { type: 'application/octet-stream' }), 'task_report.xlsx');
-	// }
+		doc.save('task_report.pdf');
+	};
 </script>
 
-<div class="mb-4">
-	<Select bind:value={$selectedTable} class="w-48">
-		<option value="tasks">Task Report</option>
-		<option value="users">User Task Summary</option>
-		<option value="regions">Regions Summary</option>
-	</Select>
-</div>
-
 <MainContainer let:HeaderContainer let:HeaderTwoContainer let:ButtonContainer>
-	<HeaderContainer>
-		<svelte-fragment slot="headingContent">
-			{#if $selectedTable === 'tasks'}
-				Task Report
-			{:else if $selectedTable === 'users'}
-				User Task Summary
-			{:else if $selectedTable === 'regions'}
-				Region Summary
-			{/if}
-		</svelte-fragment>
-		<svelte-fragment slot="headingDescription">
-			{#if $selectedTable === 'tasks'}
-				This is a list of this week's tasks
-			{:else if $selectedTable === 'users'}
-				This is a list of this week's users and tasks.
-			{:else if $selectedTable === 'regions'}
-				Region Summary
-			{/if}
-		</svelte-fragment>
-	</HeaderContainer>
+	<div class="flex items-center justify-between">
+		<HeaderContainer>
+			<svelte-fragment slot="headingContent">
+				{#if $selectedTable === 'tasks'}
+					Task Report
+				{:else if $selectedTable === 'users'}
+					User Task Summary
+				{:else if $selectedTable === 'regions'}
+					Region Summary
+				{/if}
+			</svelte-fragment>
+			<svelte-fragment slot="headingDescription">
+				{#if $selectedTable === 'tasks'}
+					This is a list of this week's tasks
+				{:else if $selectedTable === 'users'}
+					This is a list of this week's users and tasks.
+				{:else if $selectedTable === 'regions'}
+					Region Summary
+				{/if}
+			</svelte-fragment>
+		</HeaderContainer>
+		<div class="mb-4 flex items-center gap-2">
+			<span class="text-xs text-white">Current page:</span>
+			<Select
+				bind:value={$selectedTable}
+				class="w-48 text-xs"
+				color="light"
+				size="sm"
+				placeholder=""
+			>
+				<option value="tasks">Task Report</option>
+				<option value="users">User Task Summary</option>
+				<option value="regions">Regions Summary</option>
+			</Select>
+		</div>
+	</div>
+
 	<HeaderTwoContainer>
 		{#if $selectedTable === 'tasks'}
 			<ButtonContainer>
@@ -219,7 +224,6 @@
 				>
 					<FilterOutline /> Filter
 				</Button>
-
 				{#if $showTaskFilter}
 					<div
 						transition:slide={{ axis: 'y', duration: 600 }}
@@ -306,7 +310,6 @@
 				>
 					<SortOutline /> Sort
 				</Button>
-
 				{#if $showTaskSorting}
 					<div
 						transition:slide={{ axis: 'y', duration: 600 }}
@@ -374,8 +377,167 @@
 				{/if}
 			</ButtonContainer>
 		{:else if $selectedTable === 'users'}
-			<!-- Similar structure for users -->
-			<!-- Add user filter and sort UI components here -->
+			<ButtonContainer>
+				<Button
+					class="flex items-center gap-2 border-none text-xs"
+					on:click={() => ($showUserFilter = !$showUserFilter)}
+					color={$userFilters.length > 0 ? 'green' : 'light'}
+					size="xs"
+				>
+					<FilterOutline /> Filter
+				</Button>
+				{#if $showUserFilter}
+					<div
+						transition:slide={{ axis: 'y', duration: 600 }}
+						class="absolute top-12 z-20 w-[500px] rounded border border-white bg-gray-800 px-2 py-1"
+					>
+						{#if $userFilters.length > 0}
+							{#each $userFilters as filter, index}
+								<div class="flex items-center gap-2 py-1">
+									<Select
+										id="header-select"
+										class="rounded border border-white py-1 text-xs"
+										bind:value={filter.selectedHeader}
+										placeholder="Select Column"
+									>
+										{#each $userActiveHeaders as header}
+											<option value={header}>{header}</option>
+										{/each}
+									</Select>
+									<Select
+										id="operator-select"
+										class="rounded border border-white py-1 text-xs"
+										bind:value={filter.selectedOperator}
+										placeholder="Select Operator"
+									>
+										{#each userOperators as { value, name }}
+											<option {value}>{name}</option>
+										{/each}
+									</Select>
+									<Input
+										class="rounded bg-[#1f2937] py-1 text-xs"
+										type="text"
+										bind:value={filter.value}
+										placeholder="Value"
+										required
+										color="base"
+									/>
+									<Button
+										class="flex size-6 items-center gap-2 border-none text-xs"
+										on:click={() => removeUserFilter(index)}
+										size="xs"
+										color="light"
+									>
+										<CloseOutline />
+									</Button>
+								</div>
+							{/each}
+						{:else}
+							<h2 class="text-sm">No Filters applied to the table.</h2>
+						{/if}
+
+						<hr class="my-2" />
+						<div class="flex items-center justify-between py-1">
+							<button on:click={addUserFilter} class="flex items-center gap-2 text-xs text-white">
+								<PlusOutline class="size-4" />Add filter
+							</button>
+
+							<div class="flex items-center gap-2">
+								<button
+									on:click={clearUserFilters}
+									class="{$userFilters.length > 0 ? 'block' : 'hidden'} text-xs text-red-400"
+								>
+									Clear filter
+								</button>
+								<button
+									on:click={() => {
+										applyUserFilters();
+										$showUserFilter = false;
+									}}
+									class="flex items-center gap-2 text-xs text-white"
+								>
+									Apply filter
+								</button>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</ButtonContainer>
+			<ButtonContainer>
+				<Button
+					class="flex items-center gap-2 border-none text-xs"
+					on:click={() => ($showUserSorting = !$showUserSorting)}
+					color={$userSortCriteria.length > 0 ? 'green' : 'light'}
+					size="xs"
+				>
+					<SortOutline /> Sort
+				</Button>
+				{#if $showUserSorting}
+					<div
+						transition:slide={{ axis: 'y', duration: 600 }}
+						class="absolute top-12 z-20 w-[400px] rounded border border-white bg-gray-800 px-2 py-1"
+					>
+						{#if $userSortCriteria.length > 0}
+							{#each $userSortCriteria as criteria, index}
+								<div class="flex items-center gap-2 py-1">
+									<Select
+										class="rounded border border-white py-1 text-xs"
+										bind:value={criteria.column}
+										placeholder="Select Column"
+									>
+										{#each $userActiveHeaders as header}
+											<option value={header}>{header}</option>
+										{/each}
+									</Select>
+									<div class="flex items-center">
+										<Toggle color="green" bind:checked={criteria.ascending} class="mr-2" />
+										<span class="text-xs text-white">
+											{criteria.ascending ? 'Ascending' : 'Descending'}
+										</span>
+									</div>
+									<Button
+										class="flex size-6 items-center justify-center border-none text-xs"
+										on:click={() => removeUserSortCriteria(index)}
+										size="xs"
+										color="light"
+									>
+										<CloseOutline />
+									</Button>
+								</div>
+							{/each}
+						{:else}
+							<h2 class="text-sm">No sorting criteria applied to the table.</h2>
+						{/if}
+
+						<hr class="my-2" />
+						<div class="flex items-center justify-between py-1">
+							<button
+								on:click={addUserSortCriteria}
+								class="flex items-center gap-2 text-xs text-white"
+							>
+								<PlusOutline class="size-4" />Pick a column to sort by
+							</button>
+							<div class="flex items-center gap-2">
+								<button
+									on:click={clearUserSort}
+									class="text-xs text-red-400 {$userSortCriteria.length > 0 ? 'block' : 'hidden'}"
+								>
+									Clear sort
+								</button>
+								<button
+									on:click={() => {
+										applyUserSorting();
+										$showUserSorting = false;
+									}}
+									class="text-xs text-white"
+								>
+									Apply sort
+								</button>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</ButtonContainer>
 		{:else if $selectedTable === 'regions'}
 			<ButtonContainer>
 				<Button
@@ -386,7 +548,6 @@
 				>
 					<FilterOutline /> Filter
 				</Button>
-
 				{#if $showRegionFilter}
 					<div
 						transition:slide={{ axis: 'y', duration: 600 }}
@@ -473,7 +634,6 @@
 				>
 					<SortOutline /> Sort
 				</Button>
-
 				{#if $showRegionSorting}
 					<div
 						transition:slide={{ axis: 'y', duration: 600 }}
@@ -541,7 +701,6 @@
 				{/if}
 			</ButtonContainer>
 		{/if}
-
 		<div class="mx-3 h-7 divide-x border border-white"></div>
 		<Button
 			on:click={() => ($showColumnModal = true)}
@@ -553,10 +712,8 @@
 		</Button>
 		<svelte-fragment slot="rightMostContent">
 			<div class="flex justify-center gap-2 py-2">
-				<!-- <Button class="text-xs" on:click={generatePDF} color="light" size="xs"
-					>Download PDF</Button
-				>
-				<Button class="text-xs" on:click={generateExcel} color="light" size="xs"
+				<Button class="text-xs" color="light" size="xs" on:click={generatePDF}>Download PDF</Button>
+				<!-- <Button class="text-xs" color="light" size="xs" on:click={generateExcel}
 					>Download Excel</Button
 				> -->
 			</div>
@@ -566,11 +723,11 @@
 	<!-- Main Table here -->
 
 	{#if $selectedTable === 'tasks'}
-		<TaskTable {sortedTasks} />
+		<TaskTable />
 	{:else if $selectedTable === 'users'}
-		<UserTable {sortedUsers} />
+		<UserTable />
 	{:else if $selectedTable === 'regions'}
-		<RegionTable {sortedRegions} />
+		<RegionTable />
 	{/if}
 </MainContainer>
 
