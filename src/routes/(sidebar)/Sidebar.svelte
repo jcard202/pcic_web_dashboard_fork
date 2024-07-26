@@ -12,12 +12,13 @@
 	import {
 		AngleDownOutline,
 		AngleUpOutline,
+		CalendarEditSolid, // Importing a new icon for the Weekly Report
+		ChartPieOutline,
 		CogOutline,
 		FileChartBarSolid,
+		FileWordSolid,
 		LockSolid,
-		ChartPieOutline,
-		UserSettingsSolid,
-		FileWordSolid
+		UserSettingsSolid
 	} from 'flowbite-svelte-icons';
 
 	export let drawerHidden: boolean = false;
@@ -46,6 +47,7 @@
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
 		{ name: 'Tasks', icon: FileWordSolid, href: '/crud/tasks' },
+		{ name: 'Weekly Report', icon: CalendarEditSolid, href: '/report-generation' }, // Corrected Weekly Report link
 		{
 			name: 'Logs',
 			icon: FileChartBarSolid,

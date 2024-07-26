@@ -152,6 +152,7 @@
 
 <div class="mt-4 flex justify-between">
 	<Button
+		color="green"
 		on:click={() => ($currentRegionPage = Math.max(1, $currentRegionPage - 1))}
 		disabled={$currentRegionPage === 1}
 	>
@@ -159,6 +160,7 @@
 	</Button>
 	<span>Page {$currentRegionPage} of {$totalRegionPages}</span>
 	<Button
+		color="green"
 		on:click={() => ($currentRegionPage = Math.min($totalRegionPages, $currentRegionPage + 1))}
 		disabled={$currentRegionPage === $totalRegionPages}
 	>
