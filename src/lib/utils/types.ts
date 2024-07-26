@@ -83,3 +83,29 @@ export interface SortCriteria {
   column: string;
   ascending: boolean;
 }
+
+
+// User interface for users with task Count 
+export interface UserWithTaskCounts {
+  id: string;
+  role: string;
+  email: string;
+  photo_url: string;
+  inspector_name: string;
+  mobile_number: string | null;
+  is_online: boolean;
+  auth_user_id: string | null;
+  created_at: string;
+  updated_at: string;
+  region_id: string | null;
+  region_name: string | null;
+  is_deleted: boolean;
+  sync_status: string;
+  last_synced_at: string | null;
+  local_id: string;
+  is_dirty: boolean;
+  for_dispatch_count: number;
+  ongoing_count: number;
+  completed_count: number;
+  total_tasks: number;
+}
