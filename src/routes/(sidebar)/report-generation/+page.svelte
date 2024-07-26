@@ -22,24 +22,11 @@
 	} from '$lib/utils/report-generation/taskStore';
 
 	import {
-		addUserFilter,
-		addUserSortCriteria,
-		applyUserFilters,
-		applyUserSorting,
-		clearUserFilters,
-		clearUserSort,
 		initializeUserFilteredData,
-		removeUserFilter,
-		removeUserSortCriteria,
-		showUserFilter,
-		showUserSorting,
 		userActiveHeaders,
 		userAllHeaders,
 		userFilteredData,
-		userFilters,
-		userOperators,
-		userSelectedHeaders,
-		userSortCriteria
+		userSelectedHeaders
 	} from '$lib/utils/report-generation/userStore';
 
 	import { Button, Checkbox, Input, Modal, Select, Toggle } from 'flowbite-svelte';
@@ -52,25 +39,48 @@
 		SortOutline
 	} from 'flowbite-svelte-icons';
 
+	import RegionTable from '$lib/utils/report-generation/components/RegionTable.svelte';
 	import TaskTable from '$lib/utils/report-generation/components/TaskTable.svelte';
 	import UserTable from '$lib/utils/report-generation/components/UserTable.svelte';
+	import {
+		addRegionFilter,
+		addRegionSortCriteria,
+		applyRegionFilters,
+		applyRegionSorting,
+		clearRegionFilters,
+		clearRegionSort,
+		initializeRegionFilteredData,
+		regionActiveHeaders,
+		regionAllHeaders,
+		regionFilteredData,
+		regionFilters,
+		regionOperators,
+		regionSelectedHeaders,
+		regionSortCriteria,
+		removeRegionFilter,
+		removeRegionSortCriteria,
+		showRegionFilter,
+		showRegionSorting
+	} from '$lib/utils/report-generation/regionStore';
 	import { selectedTable, showColumnModal } from '$lib/utils/report-generation/tableStore';
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-	const { tasks, users } = data;
+	const { tasks, users, regions } = data;
 
 	let selectedView = 'Tasks';
 
 	onMount(() => {
 		initializeTaskFilteredData(tasks);
 		initializeUserFilteredData(users);
+		initializeRegionFilteredData(regions);
 	});
 
 	$: sortedTasks = $taskFilteredData;
 	$: sortedUsers = $userFilteredData;
+	$: sortedRegions = $regionFilteredData;
 
 	const toggleHeader = (header: string) => {
 		$taskSelectedHeaders = $taskSelectedHeaders.includes(header)
@@ -91,6 +101,17 @@
 
 	const updateUserColumns = () => {
 		$userActiveHeaders = [...$userSelectedHeaders];
+		$showColumnModal = false;
+	};
+
+	const toggleRegionHeader = (header: string) => {
+		$regionSelectedHeaders = $regionSelectedHeaders.includes(header)
+			? $regionSelectedHeaders.filter((h) => h !== header)
+			: [...$regionSelectedHeaders, header];
+	};
+
+	const updateRegionColumns = () => {
+		$regionActiveHeaders = [...$regionSelectedHeaders];
 		$showColumnModal = false;
 	};
 
@@ -162,6 +183,7 @@
 	<Select bind:value={$selectedTable} class="w-48">
 		<option value="tasks">Task Report</option>
 		<option value="users">User Task Summary</option>
+		<option value="regions">Regions Summary</option>
 	</Select>
 </div>
 
@@ -331,7 +353,6 @@
 								<PlusOutline class="size-4" />Pick a column to sort by
 							</button>
 							<div class="flex items-center gap-2">
-								<!-- svelte-ignore missing-declaration -->
 								<button
 									on:click={clearTaskSort}
 									class="text-xs text-red-400 {$taskSortCriteria.length > 0 ? 'block' : 'hidden'}"
@@ -353,23 +374,26 @@
 				{/if}
 			</ButtonContainer>
 		{:else if $selectedTable === 'users'}
+			<!-- Similar structure for users -->
+			<!-- Add user filter and sort UI components here -->
+		{:else if $selectedTable === 'regions'}
 			<ButtonContainer>
 				<Button
 					class="flex items-center gap-2 border-none text-xs"
-					on:click={() => ($showUserFilter = !$showUserFilter)}
-					color={$userFilters.length > 0 ? 'green' : 'light'}
+					on:click={() => ($showRegionFilter = !$showRegionFilter)}
+					color={$regionFilters.length > 0 ? 'green' : 'light'}
 					size="xs"
 				>
 					<FilterOutline /> Filter
 				</Button>
 
-				{#if $showUserFilter}
+				{#if $showRegionFilter}
 					<div
 						transition:slide={{ axis: 'y', duration: 600 }}
 						class="absolute top-12 z-20 w-[500px] rounded border border-white bg-gray-800 px-2 py-1"
 					>
-						{#if $userFilters.length > 0}
-							{#each $userFilters as filter, index}
+						{#if $regionFilters.length > 0}
+							{#each $regionFilters as filter, index}
 								<div class="flex items-center gap-2 py-1">
 									<Select
 										id="header-select"
@@ -377,7 +401,7 @@
 										bind:value={filter.selectedHeader}
 										placeholder="Select Column"
 									>
-										{#each $userActiveHeaders as header}
+										{#each $regionActiveHeaders as header}
 											<option value={header}>{header}</option>
 										{/each}
 									</Select>
@@ -387,7 +411,7 @@
 										bind:value={filter.selectedOperator}
 										placeholder="Select Operator"
 									>
-										{#each userOperators as { value, name }}
+										{#each regionOperators as { value, name }}
 											<option {value}>{name}</option>
 										{/each}
 									</Select>
@@ -401,7 +425,7 @@
 									/>
 									<Button
 										class="flex size-6 items-center gap-2 border-none text-xs"
-										on:click={() => removeUserFilter(index)}
+										on:click={() => removeRegionFilter(index)}
 										size="xs"
 										color="light"
 									>
@@ -415,21 +439,21 @@
 
 						<hr class="my-2" />
 						<div class="flex items-center justify-between py-1">
-							<button on:click={addUserFilter} class="flex items-center gap-2 text-xs text-white">
+							<button on:click={addRegionFilter} class="flex items-center gap-2 text-xs text-white">
 								<PlusOutline class="size-4" />Add filter
 							</button>
 
 							<div class="flex items-center gap-2">
 								<button
-									on:click={clearUserFilters}
-									class="{$userFilters.length > 0 ? 'block' : 'hidden'} text-xs text-red-400"
+									on:click={clearRegionFilters}
+									class="{$regionFilters.length > 0 ? 'block' : 'hidden'} text-xs text-red-400"
 								>
 									Clear filter
 								</button>
 								<button
 									on:click={() => {
-										applyUserFilters();
-										$showUserFilter = false;
+										applyRegionFilters();
+										$showRegionFilter = false;
 									}}
 									class="flex items-center gap-2 text-xs text-white"
 								>
@@ -443,27 +467,27 @@
 			<ButtonContainer>
 				<Button
 					class="flex items-center gap-2 border-none text-xs"
-					on:click={() => ($showUserSorting = !$showUserSorting)}
-					color={$userSortCriteria.length > 0 ? 'green' : 'light'}
+					on:click={() => ($showRegionSorting = !$showRegionSorting)}
+					color={$regionSortCriteria.length > 0 ? 'green' : 'light'}
 					size="xs"
 				>
 					<SortOutline /> Sort
 				</Button>
 
-				{#if $showUserSorting}
+				{#if $showRegionSorting}
 					<div
 						transition:slide={{ axis: 'y', duration: 600 }}
 						class="absolute top-12 z-20 w-[400px] rounded border border-white bg-gray-800 px-2 py-1"
 					>
-						{#if $userSortCriteria.length > 0}
-							{#each $userSortCriteria as criteria, index}
+						{#if $regionSortCriteria.length > 0}
+							{#each $regionSortCriteria as criteria, index}
 								<div class="flex items-center gap-2 py-1">
 									<Select
 										class="rounded border border-white py-1 text-xs"
 										bind:value={criteria.column}
 										placeholder="Select Column"
 									>
-										{#each $userActiveHeaders as header}
+										{#each $regionActiveHeaders as header}
 											<option value={header}>{header}</option>
 										{/each}
 									</Select>
@@ -475,7 +499,7 @@
 									</div>
 									<Button
 										class="flex size-6 items-center justify-center border-none text-xs"
-										on:click={() => removeUserSortCriteria(index)}
+										on:click={() => removeRegionSortCriteria(index)}
 										size="xs"
 										color="light"
 									>
@@ -490,23 +514,22 @@
 						<hr class="my-2" />
 						<div class="flex items-center justify-between py-1">
 							<button
-								on:click={addUserSortCriteria}
+								on:click={addRegionSortCriteria}
 								class="flex items-center gap-2 text-xs text-white"
 							>
 								<PlusOutline class="size-4" />Pick a column to sort by
 							</button>
 							<div class="flex items-center gap-2">
-								<!-- svelte-ignore missing-declaration -->
 								<button
-									on:click={clearUserSort}
-									class="text-xs text-red-400 {$userSortCriteria.length > 0 ? 'block' : 'hidden'}"
+									on:click={clearRegionSort}
+									class="text-xs text-red-400 {$regionSortCriteria.length > 0 ? 'block' : 'hidden'}"
 								>
 									Clear sort
 								</button>
 								<button
 									on:click={() => {
-										applyUserSorting();
-										$showUserSorting = false;
+										applyRegionSorting();
+										$showRegionSorting = false;
 									}}
 									class="text-xs text-white"
 								>
@@ -517,8 +540,6 @@
 					</div>
 				{/if}
 			</ButtonContainer>
-		{:else if $selectedTable === 'regions'}
-			Region Summary
 		{/if}
 
 		<div class="mx-3 h-7 divide-x border border-white"></div>
@@ -548,6 +569,8 @@
 		<TaskTable {sortedTasks} />
 	{:else if $selectedTable === 'users'}
 		<UserTable {sortedUsers} />
+	{:else if $selectedTable === 'regions'}
+		<RegionTable {sortedRegions} />
 	{/if}
 </MainContainer>
 
@@ -575,7 +598,14 @@
 					</Checkbox>
 				{/each}
 			{:else if $selectedTable === 'regions'}
-				<p>s</p>
+				{#each $regionAllHeaders as header}
+					<Checkbox
+						checked={$regionSelectedHeaders.includes(header)}
+						on:change={() => toggleRegionHeader(header)}
+					>
+						{header}
+					</Checkbox>
+				{/each}
 			{/if}
 		</div>
 
@@ -589,7 +619,9 @@
 					Update Columns
 				</Button>
 			{:else if $selectedTable === 'regions'}
-				<p>s</p>
+				<Button class="mt-4" size="xs" color="alternative" on:click={updateRegionColumns}>
+					Update Columns
+				</Button>
 			{/if}
 		</div>
 	</div>

@@ -36,10 +36,8 @@ export interface Task {
     'Name Insured'?: string;
     'Name IUIA'?: string;
 
-    
     [key: string]: string | undefined;  // Index signature for dynamic access
 }
-
 
 export interface User {
     id: string;
@@ -64,5 +62,35 @@ export interface UserFilter {
 
 export interface UserSortCriteria {
     column: keyof User;
+    ascending: boolean;
+}
+
+// Region types
+export interface Region {
+    'Region ID': string;
+    'Region Code': string;
+    'Region Name': string;
+    'Total Users': number;
+    'Total Agents': number;
+    'Total Regional Admins': number;
+    'Total National Admins': number;
+    'Total Tasks': number;
+    'Total Dispatch Tasks': number;
+    'Total Ongoing Tasks': number;
+    'Total Completed Tasks': number;
+    'Total PPIR Tasks': number;
+    'Total Unknown Tasks': number;
+
+    [key: string]: string | number;  // Index signature for dynamic access
+}
+
+export interface RegionFilter {
+    selectedHeader: keyof Region;
+    selectedOperator: string;
+    value: string;
+}
+
+export interface RegionSortCriteria {
+    column: keyof Region;
     ascending: boolean;
 }
