@@ -53,28 +53,24 @@
 	import UserTable from '$lib/utils/report-generation/components/UserTable.svelte';
 	import {
 		addRegionFilter,
-		addRegionSortCriteria,
 		applyRegionFilters,
-		applyRegionSorting,
 		clearRegionFilters,
-		clearRegionSort,
 		initializeRegionFilteredData,
 		regionActiveHeaders,
 		regionAllHeaders,
 		regionFilters,
 		regionOperators,
 		regionSelectedHeaders,
-		regionSortCriteria,
 		removeRegionFilter,
-		removeRegionSortCriteria,
-		showRegionFilter,
-		showRegionSorting
+		showRegionFilter
 	} from '$lib/utils/report-generation/regionStore';
 	import { selectedTable, showColumnModal } from '$lib/utils/report-generation/tableStore';
 
-	import type { Task } from '$lib/utils/types';
+	import type { Region, Task, User } from '$lib/utils/types';
 	import jsPDF from 'jspdf';
 	import autoTable from 'jspdf-autotable';
+	import * as XLSX from 'xlsx';
+	// Importing XLSX library
 
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
@@ -140,6 +136,54 @@
 			.padStart(2, '0')}`;
 	};
 
+	const getDataAndFileName = () => {
+		let headers: string[] | undefined;
+		let body: any[] = [];
+		let fileName: string | undefined;
+
+		switch ($selectedTable) {
+			case 'tasks':
+				headers = get(taskActiveHeaders);
+				body =
+					tasks.length > 0
+						? tasks.map((task: Task) =>
+								headers!.map((header) => task[header as keyof Task] ?? 'N/A')
+							)
+						: headers.map(() => ''); // Placeholder to ensure headers are used in Excel
+				fileName = 'task_report';
+				break;
+			case 'users':
+				headers = get(userActiveHeaders);
+				body =
+					users.length > 0
+						? users.map((user: User) =>
+								headers!.map((header) => user[header as keyof User] ?? 'N/A')
+							)
+						: headers.map(() => '');
+				fileName = 'user_task_summary';
+				break;
+			case 'regions':
+				headers = get(regionActiveHeaders);
+				body =
+					regions.length > 0
+						? regions.map((region: Region) =>
+								headers!.map((header) => region[header as keyof Region] ?? 'N/A')
+							)
+						: headers.map(() => '');
+				fileName = 'region_summary';
+				break;
+			default:
+				throw new Error('Invalid table selection');
+		}
+
+		// Ensure headers and fileName are defined before returning
+		if (!headers || !fileName) {
+			throw new Error('Headers or fileName is not defined');
+		}
+
+		return { headers, body, fileName };
+	};
+
 	const generatePDF = () => {
 		const doc = new jsPDF();
 		const region = userCurrentRegion; // Replace with actual region data if available
@@ -152,9 +196,13 @@
 		const titleFontSize = 18;
 		const normalFontSize = 12;
 
+		const { headers, body, fileName } = getDataAndFileName();
+
 		// Add title
 		doc.setFontSize(titleFontSize);
-		doc.text('Task Report', doc.internal.pageSize.width / 2, 15, { align: 'center' });
+		doc.text(`${fileName.replace('_', ' ')}`, doc.internal.pageSize.width / 2, 15, {
+			align: 'center'
+		});
 
 		// Add region (top left)
 		doc.setFontSize(normalFontSize);
@@ -164,14 +212,22 @@
 		const dateText = `Date From: ${fromDate} To: ${toDate}`;
 		doc.text(dateText, doc.internal.pageSize.width - 14, 25, { align: 'right' });
 
-		// Add tasks table
-		const headers = get(taskActiveHeaders); // Get the latest active headers
-		const body = tasks.map((task: Task) =>
-			headers.map((header) => task[header as keyof Task] ?? 'N/A')
-		);
+		// Add table
 		autoTable(doc, { head: [headers], body, startY: 35 });
 
-		doc.save('task_report.pdf');
+		doc.save(`${fileName}.pdf`);
+	};
+
+	const generateExcel = () => {
+		const { headers, body, fileName } = getDataAndFileName();
+
+		const worksheet = XLSX.utils.json_to_sheet(
+			body.map((row) => Object.fromEntries(headers.map((header, index) => [header, row[index]])))
+		);
+		const workbook = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(workbook, worksheet, fileName);
+
+		XLSX.writeFile(workbook, `${fileName}.xlsx`);
 	};
 </script>
 
@@ -625,81 +681,6 @@
 					</div>
 				{/if}
 			</ButtonContainer>
-			<ButtonContainer>
-				<Button
-					class="flex items-center gap-2 border-none text-xs"
-					on:click={() => ($showRegionSorting = !$showRegionSorting)}
-					color={$regionSortCriteria.length > 0 ? 'green' : 'light'}
-					size="xs"
-				>
-					<SortOutline /> Sort
-				</Button>
-				{#if $showRegionSorting}
-					<div
-						transition:slide={{ axis: 'y', duration: 600 }}
-						class="absolute top-12 z-20 w-[400px] rounded border border-white bg-gray-800 px-2 py-1"
-					>
-						{#if $regionSortCriteria.length > 0}
-							{#each $regionSortCriteria as criteria, index}
-								<div class="flex items-center gap-2 py-1">
-									<Select
-										class="rounded border border-white py-1 text-xs"
-										bind:value={criteria.column}
-										placeholder="Select Column"
-									>
-										{#each $regionActiveHeaders as header}
-											<option value={header}>{header}</option>
-										{/each}
-									</Select>
-									<div class="flex items-center">
-										<Toggle color="green" bind:checked={criteria.ascending} class="mr-2" />
-										<span class="text-xs text-white">
-											{criteria.ascending ? 'Ascending' : 'Descending'}
-										</span>
-									</div>
-									<Button
-										class="flex size-6 items-center justify-center border-none text-xs"
-										on:click={() => removeRegionSortCriteria(index)}
-										size="xs"
-										color="light"
-									>
-										<CloseOutline />
-									</Button>
-								</div>
-							{/each}
-						{:else}
-							<h2 class="text-sm">No sorting criteria applied to the table.</h2>
-						{/if}
-
-						<hr class="my-2" />
-						<div class="flex items-center justify-between py-1">
-							<button
-								on:click={addRegionSortCriteria}
-								class="flex items-center gap-2 text-xs text-white"
-							>
-								<PlusOutline class="size-4" />Pick a column to sort by
-							</button>
-							<div class="flex items-center gap-2">
-								<button
-									on:click={clearRegionSort}
-									class="text-xs text-red-400 {$regionSortCriteria.length > 0 ? 'block' : 'hidden'}"
-								>
-									Clear sort
-								</button>
-								<button
-									on:click={() => {
-										applyRegionSorting();
-										$showRegionSorting = false;
-									}}
-									class="text-xs text-white"
-								>
-									Apply sort
-								</button>
-							</div>
-						</div>
-					</div>
-				{/if}
-			</ButtonContainer>
 		{/if}
 		<div class="mx-3 h-7 divide-x border border-white"></div>
 		<Button
@@ -713,9 +694,9 @@
 		<svelte-fragment slot="rightMostContent">
 			<div class="flex justify-center gap-2 py-2">
 				<Button class="text-xs" color="light" size="xs" on:click={generatePDF}>Download PDF</Button>
-				<!-- <Button class="text-xs" color="light" size="xs" on:click={generateExcel}
+				<Button class="text-xs" color="light" size="xs" on:click={generateExcel}
 					>Download Excel</Button
-				> -->
+				>
 			</div>
 		</svelte-fragment>
 	</HeaderTwoContainer>
