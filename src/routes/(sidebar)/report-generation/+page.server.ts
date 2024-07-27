@@ -7,6 +7,14 @@ import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({locals: {supabase}}) => {
  
+  const { data: taskData, error: taskError } = await supabase.rpc('get_task_data');
+  const { data: userData, error: userError } = await supabase.rpc('get_user_task_counts');
+  const { data: regionData, error: regionError } = await supabase.rpc('get_region_summary');
+
+  if (taskError || userError || regionError) {
+    console.error('Error fetching data:', taskError || userError || regionError);
+  }
+
 
   const { data: { user } } = await supabase.auth.getUser();
   const userId = user!.id;
@@ -32,23 +40,17 @@ export const load: PageServerLoad = async ({locals: {supabase}}) => {
 
   if (regionErrors) {
     console.error('Error fetching region name:', regionErrors);
-    return { regionName: null }; // Handle error as needed
+    return {  tasks: taskData ?? [],
+      users: userData ?? [],
+      regions: regionData ?? [], regionName: 'N/A' }; // Handle error as needed
   }
 
   const regionName = regionDatas?.region_name || null;
  
 
    
-  const { data: taskData, error: taskError } = await supabase.rpc('get_task_data');
-  const { data: userData, error: userError } = await supabase.rpc('get_user_task_counts');
-  const { data: regionData, error: regionError } = await supabase.rpc('get_region_summary');
+
   
-
-  if (taskError || userError || regionError) {
-    console.error('Error fetching data:', taskError || userError || regionError);
-  }
-
-
   return {
   
       tasks: taskData ?? [],
