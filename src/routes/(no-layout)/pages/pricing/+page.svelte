@@ -16,7 +16,7 @@
 	$: period = yearly ? 'year' : 'month';
 
 	const path: string = '/pages/pricing';
-  const description: string = 'Pricing examaple - PCIC Web Dashboard';
+  const description: string = 'Pricing example - PCIC Web Dashboard';
   const title: string = 'PCIC Web Dashboard - Pricing';
   const subtitle: string = 'Pricing';
 </script>
