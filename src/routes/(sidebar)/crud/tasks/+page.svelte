@@ -36,6 +36,7 @@
 	import Task from './Task.svelte';
 	import Toast from '../../../utils/widgets/Toast.svelte';
 	import { Modal } from 'flowbite-svelte';
+	import Pagination from '../../../utils/dashboard/Pagination.svelte';
 
 	let isSyncing = false;
 
@@ -85,6 +86,9 @@
 		message: '',
 		type: 'success'
 	};
+
+	let maxPageItems = 10;
+	let currentPage = 1;
 
 	let selectedTasks: any[] = [];
 
@@ -650,7 +654,7 @@
 			{/each}
 		</TableHead>
 		<TableBody>
-			{#each filteredTasks as task}
+			{#each filteredTasks.slice((currentPage - 1) * maxPageItems,  ((currentPage - 1) * maxPageItems) + maxPageItems) as task}
 				<TableBodyRow class="text-base">
 					<TableBodyCell on:click={() => selectTasks(task)} class="w-4 p-4"
 						><Checkbox checked={selectedTasks.includes(task)} /></TableBodyCell
@@ -719,6 +723,12 @@
 			{/each}
 		</TableBody>
 	</Table>
+	<Pagination 
+		bind:currentPage
+		totalPages={filteredTasks.length/maxPageItems}
+		pageSize={maxPageItems}
+		totalItems={filteredTasks.length}
+	></Pagination>
 </main>
 
 <Drawer
