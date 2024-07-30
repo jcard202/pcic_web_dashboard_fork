@@ -52,7 +52,7 @@
 			<Input
 				type="email"
 				name="email"
-				placeholder="name@company.com"
+				placeholder="Email Here"
 				required
 				class="border outline-none dark:border-gray-600 dark:bg-gray-700"
 			/>

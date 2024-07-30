@@ -23,7 +23,7 @@
 	export let siteImgClass = 'mr-4 h-11';
 	export let cardH1Class = 'text-2xl font-bold text-gray-900 dark:text-white';
 
-	export let handleSubmit:any = null; 
+	export let handleSubmit: any = null;
 </script>
 
 <main class={mainClass}>
@@ -49,12 +49,15 @@
 						{/if}
 					</div>
 				{/if}
-				<Button  type="submit"  size="lg">{loginTitle}</Button>
+				<Button type="submit" size="lg">{loginTitle}</Button>
+				<!--
+				Mar: Commented for now, because it is not needed. 
 				{#if createAccount}
 					<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
 						Not registered? <A href={registerLink}>{createAccountTitle}</A>
 					</div>
 				{/if}
+				 -->
 			</form>
 		</Card>
 	</div>
