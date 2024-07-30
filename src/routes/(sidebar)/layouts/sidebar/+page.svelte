@@ -6,7 +6,7 @@
 	export let data: PageData;
 	
 	const path: string = '/layouts/sidebar';
-  const description: string = 'Sidebar layout examaple - PCIC Web Dashboard';
+  const description: string = 'Sidebar layout example - PCIC Web Dashboard';
   const title: string = 'PCIC Web Dashboard - Sidebar Layout';
   const subtitle: string = 'Sidebar Layout';
 </script>

@@ -5,7 +5,7 @@
 	const title = 'Reset your password';
 	const site = {
 		name: 'Flowbite',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};

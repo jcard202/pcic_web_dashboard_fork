@@ -40,7 +40,7 @@
 	</DropdownHeader>
 	<DropdownItem>Dashboard</DropdownItem>
 	<DropdownItem>Settings</DropdownItem>
-	<DropdownItem>Earnings</DropdownItem>
+	<!-- <DropdownItem>Earnings</DropdownItem> -->
 	<DropdownDivider />
 	<DropdownItem on:click={signOut}>Sign out</DropdownItem>
 </Dropdown>

@@ -7,7 +7,7 @@
 	let title = 'Sign in to platform';
 	let site = {
 		name: 'PCIC Portal	',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};

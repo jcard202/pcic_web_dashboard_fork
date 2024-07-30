@@ -3,7 +3,7 @@
 	import { LockOpenSolid } from 'flowbite-svelte-icons';
 	export let site = {
 		name: 'Flowbite',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: 'https://commons.wikimedia.org/wiki/File:Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};
@@ -68,7 +68,7 @@
 ## Props
 @prop export let site = {
 		name: 'Flowbite',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};

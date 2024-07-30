@@ -16,7 +16,7 @@
 				<div class="col-span-2 mb-6 md:mb-0">
 					<FooterBrand
 						href="https://flowbite.com"
-						src="/images/flowbite-svelte-icon-logo.svg"
+						src="/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg"
 						alt="PCIC Logo"
 						name="Flowbite"
 					/>

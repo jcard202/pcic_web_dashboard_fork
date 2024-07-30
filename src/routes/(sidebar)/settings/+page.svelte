@@ -16,7 +16,7 @@
 	import MetaTag from '../../utils/MetaTag.svelte';
 
 	const path: string = '/settings';
-  const description: string = 'Settings examaple - PCIC Web Dashboard';
+  const description: string = 'Settings example - PCIC Web Dashboard';
   const title: string = 'PCIC Web Dashboard - Settings';
   const subtitle: string = 'Settings';
 </script>
