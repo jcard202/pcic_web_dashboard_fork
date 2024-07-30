@@ -40,7 +40,7 @@
 			type="email"
 			name="email"
 			id="email"
-			placeholder="Email Here"
+			placeholder="name@company.com"
 			required
 			class={inputClass}
 		/>

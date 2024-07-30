@@ -12,8 +12,8 @@
 	import {
 		AngleDownOutline,
 		AngleUpOutline,
-		ChartPieOutline, // Mar: This is used in dashboard as icon
-		CalendarEditSolid,
+		CalendarEditSolid, // Importing a new icon for the Weekly Report
+		ChartPieOutline,
 		CogOutline,
 		FileChartBarSolid,
 		FileWordSolid,
@@ -44,20 +44,10 @@
 	$: activeMainSidebar = $page.url.pathname;
 
 	let posts = [
-		/**
-		 * Mar:
-		 *
-		 * From the Weekly Report to the Dashboard, it was used for the Weekly Report.
-		 * This is only temporary and will be removed once the Weekly Report is implemented to the Dashboard.
-		 *
-		 * { name: 'Weekly Report', icon: CalendarEditSolid, href: '/report-generation' },
-		 */
-
-		{ name: 'Dashboard', icon: CalendarEditSolid, href: '/report-generation' },
-		// this is the original: { name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
-
+		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
 		{ name: 'Tasks', icon: FileWordSolid, href: '/crud/tasks' },
+		{ name: 'Weekly Report', icon: CalendarEditSolid, href: '/report-generation' }, // Corrected Weekly Report link
 		{
 			name: 'Logs',
 			icon: FileChartBarSolid,

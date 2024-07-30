@@ -93,7 +93,7 @@
 			type="email"
 			name="email"
 			id="email"
-			placeholder="Email Here"
+			placeholder="name@company.com"
 			required
 			class="border outline-none dark:border-gray-600 dark:bg-gray-700"
 		/>

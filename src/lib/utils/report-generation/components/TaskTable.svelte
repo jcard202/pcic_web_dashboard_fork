@@ -124,7 +124,7 @@
 							>
 								<button
 									on:click={() => removeColumn(index)}
-									class="flex items-center gap-2 text-xs font-normal text-white py-4"
+									class="flex items-center gap-2 text-xs font-normal text-white"
 								>
 									<TrashBinOutline class="size-4" color="red" /> Remove column
 								</button>

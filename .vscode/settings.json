@@ -5,12 +5,9 @@
   "deno.lint": true,
   "deno.unstable": true,
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "denoland.vscode-deno"
   },
   "cSpell.words": [
-    "arrowdown",
-    "arrowup",
-    "autotable",
     "Dribbble",
     "flowbite",
     "fordispatch"
