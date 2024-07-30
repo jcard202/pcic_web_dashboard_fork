@@ -32,7 +32,7 @@
 		/>
 		<NavBrand href="/" class={list ? 'w-40' : 'lg:w-60'}>
 			<img
-				src="/images/flowbite-svelte-icon-logo.svg"
+				src="/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg"
 				class="me-2.5 h-6 sm:h-8"
 				alt="PCIC Logo"
 			/>

@@ -3,7 +3,7 @@
 	export let title = 'Create a Free Account';
 	export let site = {
 		name: 'Flowbite1',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo1'
 	};
@@ -60,7 +60,7 @@
 @prop export let title = 'Create a Free Account';
 @prop export let site = {
 		name: 'Flowbite1',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo1'
 	};

@@ -3,7 +3,7 @@
 	export let title = 'Sign in to platform';
 	export let site = {
 		name: 'PCIC Portal',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};
@@ -67,7 +67,7 @@
 @prop export let title = 'Sign in to platform';
 @prop export let site = {
 		name: 'Flowbite',
-		img: '/images/flowbite-svelte-icon-logo.svg',
+		img: '/images/Philippine_Crop_Insurance_Corporation_(PCIC).svg',
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};
