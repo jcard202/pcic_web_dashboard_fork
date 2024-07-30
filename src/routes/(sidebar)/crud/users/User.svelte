@@ -21,7 +21,6 @@
     let isLoading = true;
     let errorMessage = '';
     let photoFile: File | null = null;
-    let photoPreview: string | null = null;
     let isAuthenticated = false;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -58,7 +57,14 @@
                 throw error;
             }
 
+            console.log('Raw regions data:', regionsData);
+
             regions = regionsData as Region[];
+            console.log('Processed regions:', regions);
+            
+            if (regions.length === 0) {
+                console.warn('No regions fetched from the database. Please check if the regions table has data.');
+            }
         } catch (error) {
             console.error('Error fetching regions:', error);
             errorMessage = 'Failed to load regions: ' + (error instanceof Error ? error.message : String(error));
@@ -67,6 +73,8 @@
 
     async function uploadPhoto(file: File): Promise<string | null> {
         try {
+            console.log('Attempting to upload file:', file.name, 'Size:', file.size);
+            
             if (file.size > MAX_FILE_SIZE) {
                 throw new Error(`File size exceeds limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
             }
@@ -80,12 +88,21 @@
                 });
 
             if (error) {
+                console.error('Supabase storage upload error:', error);
                 throw new Error(`Upload failed: ${error.message}`);
             }
+
+            if (!data) {
+                throw new Error('Upload succeeded but no data returned');
+            }
+
+            console.log('File uploaded successfully, data:', data);
 
             const { data: urlData } = supabase.storage
                 .from('photo')
                 .getPublicUrl(data.path);
+
+            console.log('Public URL:', urlData.publicUrl);
 
             return urlData.publicUrl;
         } catch (error) {
@@ -102,6 +119,8 @@
             return;
         }
 
+        console.log('Selected Region ID before submission:', selectedRegionId);
+
         if (!selectedRegionId) {
             showAlertMessage('Please select a region', 'error');
             return;
@@ -113,6 +132,8 @@
             userData[key] = value.toString();
         });
 
+        console.log('User data being sent:', userData);
+
         if (!allowedRoles.includes(userData.role)) {
             showAlertMessage('Please select a valid role', 'error');
             return;
@@ -123,13 +144,75 @@
             return;
         }
 
-        let uid: string | null = null;
-
         try {
-            // Attempt to create the auth user
+            // Check if user already exists
+            const { data: existingUser, error: existingUserError } = await supabase
+                .from('users')
+                .select('email')
+                .eq('email', userData.email)
+                .single();
+
+            if (existingUserError && existingUserError.code !== 'PGRST116') {
+                throw existingUserError;
+            }
+
+            if (existingUser) {
+                showAlertMessage('A user with this email already exists', 'error');
+                return;
+            }
+
+            let photo_url = DEFAULT_PROFILE_PIC;
+            if (photoFile) {
+                try {
+                    photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
+                } catch (uploadError) {
+                    console.error('Failed to upload photo:', uploadError);
+                    showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
+                }
+            }
+
+            console.log('Preparing to insert user with photo_url:', photo_url);
+
+            const userDataToInsert = {
+                inspector_name: userData.inspector_name,
+                email: userData.email,
+                role: userData.role,
+                region_id: selectedRegionId,
+                mobile_number: userData.mobile_number,
+                photo_url: photo_url
+            };
+
+            console.log('User data to insert:', userDataToInsert);
+
+            // First, insert the user into your database
+            const { data: userInsertData, error: insertError } = await supabase
+                .from('users')
+                .insert(userDataToInsert)
+                .select(`
+                    *,
+                    regions (
+                        region_name
+                    )
+                `)
+                .single();
+
+            if (insertError) {
+                console.error('Error inserting user:', insertError);
+                throw insertError;
+            }
+
+            if (!userInsertData) {
+                throw new Error('Failed to insert user data');
+            }
+
+            console.log('User inserted:', userInsertData);
+
+            // Then, create the auth user without signing in
             const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: userData.email,
                 password: userData.password,
+                
+                //dont need
                 options: {
                     data: {
                         inspector_name: userData.inspector_name,
@@ -141,105 +224,29 @@
             });
 
             if (authError) {
-                if (authError.message.includes('User already registered')) {
-                    // The user already exists in the authentication system
-                    showAlertMessage('This email is already registered. Please use a different email or sign in.', 'error');
-                } else {
-                    console.error('Error creating auth user:', authError);
-                    showAlertMessage('Failed to create user account. Please try again.', 'error');
-                }
-                return;
+                console.error('Error creating auth user:', authError);
+                throw authError;
             }
 
+            // Update the user record with the auth_user_id
             if (authData.user) {
-                uid = authData.user.id;
-            }
+                const { error: updateError } = await supabase
+                    .from('users')
+                    .update({ auth_user_id: authData.user.id })
+                    .eq('id', userInsertData.id);
 
-        } catch (error) {
-            console.error('Error during sign up:', error);
-            showAlertMessage('Failed to create user. Please try again later.', 'error');
-            return;
-        }
-
-        if (!uid) {
-            showAlertMessage('Could not retrieve user ID after sign up.', 'error');
-            return;
-        }
-
-        // Check if the user already exists in the users table
-        try {
-            const { data: existingUser, error: existingUserError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', uid)
-                .single();
-
-            if (existingUserError && existingUserError.code !== 'PGRST116') {
-                console.error('Error checking for existing user by UID:', existingUserError);
-                showAlertMessage('Error checking for existing user. Please try again.', 'error');
-                return;
-            }
-
-            if (existingUser) {
-                showAlertMessage('A user with this UID already exists in the users table.', 'error');
-                return;
-            }
-
-        } catch (error) {
-            console.error('Error checking for existing user:', error);
-            showAlertMessage('Error occurred while verifying user existence. Please try again.', 'error');
-            return;
-        }
-
-        let photo_url = DEFAULT_PROFILE_PIC;
-        if (photoFile) {
-            try {
-                photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
-            } catch (uploadError) {
-                console.error('Failed to upload photo:', uploadError);
-                showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
-            }
-        }
-
-        const userDataToInsert = {
-            id: uid,
-            auth_user_id: uid,
-            inspector_name: userData.inspector_name,
-            email: userData.email,
-            role: userData.role,
-            region_id: selectedRegionId,
-            mobile_number: userData.mobile_number,
-            photo_url: photo_url
-        };
-
-        try {
-            // Insert the user into your database
-            const { data: userInsertData, error: insertError } = await supabase
-                .from('users')
-                .insert(userDataToInsert)
-                .select('*, regions (region_name)')
-                .single();
-
-            if (insertError) {
-                console.error('Error inserting user:', insertError);
-                showAlertMessage('Failed to insert user data. Please try again later.', 'error');
-                return;
-            }
-
-            console.log('User inserted:', userInsertData);
-
-            // Sign out the user
-            const { error: signOutError } = await supabase.auth.signOut();
-            if (signOutError) {
-                console.error('Error signing out:', signOutError);
+                if (updateError) {
+                    console.error('Error updating user with auth_user_id:', updateError);
+                    // Consider if you want to throw this error or just log it
+                }
             }
 
             dispatch('userAdded', userInsertData);
             open = false;
-            showAlertMessage('User created successfully. Please log in with your new account.', 'success');
-
+            showAlertMessage('User created successfully.', 'success');
         } catch (error) {
             console.error('Error creating user:', error);
+            errorMessage = `Error: ${error instanceof Error ? error.message : String(error)}`;
             showAlertMessage(`Failed to create user. Please try again later.`, 'error');
         }
     }
@@ -248,21 +255,12 @@
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             photoFile = input.files[0];
+            console.log('File selected:', photoFile.name, 'Size:', photoFile.size);
             if (photoFile.size > MAX_FILE_SIZE) {
                 showAlertMessage(`File size exceeds limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB. Please choose a smaller file.`, 'error');
-                input.value = '';
+                input.value = ''; // Clear the input
                 photoFile = null;
-                photoPreview = null;
-            } else {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    photoPreview = e.target?.result as string;
-                };
-                reader.readAsDataURL(photoFile);
             }
-        } else {
-            photoFile = null;
-            photoPreview = null;
         }
     }
 
@@ -272,7 +270,7 @@
         showAlert = true;
         setTimeout(() => {
             showAlert = false;
-        }, 5000);
+        }, 5000); // Hide alert after 5 seconds
     }
 </script>
 
@@ -327,12 +325,6 @@
                         <span>Photo (Max {MAX_FILE_SIZE / (1024 * 1024)}MB)</span>
                         <Input type="file" on:change={handleFileInput} accept="image/*" />
                     </Label>
-                    {#if photoPreview}
-                        <div class="col-span-6">
-                            <!-- svelte-ignore a11y-img-redundant-alt -->
-                            <img src={photoPreview} alt="Selected photo preview" class="max-w-full h-auto" />
-                        </div>
-                    {/if}
                 </div>
                 <div class="mt-6">
                     <Button type="submit">{(data && Object.keys(data).length) ? 'Save all' : 'Add user'}</Button>
