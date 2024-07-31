@@ -31,7 +31,6 @@
     import Delete from './Delete.svelte';
     import Toast from '../../../utils/widgets/Toast.svelte';
     import MetaTag from '../../../utils/MetaTag.svelte';
-    import type { PostgrestError } from '@supabase/supabase-js';
 
     export let data;
     $: ({ supabase } = data)
@@ -61,7 +60,6 @@
             supabaseReady = true;
             const { data: { user } } = await supabase.auth.getUser();
             if (user) {
-                current_user = user;
                 console.log('Component mounted, user authenticated');
                 await fetchUsers();
             } else {
@@ -136,6 +134,7 @@
 
     function handleOpenUser() {
         if (supabaseReady) {
+            current_user = null;
             openUser = true;
         } else {
             console.error('Supabase client is not ready');
@@ -244,6 +243,7 @@
                                 class="gap-2 px-3"
                                 on:click={() => {
                                     current_user = user;
+                                    console.log(current_user)
                                     openUser = true;
                                 }}
                             >
@@ -271,14 +271,15 @@
 <!-- Modals -->
 <User 
     bind:open={openUser} 
-    data={current_user} 
-    {supabase} 
+    current_user={current_user} 
+    selectedRegionId={current_user?.region_id}
+    data={data} 
     on:userAdded={handleUserAdded} 
     on:userUpdated={handleUserUpdated} 
 />
 <Delete 
     bind:open={openDelete} 
     userId={userToDelete} 
-    {supabase}
+    data={data}
     on:userDeleted={handleUserDeleted} 
 />

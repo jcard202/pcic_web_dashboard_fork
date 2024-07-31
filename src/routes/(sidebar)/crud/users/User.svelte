@@ -1,12 +1,13 @@
 <script lang="ts">
     import { Button, Input, Label, Modal, Select } from 'flowbite-svelte';
     import { createEventDispatcher, onMount } from 'svelte';
-    import type { SupabaseClient } from '@supabase/supabase-js';
     import Alert from '../../../utils/widgets/alert.svelte';
 
     export let open: boolean = false;
-    export let data: Record<string, any> = {};
-    export let supabase: SupabaseClient;
+    export let current_user : any;
+    export let data: any;
+
+    $: ({ supabase } = data)
 
     interface Region {
         id: string;
@@ -21,7 +22,6 @@
     let isLoading = true;
     let errorMessage = '';
     let photoFile: File | null = null;
-    let photoPreview: string | null = null;
     let isAuthenticated = false;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -31,17 +31,17 @@
     let alertMessage = '';
     let alertType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
-    let selectedRegionId: string = '';
+    export let selectedRegionId: string | null;
 
     onMount(async () => {
+
         const { data: { user }, error } = await supabase.auth.getUser();
         if (user) {
             isAuthenticated = true;
             console.log('User is authenticated:', user);
         } else {
             console.error('User is not authenticated:', error);
-        }
-
+        }        
         await fetchRegions();
         isLoading = false;
     });
@@ -58,7 +58,14 @@
                 throw error;
             }
 
+            console.log('Raw regions data:', regionsData);
+
             regions = regionsData as Region[];
+            console.log('Processed regions:', regions);
+            
+            if (regions.length === 0) {
+                console.warn('No regions fetched from the database. Please check if the regions table has data.');
+            }
         } catch (error) {
             console.error('Error fetching regions:', error);
             errorMessage = 'Failed to load regions: ' + (error instanceof Error ? error.message : String(error));
@@ -67,6 +74,8 @@
 
     async function uploadPhoto(file: File): Promise<string | null> {
         try {
+            console.log('Attempting to upload file:', file.name, 'Size:', file.size);
+            
             if (file.size > MAX_FILE_SIZE) {
                 throw new Error(`File size exceeds limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
             }
@@ -80,18 +89,38 @@
                 });
 
             if (error) {
+                console.error('Supabase storage upload error:', error);
                 throw new Error(`Upload failed: ${error.message}`);
             }
+
+            if (!data) {
+                throw new Error('Upload succeeded but no data returned');
+            }
+
+            console.log('File uploaded successfully, data:', data);
 
             const { data: urlData } = supabase.storage
                 .from('photo')
                 .getPublicUrl(data.path);
+
+            console.log('Public URL:', urlData.publicUrl);
 
             return urlData.publicUrl;
         } catch (error) {
             console.error('Error in uploadPhoto function:', error);
             throw error;
         }
+    }
+
+    async function formLoad (event:Event){
+        const formData = new FormData(event.target as HTMLFormElement);
+        formData.append('email', data.email);
+        formData.append('inspector_name', data.inspector_name);
+        formData.append('role', data.role);
+        formData.append('mobile_number', data.mobile_number);
+        selectedRegionId = data.region_id;
+        alert();
+
     }
 
     async function handleSubmit(event: Event) {
@@ -101,6 +130,8 @@
             showAlertMessage('You must be authenticated to perform this action', 'error');
             return;
         }
+
+        console.log('Selected Region ID before submission:', selectedRegionId);
 
         if (!selectedRegionId) {
             showAlertMessage('Please select a region', 'error');
@@ -113,6 +144,8 @@
             userData[key] = value.toString();
         });
 
+        console.log('User data being sent:', userData);
+
         if (!allowedRoles.includes(userData.role)) {
             showAlertMessage('Please select a valid role', 'error');
             return;
@@ -123,123 +156,118 @@
             return;
         }
 
-        let uid: string | null = null;
-
         try {
-            // Attempt to create the auth user
-            const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: userData.email,
-                password: userData.password,
-                options: {
-                    data: {
-                        inspector_name: userData.inspector_name,
-                        role: userData.role,
-                        region_id: selectedRegionId,
-                        mobile_number: userData.mobile_number,
+  
+            
+            let userDataToInsert;
+            if(!current_user){
+                // Check if user already exists
+                const { data: existingUser, error: existingUserError } = await supabase
+                    .from('users')
+                    .select('email')
+                    .eq('email', userData.email)
+                    .single();
+
+                if (existingUserError && existingUserError.code !== 'PGRST116') {
+                    throw existingUserError;
+                }
+
+                if (existingUser) {
+                    showAlertMessage('A user with this email already exists', 'error');
+                    return;
+                }
+                let photo_url = DEFAULT_PROFILE_PIC;
+                if (photoFile) {
+                    try {
+                        photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
+                    } catch (uploadError) {
+                        console.error('Failed to upload photo:', uploadError);
+                        showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
                     }
                 }
-            });
 
-            if (authError) {
-                if (authError.message.includes('User already registered')) {
-                    // The user already exists in the authentication system
-                    showAlertMessage('This email is already registered. Please use a different email or sign in.', 'error');
-                } else {
+                console.log('Preparing to insert user with photo_url:', photo_url);
+                // Then, create the auth user without signing in
+                const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+                    email: userData.email,
+                    password: userData.password,
+                });
+                console.log('DATAAAAA',authData)
+                if (authError) {
                     console.error('Error creating auth user:', authError);
-                    showAlertMessage('Failed to create user account. Please try again.', 'error');
+                    throw authError;
                 }
-                return;
+                userDataToInsert = {
+                    id: authData.user.id,
+                    inspector_name: userData.inspector_name,
+                    email: userData.email,
+                    role: userData.role,
+                    auth_user_id : authData.user.id ,
+                    region_id: selectedRegionId,
+                    mobile_number: userData.mobile_number,
+                    photo_url: photo_url
+                };
+
+            }else{
+                let photo_url = current_user.photo_url;
+                if (photoFile) {
+                    try {
+                        photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
+                    } catch (uploadError) {
+                        console.error('Failed to upload photo:', uploadError);
+                        showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
+                    }
+                }
+                userDataToInsert = {
+                    id: current_user.id,
+                    inspector_name: userData.inspector_name,
+                    email: userData.email,
+                    role: userData.role,
+                    region_id: selectedRegionId,
+                    mobile_number: userData.mobile_number,
+                    photo_url: photo_url
+                };
             }
+       
+         
 
-            if (authData.user) {
-                uid = authData.user.id;
-            }
+ 
 
-        } catch (error) {
-            console.error('Error during sign up:', error);
-            showAlertMessage('Failed to create user. Please try again later.', 'error');
-            return;
-        }
+            console.log('User data to insert:', userDataToInsert);
 
-        if (!uid) {
-            showAlertMessage('Could not retrieve user ID after sign up.', 'error');
-            return;
-        }
-
-        // Check if the user already exists in the users table
-        try {
-            const { data: existingUser, error: existingUserError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', uid)
-                .single();
-
-            if (existingUserError && existingUserError.code !== 'PGRST116') {
-                console.error('Error checking for existing user by UID:', existingUserError);
-                showAlertMessage('Error checking for existing user. Please try again.', 'error');
-                return;
-            }
-
-            if (existingUser) {
-                showAlertMessage('A user with this UID already exists in the users table.', 'error');
-                return;
-            }
-
-        } catch (error) {
-            console.error('Error checking for existing user:', error);
-            showAlertMessage('Error occurred while verifying user existence. Please try again.', 'error');
-            return;
-        }
-
-        let photo_url = DEFAULT_PROFILE_PIC;
-        if (photoFile) {
-            try {
-                photo_url = await uploadPhoto(photoFile) || DEFAULT_PROFILE_PIC;
-            } catch (uploadError) {
-                console.error('Failed to upload photo:', uploadError);
-                showAlertMessage('Failed to upload photo. Default profile picture will be used.', 'warning');
-            }
-        }
-
-        const userDataToInsert = {
-            id: uid,
-            auth_user_id: uid,
-            inspector_name: userData.inspector_name,
-            email: userData.email,
-            role: userData.role,
-            region_id: selectedRegionId,
-            mobile_number: userData.mobile_number,
-            photo_url: photo_url
-        };
-
-        try {
-            // Insert the user into your database
+            // First, insert the user into your database
             const { data: userInsertData, error: insertError } = await supabase
                 .from('users')
-                .insert(userDataToInsert)
-                .select('*, regions (region_name)')
+                .upsert(userDataToInsert)
+                .select(`
+                    *,
+                    regions (
+                        region_name
+                    )
+                `)
                 .single();
 
             if (insertError) {
                 console.error('Error inserting user:', insertError);
-                showAlertMessage('Failed to insert user data. Please try again later.', 'error');
-                return;
+                throw insertError;
+            }
+
+            if (!userInsertData) {
+                throw new Error('Failed to insert user data');
             }
 
             console.log('User inserted:', userInsertData);
 
-            // Sign out the user
-            const { error: signOutError } = await supabase.auth.signOut();
-            if (signOutError) {
-                console.error('Error signing out:', signOutError);
+            if(!current_user){
+                dispatch('userAdded', userInsertData);
+            }else{
+                dispatch('userUpdated', userInsertData);
             }
-
-            dispatch('userAdded', userInsertData);
             open = false;
-            showAlertMessage('User created successfully. Please log in with your new account.', 'success');
-
+            showAlertMessage('User created successfully.', 'success');
         } catch (error) {
             console.error('Error creating user:', error);
+            errorMessage = `Error: ${error instanceof Error ? error.message : String(error)}`;
             showAlertMessage(`Failed to create user. Please try again later.`, 'error');
         }
     }
@@ -248,21 +276,12 @@
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             photoFile = input.files[0];
+            console.log('File selected:', photoFile.name, 'Size:', photoFile.size);
             if (photoFile.size > MAX_FILE_SIZE) {
                 showAlertMessage(`File size exceeds limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB. Please choose a smaller file.`, 'error');
-                input.value = '';
+                input.value = ''; // Clear the input
                 photoFile = null;
-                photoPreview = null;
-            } else {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    photoPreview = e.target?.result as string;
-                };
-                reader.readAsDataURL(photoFile);
             }
-        } else {
-            photoFile = null;
-            photoPreview = null;
         }
     }
 
@@ -272,7 +291,7 @@
         showAlert = true;
         setTimeout(() => {
             showAlert = false;
-        }, 5000);
+        }, 5000); // Hide alert after 5 seconds
     }
 </script>
 
@@ -291,23 +310,27 @@
                 <div class="grid grid-cols-6 gap-6">
                     <Label class="col-span-6 space-y-2">
                         <span>Full Name</span>
-                        <Input name="inspector_name" class="border outline-none" placeholder="e.g. Bonnie Green" required />
+                        <Input name="inspector_name" class="border outline-none" placeholder="e.g. Bonnie Green" value={current_user?.inspector_name} required />
                     </Label>
                     <Label class="col-span-6 space-y-2 sm:col-span-3">
                         <span>Email</span>
-                        <Input name="email" type="email" class="border outline-none" placeholder="e.g. bonnie@flowbite.com" required />
+                        <Input name="email" type="email" class="border outline-none" placeholder="e.g. bonnie@flowbite.com" value={current_user?.email} required />
                     </Label>
                     <Label class="col-span-6 space-y-2 sm:col-span-3">
                         <span>Password</span>
-                        <Input name="password" type="password" class="border outline-none" placeholder="Password" required />
+                        {#if current_user}
+                            <Input name="password" type="password" class="border outline-none" placeholder="Change password" />
+                        {:else}
+                            <Input name="password" type="password" class="border outline-none" placeholder="Password" required />
+                        {/if}
                     </Label>
                     <Label class="col-span-6 space-y-2 sm:col-span-3">
                         <span>Mobile Number</span>
-                        <Input name="mobile_number" type="tel" class="border outline-none" placeholder="e.g. +1234567890" required />
+                        <Input name="mobile_number" type="tel" class="border outline-none" placeholder="e.g. +1234567890" value={current_user?.mobile_number} required />
                     </Label>
                     <Label class="col-span-6 space-y-2 sm:col-span-3">
                         <span>Role</span>
-                        <Select name="role" class="mt-2" required>
+                        <Select name="role" class="mt-2" value={current_user?.role} required>
                             <option value="">Select a role</option>
                             {#each allowedRoles as role}
                                 <option value={role}>{role}</option>
@@ -324,18 +347,16 @@
                         </Select>
                     </Label>
                     <Label class="col-span-6 space-y-2">
-                        <span>Photo (Max {MAX_FILE_SIZE / (1024 * 1024)}MB)</span>
+                        {#if current_user}
+                            <span>Change Photo (Max {MAX_FILE_SIZE / (1024 * 1024)}MB)</span>
+                        {:else}
+                            <span>Photo (Max {MAX_FILE_SIZE / (1024 * 1024)}MB)</span>
+                        {/if}
                         <Input type="file" on:change={handleFileInput} accept="image/*" />
                     </Label>
-                    {#if photoPreview}
-                        <div class="col-span-6">
-                            <!-- svelte-ignore a11y-img-redundant-alt -->
-                            <img src={photoPreview} alt="Selected photo preview" class="max-w-full h-auto" />
-                        </div>
-                    {/if}
                 </div>
                 <div class="mt-6">
-                    <Button type="submit">{(data && Object.keys(data).length) ? 'Save all' : 'Add user'}</Button>
+                    <Button type="submit">{(current_user) ? 'Save all' : 'Add user'}</Button>
                 </div>
             </form>
         {/if}

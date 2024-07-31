@@ -1,23 +1,23 @@
 <script lang="ts">
     import { Button, Modal } from 'flowbite-svelte';
     import { ExclamationCircleOutline } from 'flowbite-svelte-icons';
-    import type { SupabaseClient, PostgrestError } from '@supabase/supabase-js';
     import { createEventDispatcher } from 'svelte';
 
     export let open: boolean = false;
     export let userId: string;
-    export let supabase: SupabaseClient;
+    export let data;
 
     const dispatch = createEventDispatcher();
     let isDeleting = false;
     let errorMessage = '';
+
+    $:( {supabase}= data);
 
     async function deleteUser() {
         if (isDeleting) return;
         isDeleting = true;
         errorMessage = '';
         console.log('Attempting to delete user with ID:', userId);
-
         try {
             const { data, error } = await supabase
                 .from('users')
@@ -30,6 +30,7 @@
             console.log('Delete response:', data);
 
             if (data && data.length > 0) {
+                await supabase.auth.admin.deleteUser(userId);
                 dispatch('userDeleted', userId);
                 open = false;
             } else {
