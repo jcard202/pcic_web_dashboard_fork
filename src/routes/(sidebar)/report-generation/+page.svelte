@@ -247,7 +247,7 @@
 				{#if $selectedTable === 'tasks'}
 					Task Report
 				{:else if $selectedTable === 'users'}
-					User Task Summary
+					Weekly Tasks Summary
 				{:else if $selectedTable === 'regions'}
 					Region Summary
 				{/if}
