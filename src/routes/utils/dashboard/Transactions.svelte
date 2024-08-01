@@ -80,13 +80,13 @@
 				'Inspector Name': 1,
 				'Mobile Number': 2,
 				Online: 3,
-				Mon: 4,
-				Tue: 5,
-				Wed: 6,
-				Thu: 7,
-				Fri: 8,
-				Sat: 9,
-				Sun: 10,
+				Sun: 4,
+				Mon: 5,
+				Tue: 6,
+				Wed: 7,
+				Thu: 8,
+				Fri: 9,
+				Sat: 10,
 				'Total Dispatch': 11,
 				'Total Completed': 12,
 				Backlogs: 13
@@ -112,13 +112,13 @@
 		'Inspector Name',
 		'Mobile Number',
 		'Online',
+		'Sun',
 		'Mon',
 		'Tue',
 		'Wed',
 		'Thu',
 		'Fri',
 		'Sat',
-		'Sun',
 		'Total Dispatch',
 		'Total Completed',
 		'Backlogs'
@@ -156,6 +156,20 @@
 			return;
 		}
 
+		// Get the current date
+		const today = new Date();
+		const currentDayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday, etc.
+
+		// Calculate the start of the week (Sunday)
+		const startOfWeek = new Date(today);
+		startOfWeek.setDate(today.getDate() - currentDayOfWeek);
+		startOfWeek.setHours(0, 0, 0, 0);
+
+		// Calculate the end of the week (Saturday)
+		const endOfWeek = new Date(startOfWeek);
+		endOfWeek.setDate(startOfWeek.getDate() + 6);
+		endOfWeek.setHours(23, 59, 59, 999);
+
 		// Process and combine the data
 		data = users.map((user) => {
 			const userTasks = tasks.filter((task) => task.assignee === user.id);
@@ -165,10 +179,15 @@
 
 			// Calculate tasks for each day of the week
 			const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-			const tasksByDay = weekDays.map((day) => {
+			const tasksByDay = weekDays.map((day, index) => {
+				const dayStart = new Date(startOfWeek);
+				dayStart.setDate(startOfWeek.getDate() + index);
+				const dayEnd = new Date(dayStart);
+				dayEnd.setHours(23, 59, 59, 999);
+
 				return userTasks.filter((task) => {
 					const taskDate = new Date(task.created_at);
-					return taskDate.toLocaleString('en-US', { weekday: 'short' }) === day;
+					return taskDate >= dayStart && taskDate <= dayEnd;
 				}).length;
 			});
 
@@ -262,7 +281,7 @@
 				{/each}
 			</TableHead>
 			<TableBody>
-				{#each paginatedData as [id, name, mobile, online, mon, tue, wed, thu, fri, sat, sun, totalDispatch, totalCompleted, backlogs]}
+				{#each paginatedData as [id, name, mobile, online, sun, mon, tue, wed, thu, fri, sat, totalDispatch, totalCompleted, backlogs]}
 					<TableBodyRow on:click={() => handleRowClick(id)} class="cursor-pointer">
 						<TableBodyCell class="px-4 font-normal">{name}</TableBodyCell>
 						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">
@@ -271,50 +290,36 @@
 						<TableBodyCell class="px-4">
 							<StatusBadge state={online ? 'online' : 'offline'} {dark} />
 						</TableBodyCell>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{mon}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{tue}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{wed}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{thu}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{fri}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{sat}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{sun}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{totalDispatch}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{totalCompleted}</TableBodyCell
-						>
-						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400"
-							>{backlogs}</TableBodyCell
-						>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{sun}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{mon}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{tue}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{wed}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{thu}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{fri}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">{sat}</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">
+							{totalDispatch}
+						</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">
+							{totalCompleted}
+						</TableBodyCell>
+						<TableBodyCell class="px-4 font-normal text-gray-500 dark:text-gray-400">
+							{backlogs}
+						</TableBodyCell>
 					</TableBodyRow>
 				{/each}
 			</TableBody>
 		</Table>
+	{/if}
+	<div class="-mb-1 flex items-center justify-between pt-3 sm:pt-6">
+		
+			<a href="#top"
+			class="inline-flex items-center rounded-lg p-1 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
+		>
+			<ChevronLeftOutline size="lg" /> Tasks report
+		</a>
+		{#if showPagination}
+			<PaginationComponent bind:currentPage {totalPages} {pageSize} totalItems={data.length} />
 		{/if}
-		<div class="-mb-1 flex items-center justify-between pt-3 sm:pt-6">
-			
-				<a href="#top"
-				class="inline-flex items-center rounded-lg p-1 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
-			>
-				<ChevronLeftOutline size="lg" /> Tasks report
-			</a>
-			{#if showPagination}
-				<PaginationComponent bind:currentPage {totalPages} {pageSize} totalItems={data.length} />
-			{/if}
-		</div>
-	</Card>
+	</div>
+</Card>
