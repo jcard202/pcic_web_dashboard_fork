@@ -11,7 +11,7 @@
     let isDeleting = false;
     let errorMessage = '';
 
-    $:( {supabase}= data);
+    $: ({ supabase } = data);
 
     async function deleteUser() {
         if (isDeleting) return;
@@ -19,6 +19,11 @@
         errorMessage = '';
         console.log('Attempting to delete user with ID:', userId);
         try {
+            // First, delete the user from the authentication system
+            const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+            if (authError) throw authError;
+
+            // Then, delete the user from the 'users' table
             const { data, error } = await supabase
                 .from('users')
                 .delete()
@@ -30,11 +35,10 @@
             console.log('Delete response:', data);
 
             if (data && data.length > 0) {
-                await supabase.auth.admin.deleteUser(userId);
                 dispatch('userDeleted', userId);
                 open = false;
             } else {
-                errorMessage = 'User not found or already deleted.';
+                errorMessage = 'User not found or already deleted from the users table.';
             }
         } catch (error) {
             console.error('Error deleting user:', error);
