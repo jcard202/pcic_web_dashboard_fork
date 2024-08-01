@@ -27,7 +27,6 @@
 
 	import { onMount } from 'svelte';
 	import { supabase_content } from './../../../supabase';
-	// Adjust the import path as needed
 
 	// ---------------------------------------- EXPORTs ---------------------------------------------------- //
 
@@ -127,36 +126,63 @@
 
 	async function fetchData() {
 		isLoading = true;
-		const { data: fetchedData, error } = await supabase_content.from('users').select(`
-                id,
-                inspector_name,
-                mobile_number,
-                is_online
-            `);
+		const { data: users, error: usersError } = await supabase_content
+			.from('users')
+			.select(`
+				id,
+				inspector_name,
+				mobile_number,
+				is_online
+			`);
 
-		if (error) {
-			console.error('Error fetching data:', error);
+		if (usersError) {
+			console.error('Error fetching users:', usersError);
 			isLoading = false;
 			return;
 		}
 
-		// Transform the data to match your table structure
-		data = fetchedData.map((user) => [
-			user.id,
-			user.inspector_name,
-			user.mobile_number,
-			user.is_online,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0,
-			0 // Placeholder values for other columns
-		]);
+		const { data: tasks, error: tasksError } = await supabase_content
+			.from('tasks')
+			.select(`
+				id,
+				assignee,
+				status,
+				created_at
+			`);
+
+		if (tasksError) {
+			console.error('Error fetching tasks:', tasksError);
+			isLoading = false;
+			return;
+		}
+
+		// Process and combine the data
+		data = users.map((user) => {
+			const userTasks = tasks.filter((task) => task.assignee === user.id);
+			const totalDispatch = userTasks.length;
+			const completed = userTasks.filter((task) => task.status === 'completed').length;
+			const backlogs = userTasks.filter((task) => task.status === 'ongoing').length;
+
+			// Calculate tasks for each day of the week
+			const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+			const tasksByDay = weekDays.map((day) => {
+				return userTasks.filter((task) => {
+					const taskDate = new Date(task.created_at);
+					return taskDate.toLocaleString('en-US', { weekday: 'short' }) === day;
+				}).length;
+			});
+
+			return [
+				user.id,
+				user.inspector_name,
+				user.mobile_number,
+				user.is_online,
+				...tasksByDay,
+				totalDispatch,
+				completed,
+				backlogs
+			];
+		});
 
 		isLoading = false;
 	}
@@ -279,17 +305,16 @@
 				{/each}
 			</TableBody>
 		</Table>
-	{/if}
-	<div class="-mb-1 flex items-center justify-between pt-3 sm:pt-6">
-		<a
-			href="#top"
-			class="inline-flex items-center rounded-lg p-1 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
-		>
-			<ChevronLeftOutline size="lg" /> Tasks report
-		</a>
-		{#if showPagination}
-			<PaginationComponent bind:currentPage {totalPages} {pageSize} totalItems={data.length} />
 		{/if}
-	</div>
-</Card>
-
+		<div class="-mb-1 flex items-center justify-between pt-3 sm:pt-6">
+			
+				<a href="#top"
+				class="inline-flex items-center rounded-lg p-1 text-xs font-medium uppercase text-primary-700 hover:bg-gray-100 dark:text-primary-500 dark:hover:bg-gray-700 sm:text-sm"
+			>
+				<ChevronLeftOutline size="lg" /> Tasks report
+			</a>
+			{#if showPagination}
+				<PaginationComponent bind:currentPage {totalPages} {pageSize} totalItems={data.length} />
+			{/if}
+		</div>
+	</Card>
