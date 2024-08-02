@@ -177,7 +177,7 @@
 			const completed = userTasks.filter((task) => task.status === 'completed').length;
 			const backlogs = userTasks.filter((task) => task.status === 'ongoing').length;
 
-			// Calculate tasks for each day of the week
+			// Calculate completed tasks for each day of the week
 			const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 			const tasksByDay = weekDays.map((day, index) => {
 				const dayStart = new Date(startOfWeek);
@@ -187,7 +187,7 @@
 
 				return userTasks.filter((task) => {
 					const taskDate = new Date(task.created_at);
-					return taskDate >= dayStart && taskDate <= dayEnd;
+					return taskDate >= dayStart && taskDate <= dayEnd && task.status === 'completed';
 				}).length;
 			});
 
@@ -219,10 +219,10 @@
 	<div class="items-center justify-between lg:flex">
 		<div class="mb-4 mt-px lg:mb-0">
 			<Heading tag="h3" class="-ml-0.25 mb-2 text-xl font-semibold dark:text-white">
-				This Week's Tasks
+				This Week's Completed Tasks
 			</Heading>
 			<span class="text-base font-normal text-gray-500 dark:text-gray-400">
-				This is a list of this week's tasks
+				This is a list of this week's completed tasks
 			</span>
 		</div>
 		<div class="items-center justify-between gap-3 space-y-4 sm:flex sm:space-y-0">
