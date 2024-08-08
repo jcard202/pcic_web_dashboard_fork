@@ -8,6 +8,7 @@
 	export let upsertTask:any = null;
 	export let markAsComplete:any = null;
 	export let clearForm:any = null;
+	export let formView:any;
 	let filteredUsers:any[] = [...users];
 
 	let task_name:string;
@@ -30,6 +31,8 @@
 			priority = selected_task.priority;
 			ppir_form = selected_task.ppir_forms;
 		}
+
+		console.log(formView);
 	});
 
 
@@ -275,6 +278,7 @@
 		<h3 class="mb-6 text-center text-lg text-gray-500 dark:text-gray-400">
 			"PPIC Form"
 		</h3>
+		<object  data={formView} width="100%" height="600px"  title="form"></object>
 		<div class="flex items-center justify-center">
 			<Button color="alternative" on:click={() => (open = false)}>Close</Button>
 		</div>

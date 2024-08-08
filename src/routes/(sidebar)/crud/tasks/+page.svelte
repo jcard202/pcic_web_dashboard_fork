@@ -23,6 +23,7 @@
 		ArrowsRepeatOutline,
 		ArrowUpDownOutline,
 		ArrowUpOutline,
+		PrinterSolid,
 		CogSolid,
 		DotsVerticalOutline,
 		EditOutline,
@@ -37,6 +38,7 @@
 	import Toast from '../../../utils/widgets/Toast.svelte';
 	import { Modal } from 'flowbite-svelte';
 	import Pagination from '../../../utils/dashboard/Pagination.svelte';
+	import jsPDF from 'jspdf';
 
 	let isSyncing = false;
 
@@ -61,6 +63,8 @@
 	let isLoading = true;
 
 	export let data;
+
+	let formView = '';
 
 	let users: any[] = [];
 	let tasks: any[] = [];
@@ -98,6 +102,7 @@
 		current_user = (await supabase.auth.getUser()).data.user;
 		await fetchUsers();
 		await fetchTasks();
+		formView = generateFormView();
 	});
 
 	const handleConfirmDelete = (event:any) => {
@@ -386,6 +391,30 @@
 		}
 	};
 
+
+	const generateFormView = () => {
+		const doc = new jsPDF();
+		// Set font sizes
+		const titleFontSize = 18;
+		const normalFontSize = 12;
+
+
+		// Add title
+		doc.setFontSize(titleFontSize);
+		doc.text(`Test`, doc.internal.pageSize.width / 2, 15, {
+			align: 'center'
+		});
+
+		// Add region (top left)
+		doc.setFontSize(normalFontSize);
+		doc.text(`raondom region`, 14, 25);
+
+		// Add date range (top right)
+		doc.text('random date', doc.internal.pageSize.width - 14, 25, { align: 'right' });
+
+		return doc.output('datauristring');
+	};
+
 	/**
 	 * Synchronizes with an FTP server.
 	 *
@@ -598,7 +627,7 @@
 			</div>
 		</Toolbar>
 	</div>
-	<Table>
+	<Table class='select-none'>
 		<TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
 			<TableHeadCell class="w-4 p-4"
 				><Checkbox
@@ -661,11 +690,19 @@
 					>
 					<TableBodyCell class="flex items-center space-x-6 whitespace-nowrap p-4">
 						<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-							<div class="text-base font-semibold text-gray-900 dark:text-white">
-								{task.task_number}
-							</div>
+							{#if task.status == 'completed'}
+								<div class="text-base font-semibold text-gray-900 dark:text-white flex cursor-pointer hover:!text-green-500">
+										<PrinterSolid class="mr-2"></PrinterSolid> 
+									{task.task_number} 
+								</div>
+							{:else}
+								<div class="text-base font-semibold text-gray-900 dark:text-white flex">
+									{task.task_number} 
+								</div>
+							{/if}
+
 							<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-								{task.task_type}
+								{task.task_type} 
 							</div>
 						</div>
 					</TableBodyCell>
@@ -740,6 +777,7 @@
 >
 	<svelte:component
 		this={drawerComponent}
+		{formView}
 		{users}
 		{markAsComplete}
 		{selected_task}
