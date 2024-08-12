@@ -1,108 +1,158 @@
-<script lang="ts">
-    import { goto } from '$app/navigation';
-    import type { PageData } from './$types';
-    import { 
-        Breadcrumb, 
-        BreadcrumbItem, 
-        Button, 
-        Heading, 
-        Input, 
-        Table, 
-        TableBody, 
-        TableBodyCell, 
-        TableBodyRow, 
-        TableHead, 
-        TableHeadCell, 
-        Toolbar 
-    } from 'flowbite-svelte';
-
-    interface Activity {
-        task_number: string;
-        status: string;
-        created_at: string;
+<!-- <script>
+    const timelineData = [
+      {
+        date: 'July 5, 2018',
+        events: [
+          {
+            time: '6:52 PM',
+            iconColor: '#4CAF50',
+            icon: 'wordpress-icon.png',
+            title: 'WordPress',
+            description: 'WordPress autoupdated to version 4.9.7',
+            details: 'Update complete',
+          },
+          {
+            time: '3:29 PM',
+            iconColor: '#FFC107',
+            icon: 'plugin-icon.png',
+            title: 'Filipe Varela',
+            description: 'WP Mail SMTP 1.3.3',
+            details: 'Plugin updated',
+          },
+          {
+            time: '3:07 PM',
+            iconColor: '#FFC107',
+            icon: 'plugin-icon.png',
+            title: 'WordPress',
+            description: 'WP Mail SMTP 1.3.3',
+            details: 'Plugin update available',
+          },
+          {
+            time: '1:02 PM',
+            iconColor: '#009688',
+            icon: 'lock-icon.png',
+            title: 'Jetpack',
+            description: 'keoshi had a failed login attempt from IP Address:',
+            details: 'Login failed',
+          },
+        ],
+      },
+      {
+        date: 'July 4, 2018',
+        events: [
+          {
+            time: '2:20 PM',
+            iconColor: '#4CAF50',
+            icon: 'jetpack-icon.png',
+            title: 'Jetpack',
+            description: 'Jetpack by WordPress.com 6.3.2',
+            details: 'Plugin autoupdated',
+          },
+        ],
+      },
+    ];
+  </script>
+  
+  <div class="timeline">
+    {#each timelineData as { date, events }}
+      <div class="timeline-date">{date}</div>
+  
+      {#each events as event}
+        <div class="timeline-item">
+          <div class="timeline-icon" style="background-color: {event.iconColor};">
+            <img src={event.icon} alt={event.title} />
+          </div>
+          <div class="timeline-content">
+            <h3>{event.title}</h3>
+            <p>{event.description}</p>
+            <small>{event.details}</small>
+          </div>
+          <div class="timeline-time">{event.time}</div>
+        </div>
+      {/each}
+    {/each}
+  </div>
+  
+  <style>
+    .timeline {
+      width: 600px;
+      margin: 0 auto;
+      position: relative;
+      padding: 20px 0;
     }
-
-    type PageDataWithActivities = PageData & {
-        activities: Activity[];
-    };
-
-    export let data: PageDataWithActivities;
-
-    $: activities = data.activities ? data.activities.map((task, index) => ({
-        id: index + 1,
-        task: `Task ${task.task_number}`,
-        status: task.status,
-        timestamp: new Date(task.created_at).toLocaleString()
-    })) : [];
-
-    function goBack() {
-        goto('/sidebar/crud/logs'); // Adjust this path if needed
+  
+    .timeline-date {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      color: #333;
     }
-
-    function getStatusColor(status: string) {
-        switch(status.toLowerCase()) {
-            case 'completed': return 'text-green-600';
-            case 'ongoing': return 'text-blue-600';
-            case 'pending': return 'text-yellow-600';
-            default: return 'text-gray-600';
-        }
+  
+    .timeline-item {
+      display: flex;
+      align-items: flex-start;
+      position: relative;
+      margin-bottom: 20px;
     }
-</script>
-
-<main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
-    <div class="p-4">
-        <Breadcrumb class="mb-5">
-            <BreadcrumbItem home href="/sidebar">Home</BreadcrumbItem>
-            <BreadcrumbItem href="/sidebar/crud/logs">Logs</BreadcrumbItem>
-            <BreadcrumbItem>Activity</BreadcrumbItem>
-        </Breadcrumb>
-        
-        <Button on:click={goBack} class="mb-4">Back to Inspectors</Button>
-        
-        <Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-            Inspector Activities
-        </Heading>
-
-        <Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
-           <Input placeholder="Search activities" class="me-6 w-80 border xl:w-96" />
-            <div slot="end" class="space-x-2">
-                <Button class="whitespace-nowrap">Export Logs</Button>
-            </div>
-        </Toolbar>
-
-        {#if data.error}
-            <p class="text-red-500">{data.error}</p>
-        {:else if activities.length === 0}
-            <p class="text-gray-500">No activities found for this inspector.</p>
-        {:else}
-            <Table hoverable={true}>
-                <TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
-                    <TableHeadCell class="w-4 p-4">#</TableHeadCell>
-                    <TableHeadCell class="ps-4 font-normal">Task</TableHeadCell>
-                    <TableHeadCell class="ps-4 font-normal">Status</TableHeadCell>
-                    <TableHeadCell class="ps-4 font-normal">Timestamp</TableHeadCell>
-                </TableHead>
-                <TableBody>
-                    {#each activities as activity}
-                        <TableBodyRow class="text-base">
-                            <TableBodyCell class="w-4 p-4">{activity.id}</TableBodyCell>
-                            <TableBodyCell class="ps-4">{activity.task}</TableBodyCell>
-                            <TableBodyCell class="ps-4">
-                                <span class={getStatusColor(activity.status)}>
-                                    {activity.status}
-                                </span>
-                            </TableBodyCell>
-                            <TableBodyCell class="ps-4">{activity.timestamp}</TableBodyCell>
-                        </TableBodyRow>
-                    {/each}
-                </TableBody>
-            </Table>
-        {/if}
-    </div>
-</main>
-
-<style>
-    main {
-        padding: 16px;
+  
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      top: 15px;
+      left: 30px;
+      width: 2px;
+      height: 100%;
+      background: #E0E0E0;
     }
-</style>
+  
+    .timeline-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+      margin-right: 15px;
+    }
+  
+    .timeline-icon img {
+      width: 40px;
+      height: 40px;
+    }
+  
+    .timeline-content {
+      background: #FFF;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      flex-grow: 1;
+    }
+  
+    .timeline-content h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+    }
+  
+    .timeline-content p {
+      margin: 0;
+      font-size: 14px;
+      color: #555;
+    }
+  
+    .timeline-content small {
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+      color: #999;
+    }
+  
+    .timeline-time {
+      margin-left: auto;
+      font-size: 14px;
+      color: #999;
+      padding-top: 10px;
+    }
+  </style>
+   -->
