@@ -127,7 +127,7 @@
 
 <main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
     {#if showActivity && selectedUserId}
-        <InspectorAct userId={selectedUserId} {goBack} />
+        <InspectorAct userId={selectedUserId} on:back={goBack} />
     {:else}
         <div class="p-4">
             <Breadcrumb class="mb-5">

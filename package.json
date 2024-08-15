@@ -70,6 +70,7 @@
 		"jspdf": "^2.5.1",
 		"jspdf-autotable": "^3.8.2",
 		"lucide-svelte": "^0.427.0",
+		"mapbox-gl": "^3.6.0",
 		"svelte-routing": "^2.13.0",
 		"tailwind-merge": "^2.4.0",
 		"xlsx": "^0.18.5"

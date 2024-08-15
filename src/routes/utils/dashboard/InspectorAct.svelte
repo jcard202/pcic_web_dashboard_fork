@@ -65,7 +65,7 @@
     function handleRowClick(taskId: string) {
       selectedTaskId = taskId; // Use the UUID to set the selected task ID
     }
-  
+    
     onMount(() => {
       fetchActivities();
     });
