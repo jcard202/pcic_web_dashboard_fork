@@ -102,7 +102,7 @@
 		current_user = (await supabase.auth.getUser()).data.user;
 		await fetchUsers();
 		await fetchTasks();
-		formView = generateFormView();
+		
 	});
 
 	const handleConfirmDelete = (event:any) => {
@@ -392,29 +392,91 @@
 	};
 
 
-	const generateFormView = () => {
+	const generateFormView = (task:any, download:boolean=false) => {
+		const data = task.ppir_forms;
+		data.task_number = task.task_number;
 		const doc = new jsPDF();
-		// Set font sizes
-		const titleFontSize = 18;
-		const normalFontSize = 12;
+		const taskNumber = data.task_number || "Unknown Task"; // Title task number
+		doc.setFontSize(16);
+		doc.setFont('', 'bold');
+		doc.text(`${taskNumber}`, 10, 15); // Title
 
+		const fields = [
+			"ppir_assignmentid", "ppir_dopds_act", "ppir_insuranceid", "ppir_doptp_act", "ppir_farmername", 
+			"ppir_doptp_aci", "ppir_address", "ppir_svp_aci", "ppir_farmertype", "ppir_svp_act", "ppir_mobile_no", 
+			"ppir_variety", "ppir_groupname", "ppir_stage_crop", "ppir_groupaddress", "ppir_remarks", 
+			"ppir_lendername", "ppir_name_insured", "ppir_lenderaddress", "ppir_name_iuia", "ppir_cicno", 
+			"ppir_farmloc", "ppir_north", "ppir_south", "ppir_east", "ppir_west", "ppir_att_1", "ppir_att_2", 
+			"ppir_att_3", "ppir_att_4", "ppir_area_aci", "ppir_area_act", "ppir_dopds_aci"
+		];
 
-		// Add title
-		doc.setFontSize(titleFontSize);
-		doc.text(`Test`, doc.internal.pageSize.width / 2, 15, {
-			align: 'center'
+		let yPos = 30; // Starting y position after title
+		const lineHeight = 10; // Space between lines
+		const pageHeight = doc.internal.pageSize.height;
+		const columnWidth = 95; // Half of page width (assuming A4 size)
+		let column = 1; // Current column
+		doc.setFontSize(11);
+		
+		fields.forEach((field, index) => {
+			let value = data[field];
+			if (value == null || value == '') {
+				value = "NOT SET";
+			}
+			const label = field.replace(/^ppir_/, '').replace(/_/g, ' ').toUpperCase();
+
+			// Set font for label
+			doc.setFont('', 'bold');
+			doc.text(`${label}:`, (column - 1) * columnWidth + (column==1? 10: 20), yPos);
+
+			// Set font for value and draw underline
+			doc.setFont('', 'normal');
+			doc.text(`____________________________`, (column - 1) *  columnWidth + 50, yPos); // Underline
+			doc.text(value, (column - 1) * columnWidth + 50, yPos);
+
+			yPos += lineHeight;
+
+			// Check if we need to switch to the next column
+			if (yPos + lineHeight > pageHeight - 70 && column === 1) { // Adjusted margin to account for bottom space for signatures
+				column = 2;
+				yPos = 30; // Reset y position for second column
+			} else if (yPos + lineHeight > pageHeight - 70 && column === 2) {
+				doc.addPage();
+				column = 1;
+				yPos = 30;
+			}
 		});
 
-		// Add region (top left)
-		doc.setFontSize(normalFontSize);
-		doc.text(`raondom region`, 14, 25);
+		// Move yPos to bottom for signatures
+		yPos = pageHeight - 50;
 
-		// Add date range (top right)
-		doc.text('random date', doc.internal.pageSize.width - 14, 25, { align: 'right' });
+	// Signatures
+		if (data.ppir_sig_insured) {
+			const sigInsuredImg = `data:image/png;base64,${data.ppir_sig_insured}`;
+			
+			// Draw a square around the signature
+			doc.setLineWidth(0.5); // Set the border thickness
+			doc.rect(65, yPos - 30, 60, 30); // Draw the rectangle (x, y, width, height)
+			
+			doc.text("SIGNATURE OF INSURED:", 10, yPos-15);
+			doc.addImage(sigInsuredImg, 'PNG', 70, yPos - 25, 50, 20); // Position the image inside the square
+			yPos += 40; // Adjust yPos to leave space for the next signature
+		}
 
+		if (data.ppir_sig_iuia) {
+			const sigIUIAImg = `data:image/png;base64,${data.ppir_sig_iuia}`;
+			
+			// Draw a square around the signature
+			doc.setLineWidth(0.5); // Set the border thickness
+			doc.rect(65, yPos - 30, 60, 30); // Draw the rectangle (x, y, width, height)
+			
+			doc.text("SIGNATURE OF IU/IA:", 10, yPos-15);
+			doc.addImage(sigIUIAImg, 'PNG', 70, yPos - 25, 50, 20); // Position the image inside the square
+		}
+		if(download){
+			doc.save(`${data.task_number}-${data.ppir_assignmentid}.pdf`)
+		}
 		return doc.output('datauristring');
 	};
-
 	/**
 	 * Synchronizes with an FTP server.
 	 *
@@ -691,10 +753,10 @@
 					<TableBodyCell class="flex items-center space-x-6 whitespace-nowrap p-4">
 						<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
 							{#if task.status == 'completed'}
-								<div class="text-base font-semibold text-gray-900 dark:text-white flex cursor-pointer hover:!text-green-500">
+								<button on:click={()=> generateFormView(task,true)} class="text-base font-semibold text-gray-900 dark:text-white flex cursor-pointer hover:!text-green-500">
 										<PrinterSolid class="mr-2"></PrinterSolid> 
 									{task.task_number} 
-								</div>
+								</button>
 							{:else}
 								<div class="text-base font-semibold text-gray-900 dark:text-white flex">
 									{task.task_number} 
@@ -739,6 +801,9 @@
 							class="gap-2 px-3"
 							on:click={() => {
 								selected_task = task;
+								if(task.ppir_forms){
+									formView = generateFormView(selected_task);
+								}
 								toggle(Task);
 							}}
 						>

@@ -275,9 +275,6 @@
 			<Button color="alternative" on:click={() => (open = false)}>No, cancel</Button>
 		</div>
 	{:else}
-		<h3 class="mb-6 text-center text-lg text-gray-500 dark:text-gray-400">
-			"PPIC Form"
-		</h3>
 		<object  data={formView} width="100%" height="600px"  title="form"></object>
 		<div class="flex items-center justify-center">
 			<Button color="alternative" on:click={() => (open = false)}>Close</Button>
