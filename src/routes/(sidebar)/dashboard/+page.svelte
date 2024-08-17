@@ -15,4 +15,3 @@
 <main class="p-4">
 	<Dashboard {data} />
 </main>
-<Footer />

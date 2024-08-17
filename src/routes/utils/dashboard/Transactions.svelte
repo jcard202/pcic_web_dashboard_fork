@@ -25,7 +25,9 @@
         try {
             const { data: users, error: usersError } = await supabase_content
                 .from('users')
-                .select('id, inspector_name, mobile_number, is_online');
+                .select('id, inspector_name, mobile_number, is_online')
+                .eq('role', 'Agent');
+
 
             if (usersError) {
                 dataError = usersError.message;
