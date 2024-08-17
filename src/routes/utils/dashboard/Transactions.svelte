@@ -133,17 +133,20 @@
             <Breadcrumb class="mb-5">
                 <BreadcrumbItem home href="/sidebar">Home</BreadcrumbItem>
                 <BreadcrumbItem href="/sidebar/crud/logs">Logs</BreadcrumbItem>
-                <BreadcrumbItem>Activity</BreadcrumbItem>
+                <BreadcrumbItem>Weekly Tasks</BreadcrumbItem>
             </Breadcrumb>
 
-            <Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
-                Inspectors
+            <Heading tag="h1" class="text-xl font-semibold mb-7 text-gray-900 dark:text-white sm:text-2xl">
+                Inspectors Weekly Tasks
             </Heading>
 
             {#if dataError}
                 <p class="text-red-500">{dataError}</p>
             {:else if isLoading}
-                <p>Loading...</p>
+
+                <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+                    <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
+                  </div>
             {:else}
                 <Table hoverable={true}>
                     <TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">

@@ -63,8 +63,9 @@
 	{#if dataError}
 	  <p class="text-red-500">{dataError}</p>
 	{:else if isLoading}
-	  <p>Loading...</p>
-	{:else if userLogs.length === 0}
+	<div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+		<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
+	  </div>	{:else if userLogs.length === 0}
 	  <p class="text-gray-500">No logs found for this task.</p>
 	{:else}
 	  {#each userLogs as log}

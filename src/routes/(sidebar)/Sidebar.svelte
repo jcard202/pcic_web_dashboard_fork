@@ -46,25 +46,9 @@
 	let posts = [
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
-		{ name: 'Tasks', icon: FileWordSolid, href: '/crud/tasks' },
+		{ name: 'Assignment', icon: FileWordSolid, href: '/crud/tasks' },
 		{ name: 'Weekly Report', icon: CalendarEditSolid, href: '/report-generation' }, // Corrected Weekly Report link
-		// {
-		// 	name: 'Logs',
-		// 	icon: FileChartBarSolid,
-		// 	children: {
-		// 		'Activity Log': '/crud/logs/activity',
-		// 		'Time Indication': '/crud/logs/time-indication'
-		// 	}
-		// },
-		// {
-		// 	name: 'Extra Pages',
-		// 	icon: FileChartBarSolid,
-		// 	children: {
-		// 		Maintenance: '/errors/400',
-		// 		'404 not found': '/errors/404',
-		// 		'500 server error': '/errors/500'
-		// 	}
-		// },
+	
 		{
 			name: 'Authentication Pages',
 			icon: LockSolid,

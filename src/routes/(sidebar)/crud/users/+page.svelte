@@ -202,8 +202,9 @@
         </Toolbar>
     </div>
     {#if isLoading}
-        <p>Loading...</p>
-    {:else if users.length === 0}
+    <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+        <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
+      </div>    {:else if users.length === 0}
         <p>No users found. Add some users to see them here.</p>
     {:else}
         <Table>

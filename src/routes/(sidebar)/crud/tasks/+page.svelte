@@ -777,7 +777,7 @@
 			<BreadcrumbItem home>Home</BreadcrumbItem>
 			<BreadcrumbItem href="/crud/tasks">Tasks</BreadcrumbItem>
 			<!-- <BreadcrumbItem>List</BreadcrumbItem> -->
-		</Breadcrumb>
+		</Breadcrumb>	
 		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
 			Task Management
 		</Heading>
@@ -891,6 +891,12 @@
 			</div>
 		</Toolbar>
 	</div>
+
+	{#if isLoading}
+	<div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+		<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
+	  </div>
+	{:else}
 	<Table class='select-none'>
 		<TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
 			<TableHeadCell class="w-4 p-4"
@@ -1033,6 +1039,7 @@
 		pageSize={maxPageItems}
 		totalItems={filteredTasks.length}
 	></Pagination>
+	{/if}
 </main>
 
 <Drawer

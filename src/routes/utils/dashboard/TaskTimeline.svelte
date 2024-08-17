@@ -89,8 +89,9 @@
       {#if dataError}
         <p class="text-red-500 dark:text-red-400">{dataError}</p>
       {:else if isLoading}
-        <p class="text-gray-500 dark:text-gray-400">Loading...</p>
-      {:else}
+      <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+        <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
+      </div>      {:else}
         {#each userLogs as log}
           <div class="flex items-start py-3 border-b border-gray-200 dark:border-gray-700">
             <div class="w-24 text-sm text-gray-500 dark:text-gray-400">
