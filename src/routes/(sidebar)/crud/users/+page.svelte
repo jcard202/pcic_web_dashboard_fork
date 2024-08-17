@@ -8,6 +8,7 @@
         Checkbox,
         Heading,
         Input,
+        Select,
         Table,
         TableBody,
         TableBodyCell,
@@ -44,6 +45,8 @@
     let filteredUsers: any[] = []; // To hold the filtered users
     let isLoading = true;
     let searchQuery = ''; // To hold the search input value
+    let selectedRole = ''; // To hold the selected role filter
+    let selectedRegion = ''; // To hold the selected region filter
     const path = '/crud/users';
     const description = 'CRUD users example - PCIC Web Dashboard';
     const title = 'PCIC Web Dashboard - CRUD Users';
@@ -99,10 +102,12 @@
         }
     }
 
-    // Function to filter users based on searchQuery
+    // Function to filter users based on searchQuery, selectedRole, and selectedRegion
     function filterUsers() {
         filteredUsers = users.filter(user => 
-            user.inspector_name.toLowerCase().includes(searchQuery.toLowerCase())
+            user.inspector_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            (selectedRole === '' || user.role === selectedRole) &&
+            (selectedRegion === '' || user.regions?.region_name === selectedRegion)
         );
     }
 
@@ -174,6 +179,32 @@
                 bind:value={searchQuery} 
                 on:input={filterUsers} 
             />
+            <Select
+                placeholder="Filter by role"
+                class="me-4 w-80 border xl:w-96"
+                bind:value={selectedRole}
+                on:change={filterUsers}
+            >
+                <option value="">All Roles</option>
+                <option value="Agent">Agent</option>
+                <option value="Regional_Admin">Regional Admin</option>
+                <option value="National_Admin">National Admin</option>
+
+                <!-- Add more roles as needed -->
+            </Select>
+            <Select
+                placeholder="Filter by region"
+                class="me-4 w-80 border xl:w-96"
+                bind:value={selectedRegion}
+                on:change={filterUsers}
+            >
+                <option value="">All Regions</option>
+                {#each users as user}
+                    {#if user.regions?.region_name}
+                        <option value={user.regions.region_name}>{user.regions.region_name}</option>
+                    {/if}
+                {/each}
+            </Select>
             <div class="border-l border-gray-100 pl-2 dark:border-gray-700">
                 <ToolbarButton
                     color="dark"
