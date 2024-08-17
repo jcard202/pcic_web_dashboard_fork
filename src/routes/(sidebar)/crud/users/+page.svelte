@@ -8,6 +8,7 @@
         Checkbox,
         Heading,
         Input,
+        Select,
         Table,
         TableBody,
         TableBodyCell,
@@ -33,25 +34,25 @@
     import MetaTag from '../../../utils/MetaTag.svelte';
 
     export let data;
-    $: ({ supabase } = data)
+    $: ({ supabase } = data);
 
-    let openUser: boolean = false;
-    let openDelete: boolean = false;
-    let userToDelete: string = '';
+    let openUser = false;
+    let openDelete = false;
+    let userToDelete = '';
 
     let current_user: any = {};
     let users: any[] = [];
+    let filteredUsers: any[] = []; // To hold the filtered users
     let isLoading = true;
-    const path: string = '/crud/users';
-    const description: string = 'CRUD users example - PCIC Web Dashboard';
-    const title: string = 'PCIC Web Dashboard - CRUD Users';
-    const subtitle: string = 'CRUD Users';
+    let searchQuery = ''; // To hold the search input value
+    let selectedRole = ''; // To hold the selected role filter
+    let selectedRegion = ''; // To hold the selected region filter
+    const path = '/crud/users';
+    const description = 'CRUD users example - PCIC Web Dashboard';
+    const title = 'PCIC Web Dashboard - CRUD Users';
+    const subtitle = 'CRUD Users';
     
-    let toastProps: { show: boolean; message: string; type: 'success' | 'error' } = {
-        show: false,
-        message: '',
-        type: 'success'
-    };
+    let toastProps = { show: false, message: '', type: 'success' | 'error' };
 
     let supabaseReady = false;
 
@@ -88,6 +89,7 @@
             
             console.log('Fetched users data:', fetchedUsers);
             users = fetchedUsers || [];
+            filterUsers(); // Filter users based on the search query
             
             if (users.length === 0) {
                 console.log('No users found in the database.');
@@ -100,20 +102,32 @@
         }
     }
 
+    // Function to filter users based on searchQuery, selectedRole, and selectedRegion
+    function filterUsers() {
+        filteredUsers = users.filter(user => 
+            user.inspector_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            (selectedRole === '' || user.role === selectedRole) &&
+            (selectedRegion === '' || user.regions?.region_name === selectedRegion)
+        );
+    }
+
     function handleUserAdded(event: CustomEvent) {
         users = [event.detail, ...users];
+        filterUsers(); // Re-filter users after adding a new one
         showToast('User added successfully', 'success');
     }
 
     function handleUserUpdated(event: CustomEvent) {
         const updatedUser = event.detail;
         users = users.map(user => user.id === updatedUser.id ? updatedUser : user);
+        filterUsers(); // Re-filter users after updating one
         showToast('User updated successfully', 'success');
     }
 
     function handleUserDeleted(event: CustomEvent) {
         const deletedUserId = event.detail;
         users = users.filter(user => user.id !== deletedUserId);
+        filterUsers(); // Re-filter users after deleting one
         showToast('User deleted successfully', 'success');
     }
 
@@ -159,7 +173,38 @@
         </Heading>
 
         <Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
-            <Input placeholder="Search for users" class="me-4 w-80 border xl:w-96" />
+            <Input 
+                placeholder="Search for users" 
+                class="me-4 w-80 border xl:w-96" 
+                bind:value={searchQuery} 
+                on:input={filterUsers} 
+            />
+            <Select
+                placeholder="Filter by role"
+                class="me-4 w-80 border xl:w-96"
+                bind:value={selectedRole}
+                on:change={filterUsers}
+            >
+                <option value="">All Roles</option>
+                <option value="Agent">Agent</option>
+                <option value="Regional_Admin">Regional Admin</option>
+                <option value="National_Admin">National Admin</option>
+
+                <!-- Add more roles as needed -->
+            </Select>
+            <Select
+                placeholder="Filter by region"
+                class="me-4 w-80 border xl:w-96"
+                bind:value={selectedRegion}
+                on:change={filterUsers}
+            >
+                <option value="">All Regions</option>
+                {#each users as user}
+                    {#if user.regions?.region_name}
+                        <option value={user.regions.region_name}>{user.regions.region_name}</option>
+                    {/if}
+                {/each}
+            </Select>
             <div class="border-l border-gray-100 pl-2 dark:border-gray-700">
                 <ToolbarButton
                     color="dark"
@@ -204,7 +249,8 @@
     {#if isLoading}
     <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
         <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
-      </div>    {:else if users.length === 0}
+    </div>    
+    {:else if filteredUsers.length === 0}
         <p>No users found. Add some users to see them here.</p>
     {:else}
         <Table>
@@ -215,7 +261,7 @@
                 {/each}
             </TableHead>
             <TableBody>
-                {#each users as user}
+                {#each filteredUsers as user}
                     <TableBodyRow class="text-base">
                         <TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
                         <TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">

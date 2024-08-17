@@ -15,13 +15,28 @@
 	} from 'flowbite-svelte';
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
 	import '../../app.pcss';
-	import Users from '../data/users.json';
 
 	export let fluid = true;
 	export let drawerHidden = false;
 	export let list = false;
 	export let signOut;
 	export let data;
+
+	// Define the routes you want to display
+	let routes = [
+		{ name: 'Dashboard', icon: 'ChartPieOutline', href: '/dashboard' },
+		{ name: 'Users', icon: 'UserSettingsSolid', href: '/crud/users' },
+		{ name: 'Assignment', icon: 'FileWordSolid', href: '/crud/tasks' },
+		{ name: 'Weekly Report', icon: 'CalendarEditSolid', href: '/report-generation' },
+	];
+
+	let searchQuery = '';
+	let filteredRoutes = routes;
+
+	function handleSearch(event) {
+		searchQuery = event.target.value.toLowerCase();
+		filteredRoutes = routes.filter(route => route.name.toLowerCase().includes(searchQuery));
+	}
 </script>
 
 <Navbar {fluid} class="text-black" color="default" let:NavContainer>
@@ -42,7 +57,7 @@
 				PCIC Portal
 			</span>
 		</NavBrand>
-		<div class="hidden lg:block lg:ps-3">
+		<div class="hidden lg:block lg:ps-3 relative">
 			{#if list}
 				<NavUl class="ml-2" activeUrl="/" activeClass="text-primary-600 dark:text-primary-500">
 					<NavLi href="/">Home</NavLi>
@@ -51,7 +66,7 @@
 					<NavLi href="#top">Settings</NavLi>
 					<NavLi class="cursor-pointer">
 						Dropdown
-						<ChevronDownOutline  class="ms-0 inline" />
+						<ChevronDownOutline class="ms-0 inline" />
 					</NavLi>
 					<Dropdown class="z-20 w-44">
 						<DropdownItem href="#top">Item 1</DropdownItem>
@@ -61,13 +76,26 @@
 				</NavUl>
 			{:else}
 				<form>
-					<Search size="md" class="mt-1 w-96 border focus:outline-none" />
+					<Search 
+						size="md" 
+						class="mt-1 w-96 border focus:outline-none" 
+						on:input={handleSearch}
+					/>
+					{#if searchQuery}
+						<ul class="absolute bg-white dark:bg-gray-800 dark:text-white border dark:border-gray-600 mt-2 rounded shadow-lg w-96 max-h-60 overflow-y-auto">
+							{#each filteredRoutes as route}
+								<li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
+									<a href={route.href} class="flex items-center space-x-2">
+										<span>{route.name}</span>
+									</a>
+								</li>
+							{/each}
+						</ul>
+					{/if}
 				</form>
 			{/if}
 		</div>
 		<div class="ms-auto flex items-center text-gray-500 dark:text-gray-400 sm:order-2">
-			<!-- <Notifications /> -->
-			<!-- <AppsMenu /> -->
 			<DarkMode />
 			<UserMenu data={data} {signOut} />
 		</div>
