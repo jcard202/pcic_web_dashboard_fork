@@ -776,7 +776,7 @@
 		<Breadcrumb class="mb-5">
 			<BreadcrumbItem home>Home</BreadcrumbItem>
 			<BreadcrumbItem href="/crud/tasks">Tasks</BreadcrumbItem>
-			<BreadcrumbItem>List</BreadcrumbItem>
+			<!-- <BreadcrumbItem>List</BreadcrumbItem> -->
 		</Breadcrumb>
 		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
 			Task Management

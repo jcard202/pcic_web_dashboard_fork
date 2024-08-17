@@ -326,7 +326,7 @@
                     </Label>
                     <Label class="col-span-6 space-y-2 sm:col-span-3">
                         <span>Mobile Number</span>
-                        <Input name="mobile_number" type="tel" class="border outline-none" placeholder="e.g. +1234567890" value={current_user?.mobile_number} required />
+                        <Input name="mobile_number" type="tel" class="border outline-none" placeholder="e.g. 09472728018" value={current_user?.mobile_number} required />
                     </Label>
                     <Label class="col-span-6 space-y-2 sm:col-span-3">
                         <span>Role</span>

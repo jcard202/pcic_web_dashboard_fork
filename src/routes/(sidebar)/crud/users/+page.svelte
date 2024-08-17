@@ -218,7 +218,9 @@
                     <TableBodyRow class="text-base">
                         <TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
                         <TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">
-                            <Avatar src={user.photo_url || imagesPath('default-avatar.png', 'users')} alt={user.inspector_name} />
+                            <Avatar src={user.photo_url || imagesPath('default-avatar.png', 'users')} 
+                            alt="https://htmlstream.com/preview/unify-v2.6/assets/img-temp/400x450/img5.jpg" 
+                            />
                             <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
                                 <div class="text-base font-semibold text-gray-900 dark:text-white">{user.inspector_name}</div>
                                 <div class="text-sm font-normal text-gray-500 dark:text-gray-400">{user.email}</div>
