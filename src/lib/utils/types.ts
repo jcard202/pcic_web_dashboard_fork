@@ -2,6 +2,7 @@
 export type TaskStatus = 'for dispatch' | 'ongoing' | 'completed';
 
 export interface Task {
+  created_at: string | number | Date;
   id: string;
   task_number: string;
   status: string;

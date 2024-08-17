@@ -15,7 +15,7 @@
 		paginatedUsers,
 		totalUserPages,
 		userActiveHeaders,
-		userSelectedHeaders, // Import this to update when a column is removed
+		userSelectedHeaders,
 		userSortCriteria
 	} from '../userStore';
 
@@ -67,9 +67,8 @@
 		const removedHeader = headers[index];
 		headers.splice(index, 1);
 		userActiveHeaders.set(headers);
-		dropdownOpenIndex = null; // Close the dropdown after removing a column
+		dropdownOpenIndex = null;
 
-		// Update the userSelectedHeaders store
 		const selectedHeaders = [...$userSelectedHeaders];
 		const headerIndex = selectedHeaders.indexOf(removedHeader);
 		if (headerIndex > -1) {
