@@ -17,8 +17,8 @@
 		CogOutline,
 		FileChartBarSolid,
 		FileWordSolid,
-		LockSolid,
-		UserSettingsSolid
+		UserSettingsSolid,
+		LockSolid
 	} from 'flowbite-svelte-icons';
 
 	export let drawerHidden: boolean = false;
@@ -49,6 +49,8 @@
 		{ name: 'Assignment', icon: FileWordSolid, href: '/crud/tasks' },
 		{ name: 'Weekly Report', icon: CalendarEditSolid, href: '/report-generation' }, // Corrected Weekly Report link
 	
+		// Commented out the Authentication Pages section
+		/*
 		{
 			name: 'Authentication Pages',
 			icon: LockSolid,
@@ -60,8 +62,9 @@
 				'Profile lock': '/authentication/profile-lock'
 			}
 		},
-		{ name: 'Settings', icon: CogOutline, href: '/settings' }
+		*/
 	];
+
 	let dropdowns = Object.fromEntries(posts.map(({ name }) => [name, false]));
 </script>
 
@@ -75,7 +78,7 @@
 	<SidebarWrapper
 		divClass="overflow-y-auto px-3 pt-20 lg:pt-5 h-full bg-white scrolling-touch max-w-2xs lg:h-[calc(100vh-4rem)] lg:block dark:bg-gray-800 lg:me-0 lg:sticky top-2"
 	>
-		<nav class="divide-y divide-gray-200 dark:divide-gray-700">
+		<!-- <nav class="divide-y divide-gray-200 dark:divide-gray-700">
 			<SidebarGroup ulClass={groupClass} class="mb-3">
 				{#each posts as { name, icon, children, href } (name)}
 					{#if children}
@@ -105,6 +108,21 @@
 							<svelte:component this={icon} slot="icon" class={iconClass} />
 						</SidebarItem>
 					{/if}
+				{/each}
+			</SidebarGroup>
+		</nav> -->
+		<nav class="divide-y divide-gray-200 dark:divide-gray-700">
+			<SidebarGroup ulClass={groupClass} class="mb-3">
+				{#each posts as { name, icon, href } (name)}
+					<SidebarItem
+						label={name}
+						{href}
+						spanClass="ml-3"
+						class={itemClass}
+						active={activeMainSidebar === href}
+					>
+						<svelte:component this={icon} slot="icon" class={iconClass} />
+					</SidebarItem>
 				{/each}
 			</SidebarGroup>
 		</nav>
