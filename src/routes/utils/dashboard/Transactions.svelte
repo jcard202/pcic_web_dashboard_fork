@@ -194,7 +194,7 @@
                 acc[header] = inspector.mobile ?? 'N/A';
                 break;
             case "Online":
-                acc[header] = inspector.online ? 'Yes' : 'No';
+                acc[header] = inspector.online ? '' : 'X';
                 break;
             case "Mon":
                 acc[header] = inspector.Mon ?? 0;
