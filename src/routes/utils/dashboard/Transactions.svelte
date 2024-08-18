@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import InspectorAct from './InspectorAct.svelte';
+    import TaskTimeline from './TaskTimeline.svelte';
     import {
         Breadcrumb,
         BreadcrumbItem,
@@ -340,7 +340,7 @@ const generateExcel = () => {
 
 <main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
     {#if showActivity && selectedUserId}
-        <InspectorAct userId={selectedUserId} on:back={goBack} />
+        <TaskTimeline userId={selectedUserId} on:back={goBack} />
     {:else}
         <div class="p-4">
             <Breadcrumb class="mb-5">
@@ -464,4 +464,3 @@ const generateExcel = () => {
         padding: 16px;
     }
 </style>
-
