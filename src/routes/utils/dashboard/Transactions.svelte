@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import InspectorAct from './InspectorAct.svelte';
+    import TaskTimeline from './TaskTimeline.svelte';
     import {
         Breadcrumb,
         BreadcrumbItem,
@@ -27,7 +27,6 @@
                 .from('users')
                 .select('id, inspector_name, mobile_number, is_online')
                 .eq('role', 'Agent');
-
 
             if (usersError) {
                 dataError = usersError.message;
@@ -129,7 +128,7 @@
 
 <main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
     {#if showActivity && selectedUserId}
-        <InspectorAct userId={selectedUserId} on:back={goBack} />
+        <TaskTimeline userId={selectedUserId} on:back={goBack} />
     {:else}
         <div class="p-4">
             <Breadcrumb class="mb-5">
@@ -145,10 +144,9 @@
             {#if dataError}
                 <p class="text-red-500">{dataError}</p>
             {:else if isLoading}
-
                 <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
                     <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
-                  </div>
+                </div>
             {:else}
                 <Table hoverable={true}>
                     <TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">

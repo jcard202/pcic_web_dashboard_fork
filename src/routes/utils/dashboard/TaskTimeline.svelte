@@ -1,16 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { supabase_content } from '../../../supabase';
-  import { User } from 'lucide-svelte';
+  import { User, AlertCircle } from 'lucide-svelte';
   import 'mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
 
-  export let selectedTaskId: string;
+  export let userId: string;
 
   interface SupabaseLog {
     timestamp: string;
     activity: string;
-    last_synced_at: string;
     sync_status: string;
     longlat: string | null;
   }
@@ -27,14 +26,17 @@
     try {
       const { data, error } = await supabase_content
         .from('user_logs')
-        .select('timestamp, activity, last_synced_at, sync_status, longlat')
-        .eq('task_id', selectedTaskId)
+        .select('timestamp, activity, sync_status, longlat')
+        .eq('user_id', userId)
         .order('timestamp', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
       if (!data || data.length === 0) {
-        dataError = 'No timeline available for this task.';
+        dataError = 'No timeline available for this user.';
       } else {
         userLogs = data;
       }
@@ -47,12 +49,14 @@
   }
 
   function initializeMap() {
-    map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [0, 0], // Default center
-      zoom: 2,
-    });
+    if (userLogs.length > 0) {
+      map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v10',
+        center: [0, 0],
+        zoom: 2,
+      });
+    }
   }
 
   function updateMapLocation(longlat: string) {
@@ -78,50 +82,69 @@
   }
 
   onMount(() => {
-    fetchUserLogs();
-    initializeMap();
+    fetchUserLogs().then(() => {
+      if (userLogs.length > 0) {
+        initializeMap();
+      }
+    });
   });
 </script>
 
-<main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
-  <div class="flex flex-col md:flex-row max-w-6xl mx-auto p-4 space-y-6 md:space-y-0 md:space-x-6">
-    <div class="w-full md:w-2/3 bg-white dark:bg-gray-900 p-6 rounded-lg shadow-md">
-      {#if dataError}
-        <p class="text-red-500 dark:text-red-400">{dataError}</p>
-      {:else if isLoading}
-      <div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-        <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
-      </div>      {:else}
-        {#each userLogs as log}
-          <div class="flex items-start py-3 border-b border-gray-200 dark:border-gray-700">
-            <div class="w-24 text-sm text-gray-500 dark:text-gray-400">
-              {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </div>
-            <div class="flex-grow">
-              <div class="flex items-center space-x-3">
-                <button
-                  type="button"
-                  class="w-10 h-10 flex items-center justify-center bg-blue-100 dark:bg-blue-700 rounded-full cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-600"
-                  on:click={() => log.longlat && updateMapLocation(log.longlat)}
-                  on:keydown={(event) => event.key === 'Enter' && log.longlat && updateMapLocation(log.longlat)}
-                  aria-label="Show location on map"
-                >
-                  <User class="w-6 h-6 text-blue-500 dark:text-blue-300" />
-                </button>
-                <div>
-                  <p class="text-lg font-semibold text-gray-900 dark:text-gray-100">{log.activity}</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{log.sync_status}</p>
-                  {#if log.longlat}
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Location: {log.longlat}</p>
-                  {/if}
-                </div>
-              </div>
-            </div>
+<div class="flex h-screen bg-gray-900 text-white">
+  {#if isLoading}
+    <div class="w-full flex items-center justify-center">
+      <img src="/images/pcic-spinner.gif" alt="Loading..." class="h-16 w-16"/>
+    </div>
+  {:else if dataError || userLogs.length === 0}
+    <div class="w-full flex flex-col items-center justify-center p-8 text-center">
+      <AlertCircle size={48} class="text-yellow-400 mb-4" />
+      <h2 class="text-2xl font-bold mb-2">No Timeline Data Available</h2>
+      <p class="text-gray-400 max-w-md">
+        We couldn't find any timeline data for this user. This could be because the user hasn't performed any logged activities yet.
+      </p>
+    </div>
+  {:else}
+    <div class="w-1/2 overflow-y-auto p-4">
+      {#each userLogs as log}
+        <div class="bg-gray-800 rounded-lg p-4 shadow mb-4 transition-all duration-300 hover:bg-gray-700">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-sm text-gray-400">
+              {new Date(log.timestamp).toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: true 
+              })}
+            </span>
+            <button
+              class="p-2 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors duration-300"
+              on:click={() => log.longlat && updateMapLocation(log.longlat)}
+            >
+              <User size={16} />
+            </button>
           </div>
-        {/each}
-      {/if}
+          <h3 class="text-lg font-semibold mb-1">{log.activity}</h3>
+          <p class="text-sm text-gray-400">{log.sync_status}</p>
+          {#if log.longlat}
+            <p class="text-sm text-gray-400">Location: {log.longlat}</p>
+          {/if}
+        </div>
+      {/each}
+      <div class="h-20"></div>
     </div>
 
-    <div id="map" class="w-full md:w-1/3 h-96 rounded-lg shadow-md"></div>
-  </div>
-</main>
+    <div id="map" class="w-1/2 h-full"></div>
+  {/if}
+</div>
+
+<style>
+  :global(body) {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #1a202c;
+    color: white;
+  }
+</style>

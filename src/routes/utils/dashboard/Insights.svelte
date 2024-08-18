@@ -1,4 +1,4 @@
-<script lang="ts">
+<!-- <script lang="ts">
 	import { onMount } from 'svelte';
 	import { supabase_content } from '../../../supabase';
 	import { page } from '$app/stores';
@@ -120,4 +120,4 @@
 	  color: #666;
 	}
   </style>
-  
+   -->
