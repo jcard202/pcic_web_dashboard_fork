@@ -194,7 +194,11 @@
 	};
 
 	const generatePDF = () => {
-		const doc = new jsPDF();
+		const doc = new jsPDF({
+			orientation: 'landscape', // Change to landscape mode to fit more columns
+			unit: 'pt',
+			format: 'A4'
+		});
 		const region = userCurrentRegion; // Replace with actual region data if available
 		const today = new Date();
 		const startOfWeek = getStartOfWeek(new Date());
