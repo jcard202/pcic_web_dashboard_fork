@@ -7,6 +7,7 @@ import type { HeaderArray, User, UserFilter, UserSortCriteria } from './types';
 export const userDefaultHeaders = writable<HeaderArray>([
 	// 'Region Name',
 	'Inspector Name',
+
 	'Mobile Number',
 	// 'Role',
 	'OL',
@@ -24,8 +25,8 @@ export const userDefaultHeaders = writable<HeaderArray>([
 ]);
 
 export const userOptionalHeaders = writable<HeaderArray>([
+	'Region Name',
 	'ID',
-	'Region',
 	'Local ID',
 	'Email',
 	'Mobile Number'
