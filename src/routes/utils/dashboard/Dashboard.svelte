@@ -20,6 +20,6 @@
 	});
 </script>
 
-<div class="mt-px space-y-4">
-	<Transactions {dark} />
+<div class="mt-px space-y-4 ">
+	<Transactions data={data} />
 </div>

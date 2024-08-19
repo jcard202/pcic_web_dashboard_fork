@@ -49,8 +49,6 @@
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
 		{ name: 'Assignment', icon: FileWordSolid, href: '/crud/tasks' },
-		{ name: 'Weekly Report', icon: CalendarEditSolid, href: '/report-generation' }, // Corrected Weekly Report link
-	
 		// Commented out the Authentication Pages section
 		/*
 		{
