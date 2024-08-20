@@ -821,7 +821,7 @@
 <MetaTag {path} {description} {title} {subtitle} />
 
 <main class="relative h-full w-full overflow-y-auto">
-	<div class="p-4">
+	<div class="p-8">
 		<!-- Breadcrumb Navigation -->
 		<!-- <Breadcrumb class="mb-5">
 			<BreadcrumbItem home>Home</BreadcrumbItem>
