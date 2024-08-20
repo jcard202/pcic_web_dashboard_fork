@@ -205,32 +205,6 @@
                     {/if}
                 {/each}
             </Select>
-            <div class="border-l border-gray-100 pl-2 dark:border-gray-700">
-                <ToolbarButton
-                    color="dark"
-                    class="m-0 rounded p-1 hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-700"
-                >
-                    <CogSolid size="lg" />
-                </ToolbarButton>
-                <ToolbarButton
-                    color="dark"
-                    class="m-0 rounded p-1 hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-700"
-                >
-                    <TrashBinSolid size="lg" />
-                </ToolbarButton>
-                <ToolbarButton
-                    color="dark"
-                    class="m-0 rounded p-1 hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-700"
-                >
-                    <ExclamationCircleSolid size="lg" />
-                </ToolbarButton>
-                <ToolbarButton
-                    color="dark"
-                    class="m-0 rounded p-1 hover:bg-gray-100 focus:ring-0 dark:hover:bg-gray-700"
-                >
-                    <DotsVerticalOutline size="lg" />
-                </ToolbarButton>
-            </div>
 
             <div slot="end" class="flex items-center space-x-2">
                 <Button
