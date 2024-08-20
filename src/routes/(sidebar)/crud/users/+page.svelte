@@ -52,24 +52,24 @@
 	const title = 'PCIC Web Dashboard - CRUD Users';
 	const subtitle = 'CRUD Users';
 	const regions = [
-        "Region 1",
-        "Region 2",
-        "Region 3",
-        "Region 4A",
-        "Region 4B",
-        "Region 5",
-        "Region 6",
-        "Region 7",
-        "Region 8",
-        "Region 9",
-        "Region 10",
-        "Region 11",
-        "Region 12",
-        "Region 13",
-        "NCR",
-        "CAR",
-        "BARMM"
-    ];
+		'Region 1',
+		'Region 2',
+		'Region 3',
+		'Region 4A',
+		'Region 4B',
+		'Region 5',
+		'Region 6',
+		'Region 7',
+		'Region 8',
+		'Region 9',
+		'Region 10',
+		'Region 11',
+		'Region 12',
+		'Region 13',
+		'NCR',
+		'CAR',
+		'BARMM'
+	];
 
 	let toastProps = { show: false, message: '', type: 'success' | 'error' };
 
@@ -224,16 +224,16 @@
 					<option value="National_Admin">National Admin</option>
 				</Select>
 				<Select
-    placeholder="Filter by region"
-    class="me-4 w-80 border xl:w-96"
-    bind:value={selectedRegion}
-    on:change={filterUsers}
->
-    <option value="">All Regions</option>
-    {#each regions as region}
-        <option value={region}>{region}</option>
-    {/each}
-</Select>
+					placeholder="Filter by region"
+					class="me-4 w-80 border xl:w-96"
+					bind:value={selectedRegion}
+					on:change={filterUsers}
+				>
+					<option value="">All Regions</option>
+					{#each regions as region}
+						<option value={region}>{region}</option>
+					{/each}
+				</Select>
 			</div>
 
 			<!-- Add User Button -->
@@ -248,9 +248,9 @@
 
 		<!-- Conditional Rendering for Loading, No Users, or User Table -->
 		{#if isLoading}
-		<div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
-			<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
-		  </div>
+			<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+				<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3" />
+			</div>
 		{:else if filteredUsers.length === 0}
 			<p class="text-gray-700 dark:text-gray-300">
 				No users found. Add some users to see them here.
