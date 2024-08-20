@@ -456,7 +456,7 @@
 	};
 </script>
 
-<main class="relative w-full bg-white dark:bg-gray-800">
+<main class="relative h-full w-full overflow-y-auto">
 	{#if showActivity && selectedUserId}
 		<TaskTimeline userId={selectedUserId} on:back={goBack} />
 	{:else}
@@ -865,7 +865,7 @@
 				<!-- EXPANDER -->
 				<div class="flex-1"></div>
 				<div class="mb-4 flex items-center gap-2">
-					<span class="text-sm text-gray-700 dark:text-gray-300">Current page:</span>
+					<span class="text-right text-sm text-gray-700 dark:text-gray-300">Current:</span>
 					<Select
 						on:change={handleTableChange}
 						bind:value={selectedTable}
@@ -879,28 +879,30 @@
 				</div>
 			</div>
 
-			<div class="mb-4 flex justify-end space-x-4">
-				<Button
-					on:click={() => (showColumnModal = true)}
-					color="light"
-					size="xs"
-					class="flex items-center gap-2"
-				>
-					<FilePdfOutline /> Customize Columns
-				</Button>
-				<Button
-					class="flex items-center gap-2 text-xs"
-					color="light"
-					size="xs"
-					on:click={generatePDF}><FilePdfOutline /> Download PDF</Button
-				>
-				<Button
-					class="flex items-center gap-2 text-xs"
-					color="light"
-					size="xs"
-					on:click={generateExcel}><TableColumnOutline /> Download Excel</Button
-				>
-			</div>
+			{#if selectedTable === 'users'}
+				<div class="mb-4 flex justify-end space-x-4">
+					<Button
+						on:click={() => (showColumnModal = true)}
+						color="light"
+						size="xs"
+						class="flex items-center gap-2"
+					>
+						<FilePdfOutline /> Customize Columns
+					</Button>
+					<Button
+						class="flex items-center gap-2 text-xs"
+						color="light"
+						size="xs"
+						on:click={generatePDF}><FilePdfOutline /> Download PDF</Button
+					>
+					<Button
+						class="flex items-center gap-2 text-xs"
+						color="light"
+						size="xs"
+						on:click={generateExcel}><TableColumnOutline /> Download Excel</Button
+					>
+				</div>
+			{/if}
 
 			{#if dataError}
 				<p class="text-red-500">{dataError}</p>
