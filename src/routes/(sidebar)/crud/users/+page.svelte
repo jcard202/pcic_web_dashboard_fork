@@ -248,9 +248,9 @@
 
 		<!-- Conditional Rendering for Loading, No Users, or User Table -->
 		{#if isLoading}
-			<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
-				<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-24 w-24" />
-			</div>
+		<div class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50">
+			<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3"/>
+		  </div>
 		{:else if filteredUsers.length === 0}
 			<p class="text-gray-700 dark:text-gray-300">
 				No users found. Add some users to see them here.
