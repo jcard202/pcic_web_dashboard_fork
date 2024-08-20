@@ -48,7 +48,7 @@
 
 		{ name: 'Dashboard', icon: ChartPieOutline, href: '/dashboard' },
 		{ name: 'Users', icon: UserSettingsSolid, href: '/crud/users' },
-		{ name: 'Assignment', icon: FileWordSolid, href: '/crud/tasks' },
+		{ name: 'Tasks', icon: FileWordSolid, href: '/crud/tasks' },
 		// Commented out the Authentication Pages section
 		/*
 		{

@@ -26,8 +26,8 @@
 	let routes = [
 		{ name: 'Dashboard', icon: 'ChartPieOutline', href: '/dashboard' },
 		{ name: 'Users', icon: 'UserSettingsSolid', href: '/crud/users' },
-		{ name: 'Assignment', icon: 'FileWordSolid', href: '/crud/tasks' },
-		{ name: 'Weekly Report', icon: 'CalendarEditSolid', href: '/report-generation' },
+		{ name: 'Tasks', icon: 'FileWordSolid', href: '/crud/tasks' },
+		{ name: 'Weekly Report', icon: 'CalendarEditSolid', href: '/report-generation' }
 	];
 
 	let searchQuery = '';
@@ -35,7 +35,7 @@
 
 	function handleSearch(event) {
 		searchQuery = event.target.value.toLowerCase();
-		filteredRoutes = routes.filter(route => route.name.toLowerCase().includes(searchQuery));
+		filteredRoutes = routes.filter((route) => route.name.toLowerCase().includes(searchQuery));
 	}
 </script>
 
@@ -57,7 +57,7 @@
 				PCIC Portal
 			</span>
 		</NavBrand>
-		<div class="hidden lg:block lg:ps-3 relative">
+		<div class="relative hidden lg:block lg:ps-3">
 			{#if list}
 				<NavUl class="ml-2" activeUrl="/" activeClass="text-primary-600 dark:text-primary-500">
 					<NavLi href="/">Home</NavLi>
@@ -76,13 +76,11 @@
 				</NavUl>
 			{:else}
 				<form>
-					<Search 
-						size="md" 
-						class="mt-1 w-96 border focus:outline-none" 
-						on:input={handleSearch}
-					/>
+					<Search size="md" class="mt-1 w-96 border focus:outline-none" on:input={handleSearch} />
 					{#if searchQuery}
-						<ul class="absolute bg-white dark:bg-gray-800 dark:text-white border dark:border-gray-600 mt-2 rounded shadow-lg w-96 max-h-60 overflow-y-auto">
+						<ul
+							class="absolute mt-2 max-h-60 w-96 overflow-y-auto rounded border bg-white shadow-lg dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+						>
 							{#each filteredRoutes as route}
 								<li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
 									<a href={route.href} class="flex items-center space-x-2">
@@ -97,7 +95,7 @@
 		</div>
 		<div class="ms-auto flex items-center text-gray-500 dark:text-gray-400 sm:order-2">
 			<DarkMode />
-			<UserMenu data={data} {signOut} />
+			<UserMenu {data} {signOut} />
 		</div>
 	</NavContainer>
 </Navbar>

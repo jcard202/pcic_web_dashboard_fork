@@ -8,26 +8,28 @@
 	export let email: string = ''; // "neil.sims@flowbite.com",
 	export let signOut: any;
 	export let data;
-	$: ({supabase} = data);
+	$: ({ supabase } = data);
 
-	onMount( async ()=>{
+	onMount(async () => {
 		const userId = (await supabase.auth.getUser()).data.user.id;
-		console.log(userId)
+		console.log(userId);
 		const { data, error } = await supabase
-                .from('users')
-                .select(`
+			.from('users')
+			.select(
+				`
                     *
-                `).eq('auth_user_id', userId).single();
-		if(error){
+                `
+			)
+			.eq('auth_user_id', userId)
+			.single();
+		if (error) {
 			console.log(error);
 			return;
 		}
 		name = data.inspector_name;
 		email = data.email;
-		avatar = data.photo_url
-
-	})
-	
+		avatar = data.photo_url;
+	});
 </script>
 
 <button class="ms-3 rounded-full ring-gray-400 focus:ring-4 dark:ring-gray-600">
@@ -35,13 +37,13 @@
 </button>
 <Dropdown placement="bottom-end">
 	<DropdownHeader>
-		<span class="block text-sm">{name}</span>
+		<!-- <span class="block text-sm">{name}</span> -->
 		<span class="block truncate text-sm font-medium">{email}</span>
 	</DropdownHeader>
-	<DropdownItem>Dashboard</DropdownItem>
-	<DropdownItem>Settings</DropdownItem>
+	<!-- <DropdownItem>Dashboard</DropdownItem> -->
+	<!-- <DropdownItem>Settings</DropdownItem> -->
 	<!-- <DropdownItem>Earnings</DropdownItem> -->
-	<DropdownDivider />
+	<!-- <DropdownDivider /> -->
 	<DropdownItem on:click={signOut}>Sign out</DropdownItem>
 </Dropdown>
 
