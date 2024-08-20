@@ -999,7 +999,7 @@
 		</div>
 
 		<div class="flex justify-end">
-			<Button class="mt-4" size="xs" color="alternative" on:click={updateColumns}>
+			<Button class="mt-4" size="xs" color="blue" on:click={updateColumns}>
 				Update Columns
 			</Button>
 		</div>
