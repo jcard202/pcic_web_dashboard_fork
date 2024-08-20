@@ -2,8 +2,6 @@
 	import { onMount } from 'svelte';
 	import {
 		Avatar,
-		Breadcrumb,
-		BreadcrumbItem,
 		Button,
 		Checkbox,
 		Heading,
@@ -14,19 +12,9 @@
 		TableBodyCell,
 		TableBodyRow,
 		TableHead,
-		TableHeadCell,
-		Toolbar,
-		ToolbarButton
+		TableHeadCell
 	} from 'flowbite-svelte';
-	import {
-		CogSolid,
-		DotsVerticalOutline,
-		DownloadSolid,
-		EditOutline,
-		ExclamationCircleSolid,
-		PlusOutline,
-		TrashBinSolid
-	} from 'flowbite-svelte-icons';
+	import { EditOutline, PlusOutline, TrashBinSolid } from 'flowbite-svelte-icons';
 	import { imagesPath } from '../../../utils/variables';
 	import User from './User.svelte';
 	import Delete from './Delete.svelte';
@@ -42,11 +30,11 @@
 
 	let current_user: any = {};
 	let users: any[] = [];
-	let filteredUsers: any[] = []; // To hold the filtered users
+	let filteredUsers: any[] = [];
 	let isLoading = true;
-	let searchQuery = ''; // To hold the search input value
-	let selectedRole = ''; // To hold the selected role filter
-	let selectedRegion = ''; // To hold the selected region filter
+	let searchQuery = '';
+	let selectedRole = '';
+	let selectedRegion = '';
 	const path = '/crud/users';
 	const description = 'CRUD users example - PCIC Web Dashboard';
 	const title = 'PCIC Web Dashboard - CRUD Users';
@@ -74,6 +62,11 @@
 	let toastProps = { show: false, message: '', type: 'success' | 'error' };
 
 	let supabaseReady = false;
+
+	// Pagination variables
+	let currentPage = 1;
+	let itemsPerPage = 10;
+	let paginatedUsers: any[] = [];
 
 	onMount(async () => {
 		if (supabase) {
@@ -136,6 +129,28 @@
 				(selectedRole === '' || user.role === selectedRole) &&
 				(selectedRegion === '' || user.regions?.region_name === selectedRegion)
 		);
+		paginateUsers();
+	}
+
+	// Function to paginate users
+	function paginateUsers() {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+	}
+
+	function handleNextPage() {
+		if (currentPage * itemsPerPage < filteredUsers.length) {
+			currentPage += 1;
+			paginateUsers();
+		}
+	}
+
+	function handlePreviousPage() {
+		if (currentPage > 1) {
+			currentPage -= 1;
+			paginateUsers();
+		}
 	}
 
 	function handleUserAdded(event: CustomEvent) {
@@ -190,21 +205,11 @@
 	<Toast {...toastProps} />
 
 	<div class="p-8">
-		<!-- Breadcrumb Navigation -->
-		<!-- <Breadcrumb class="mb-5">
-			<BreadcrumbItem home>Home</BreadcrumbItem>
-			<BreadcrumbItem href="/crud/users">Users</BreadcrumbItem>
-			<BreadcrumbItem>List</BreadcrumbItem>
-		</Breadcrumb> -->
-
-		<!-- Page Heading -->
 		<Heading tag="h1" class="mb-4 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
 			All Agents
 		</Heading>
 
-		<!-- Toolbar with Search, Filters, and Add Button -->
 		<div class="flex flex-wrap items-center justify-between gap-4 py-2">
-			<!-- Search and Filters -->
 			<div class="flex flex-1 items-center gap-4">
 				<Input
 					placeholder="Search for users"
@@ -236,7 +241,6 @@
 				</Select>
 			</div>
 
-			<!-- Add User Button -->
 			<Button
 				size="sm"
 				class="flex items-center gap-2 whitespace-nowrap rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400"
@@ -246,12 +250,11 @@
 			</Button>
 		</div>
 
-		<!-- Conditional Rendering for Loading, No Users, or User Table -->
 		{#if isLoading}
 			<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
 				<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3" />
 			</div>
-		{:else if filteredUsers.length === 0}
+		{:else if paginatedUsers.length === 0}
 			<p class="text-gray-700 dark:text-gray-300">
 				No users found. Add some users to see them here.
 			</p>
@@ -268,7 +271,7 @@
 					{/each}
 				</TableHead>
 				<TableBody>
-					{#each filteredUsers as user}
+					{#each paginatedUsers as user}
 						<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
 							<TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
 							<TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">
@@ -328,11 +331,24 @@
 					{/each}
 				</TableBody>
 			</Table>
+
+			<div class="mt-4 flex justify-between">
+				<Button color="blue" on:click={handlePreviousPage} disabled={currentPage === 1}>
+					Previous
+				</Button>
+				<span>Page {currentPage} of {Math.ceil(filteredUsers.length / itemsPerPage)}</span>
+				<Button
+					color="blue"
+					on:click={handleNextPage}
+					disabled={currentPage * itemsPerPage >= filteredUsers.length}
+				>
+					Next
+				</Button>
+			</div>
 		{/if}
 	</div>
 </main>
 
-<!-- Modals -->
 <User
 	bind:open={openUser}
 	{current_user}
