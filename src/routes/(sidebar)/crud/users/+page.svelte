@@ -214,9 +214,7 @@
                 >
                     <PlusOutline size="sm" />Add user
                 </Button>
-                <Button size="sm" color="alternative" class="gap-2 px-3">
-                    <DownloadSolid size="md" class="-ml-1" />Export
-                </Button>
+               
             </div>
         </Toolbar>
     </div>
