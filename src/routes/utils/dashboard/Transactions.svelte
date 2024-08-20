@@ -454,6 +454,39 @@
 			isLoading = false;
 		}
 	};
+
+
+	// pagination 
+
+	$: if (inspectors.length > 0) {
+		paginateInspectors(); 
+	}
+
+	let currentPage = 1;
+	let itemsPerPage = 10;
+	let paginatedInspectors: any[] = [];
+
+	function paginateInspectors() {
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		const endIndex = startIndex + itemsPerPage;
+		paginatedInspectors = inspectors.slice(startIndex, endIndex);
+	}
+
+	function handleNextPage() {
+		if (currentPage * itemsPerPage < inspectors.length) {
+			currentPage += 1;
+			paginateInspectors();
+		}
+	}
+
+	function handlePreviousPage() {
+		if (currentPage > 1) {
+			currentPage -= 1;
+			paginateInspectors();
+		}
+	}
+
+	$: paginateInspectors();
 </script>
 
 <main class="relative h-full w-full overflow-y-auto">
@@ -461,20 +494,7 @@
 		<TaskTimeline userId={selectedUserId} on:back={goBack} />
 	{:else}
 		<div class="p-4">
-			<!-- 
-            
-            Mar commented this, this is not needed in the dashboard
-
-            <Breadcrumb class="mb-5">
-				<BreadcrumbItem home href="/sidebar">Home</BreadcrumbItem>
-
-				<BreadcrumbItem href="/sidebar/crud/logs">Logs</BreadcrumbItem>
-
-				<BreadcrumbItem>Weekly Tasks</BreadcrumbItem>
-			</Breadcrumb>
-            
-            -->
-
+			
 			<Heading
 				tag="h1"
 				class="mb-7 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl"
@@ -534,7 +554,7 @@
 						</div>
 					</div>
 				{:else if selectedTable === 'regions'}
-					<ButtonContainer>
+					<!-- <ButtonContainer>
 						<Button
 							class="flex items-center gap-2 border-none text-xs"
 							on:click={() => ($showRegionFilter = !$showRegionFilter)}
@@ -620,8 +640,8 @@
 								</div>
 							</div>
 						{/if}
-					</ButtonContainer>
-					<ButtonContainer>
+					</ButtonContainer> -->
+					<!-- <ButtonContainer>
 						<Button
 							class="flex items-center gap-2 border-none text-xs"
 							on:click={() => ($showRegionSorting = !$showRegionSorting)}
@@ -696,9 +716,9 @@
 								</div>
 							</div>
 						{/if}
-					</ButtonContainer>
+					</ButtonContainer> -->
 				{:else}
-					<ButtonContainer>
+					<!-- <ButtonContainer>
 						<Button
 							class="flex items-center gap-2 border-none text-xs"
 							on:click={() => ($showTaskFilter = !$showTaskFilter)}
@@ -784,8 +804,8 @@
 								</div>
 							</div>
 						{/if}
-					</ButtonContainer>
-					<ButtonContainer>
+					</ButtonContainer> -->
+					<!-- <ButtonContainer>
 						<Button
 							class="flex items-center gap-2 border-none text-xs"
 							on:click={() => ($showTaskSorting = !$showTaskSorting)}
@@ -860,7 +880,7 @@
 								</div>
 							</div>
 						{/if}
-					</ButtonContainer>
+					</ButtonContainer> -->
 				{/if}
 				<!-- EXPANDER -->
 				<div class="flex-1"></div>
@@ -914,7 +934,7 @@
 			{:else if selectedTable === 'tasks'}
 				<TaskTable />
 			{:else if selectedTable === 'users'}
-				<Table hoverable={true}>
+				<!-- <Table hoverable={true}>
 					<TableHead class="border-b border-gray-300 bg-gray-50 dark:border-gray-700">
 						{#each userActiveHeaders as header}
 							<TableHeadCell
@@ -955,12 +975,87 @@
 							</TableBodyRow>
 						{/each}
 					</TableBody>
+				</Table> -->
+				<Table hoverable={true}>
+					<TableHead class="border-b border-gray-300 bg-gray-50 dark:border-gray-700">
+						{#each userActiveHeaders as header}
+							<TableHeadCell
+								class="whitespace-nowrap px-6 py-3 text-center font-medium text-gray-700 dark:text-gray-300"
+							>
+								{header}
+							</TableHeadCell>
+						{/each}
+					</TableHead>
+					<TableBody>
+						{#if paginatedInspectors.length > 0}
+							{#each paginatedInspectors as inspector}
+								<TableBodyRow
+									on:click={() => handleRowClick(inspector.id)}
+									class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+								>
+									{#each userActiveHeaders as header}
+										<TableBodyCell class="px-6 py-4 text-center">
+											{#if header === 'Online'}
+												<span class="flex items-center justify-center">
+													<span
+														class={`h-3 w-3 rounded-full ${
+															inspector.online ? 'bg-green-500' : 'bg-gray-500'
+														} mr-2`}
+													></span>
+													<span
+														class={`text-sm font-semibold ${
+															inspector.online ? 'text-green-600' : 'text-gray-500'
+														}`}
+													>
+														{inspector.online ? 'Online' : 'Offline'}
+													</span>
+												</span>
+											{:else}
+												{mapInspectorData(inspector, userActiveHeaders)[header]}
+											{/if}
+										</TableBodyCell>
+									{/each}
+								</TableBodyRow>
+							{/each}
+						{:else}
+							<TableBodyRow>
+								<TableBodyCell colspan={userActiveHeaders.length} class="text-center">
+									No inspectors found.
+								</TableBodyCell>
+							</TableBodyRow>
+						{/if}
+					</TableBody>
 				</Table>
+				
+
 			{:else if selectedTable === 'regions'}
 				<RegionTable />
 			{/if}
 		</div>
 	{/if}
+
+	
+	{#if selectedTable === 'users'}
+	<div class="mt-4 mx-4 flex justify-between">
+		<Button
+			color="green"
+			on:click={handlePreviousPage}
+			disabled={currentPage === 1}
+		>
+			Previous
+		</Button>
+		<span>Page {currentPage} of {Math.ceil(inspectors.length / itemsPerPage)} </span>
+		<Button
+			color="green"
+			on:click={handleNextPage}
+			disabled={currentPage * itemsPerPage >= inspectors.length}
+		>
+			Next
+		</Button>
+	</div>
+	{/if}
+	
+	
 </main>
 
 <Modal bind:open={showColumnModal} size="lg" autoclose={false}>
