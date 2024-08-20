@@ -7,31 +7,27 @@
 
 	export let data;
 
-	$:({supabase} = data);
-	
-	const signOut =  async () =>{
-		try{
+	$: ({ supabase } = data);
+
+	const signOut = async () => {
+		try {
 			await supabase.auth.signOut();
-		}catch(e){
+		} catch (e) {
 			console.log(e);
 			return;
 		}
 		goto('/authentication/sign-in');
-	}
-	
+	};
 </script>
-
 
 <header
 	class="fixed top-0 z-40 mx-auto w-full flex-none border-b border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800"
 >
-	<Navbar data={data} {signOut} bind:drawerHidden />
+	<Navbar {data} {signOut} bind:drawerHidden />
 </header>
 <div class="overflow-hidden lg:flex">
 	<Sidebar bind:drawerHidden />
-	<div class="relative h-[100vh] w-full overflow-y-scroll lg:ml-64 pt-[70px]">
+	<div class="relative h-[100vh] w-full overflow-y-scroll pt-[70px] lg:ml-64">
 		<slot />
-		
 	</div>
 </div>
-
