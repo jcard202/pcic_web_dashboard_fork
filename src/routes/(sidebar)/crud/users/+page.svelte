@@ -167,16 +167,16 @@
 
 <MetaTag {path} {description} {title} {subtitle} />
 
-<main class="relative h-full w-full overflow-y-auto bg-white dark:bg-gray-800">
+<main class="relative h-full w-full overflow-y-auto">
 	<Toast {...toastProps} />
 
-	<div class="p-4">
+	<div class="p-8">
 		<!-- Breadcrumb Navigation -->
-		<Breadcrumb class="mb-5">
+		<!-- <Breadcrumb class="mb-5">
 			<BreadcrumbItem home>Home</BreadcrumbItem>
 			<BreadcrumbItem href="/crud/users">Users</BreadcrumbItem>
 			<BreadcrumbItem>List</BreadcrumbItem>
-		</Breadcrumb>
+		</Breadcrumb> -->
 
 		<!-- Page Heading -->
 		<Heading tag="h1" class="mb-4 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
@@ -184,7 +184,7 @@
 		</Heading>
 
 		<!-- Toolbar with Search, Filters, and Add Button -->
-		<div class="flex flex-wrap items-center justify-between gap-4 py-4">
+		<div class="flex flex-wrap items-center justify-between gap-4 py-2">
 			<!-- Search and Filters -->
 			<div class="flex flex-1 items-center gap-4">
 				<Input
