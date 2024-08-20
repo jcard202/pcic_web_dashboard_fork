@@ -883,21 +883,22 @@
 				<div class="mb-4 flex justify-end space-x-4">
 					<Button
 						on:click={() => (showColumnModal = true)}
-						color="light"
+						color="blue"
 						size="xs"
 						class="flex items-center gap-2"
+						
 					>
 						<FilePdfOutline /> Customize Columns
 					</Button>
 					<Button
 						class="flex items-center gap-2 text-xs"
-						color="light"
+						color="green"
 						size="xs"
 						on:click={generatePDF}><FilePdfOutline /> Download PDF</Button
 					>
 					<Button
 						class="flex items-center gap-2 text-xs"
-						color="light"
+						color="red"
 						size="xs"
 						on:click={generateExcel}><TableColumnOutline /> Download Excel</Button
 					>
@@ -998,7 +999,7 @@
 		</div>
 
 		<div class="flex justify-end">
-			<Button class="mt-4" size="xs" color="alternative" on:click={updateColumns}>
+			<Button class="mt-4" size="xs" color="blue" on:click={updateColumns}>
 				Update Columns
 			</Button>
 		</div>
