@@ -455,11 +455,10 @@
 		}
 	};
 
-
-	// pagination 
+	// pagination
 
 	$: if (inspectors.length > 0) {
-		paginateInspectors(); 
+		paginateInspectors();
 	}
 
 	let currentPage = 1;
@@ -494,7 +493,6 @@
 		<TaskTimeline userId={selectedUserId} on:back={goBack} />
 	{:else}
 		<div class="p-4">
-			
 			<Heading
 				tag="h1"
 				class="mb-7 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl"
@@ -906,7 +904,6 @@
 						color="blue"
 						size="xs"
 						class="flex items-center gap-2"
-						
 					>
 						<FilePdfOutline /> Customize Columns
 					</Button>
@@ -1026,36 +1023,27 @@
 						{/if}
 					</TableBody>
 				</Table>
-				
-
 			{:else if selectedTable === 'regions'}
 				<RegionTable />
 			{/if}
 		</div>
 	{/if}
 
-	
 	{#if selectedTable === 'users'}
-	<div class="mt-4 mx-4 flex justify-between">
-		<Button
-			color="green"
-			on:click={handlePreviousPage}
-			disabled={currentPage === 1}
-		>
-			Previous
-		</Button>
-		<span>Page {currentPage} of {Math.ceil(inspectors.length / itemsPerPage)} </span>
-		<Button
-			color="green"
-			on:click={handleNextPage}
-			disabled={currentPage * itemsPerPage >= inspectors.length}
-		>
-			Next
-		</Button>
-	</div>
+		<div class="mx-4 mt-4 flex items-center justify-between">
+			<Button color="blue" on:click={handlePreviousPage} disabled={currentPage === 1}>
+				Previous
+			</Button>
+			<span>Page {currentPage} of {Math.ceil(inspectors.length / itemsPerPage)} </span>
+			<Button
+				color="blue"
+				on:click={handleNextPage}
+				disabled={currentPage * itemsPerPage >= inspectors.length}
+			>
+				Next
+			</Button>
+		</div>
 	{/if}
-	
-	
 </main>
 
 <Modal bind:open={showColumnModal} size="lg" autoclose={false}>
@@ -1094,9 +1082,7 @@
 		</div>
 
 		<div class="flex justify-end">
-			<Button class="mt-4" size="xs" color="blue" on:click={updateColumns}>
-				Update Columns
-			</Button>
+			<Button class="mt-4" size="xs" color="blue" on:click={updateColumns}>Update Columns</Button>
 		</div>
 	</div>
 </Modal>
