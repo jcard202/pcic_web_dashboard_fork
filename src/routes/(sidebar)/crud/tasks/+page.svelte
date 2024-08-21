@@ -1132,7 +1132,6 @@
 					on:click={()=>{
 						modalType = 'sync';
 						open = true;
-						scanFTP();
 					}}
 					disabled={isSyncing}
 				>
@@ -1420,8 +1419,7 @@
 						}
 					</span>
 				</div>
-			{/if}
-			{#if isSyncing}
+			{:else if isSyncing}
 				<div>
 					<span class="loader"></span> 
 					<span class='mt-2 text-sm text-gray-40'>
@@ -1431,7 +1429,14 @@
 						}
 					</span>
 				</div>
+			{:else}
+				{#if Object.keys(scannedFiles).length <= 0}
+					<div class='w-full h-full flex justify-center items-center'>
+						No files listed, press 'Scan FTP Server' to scan for files.
+					</div>
+				{/if}
 			{/if}
+
 		</div>
 
 		<div class="flex items-center justify-center">
