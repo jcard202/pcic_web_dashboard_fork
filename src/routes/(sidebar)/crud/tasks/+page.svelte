@@ -1385,7 +1385,7 @@
 
 		<div class='w-full p-4 rounded-xl bg-black/10 flex-col flex items-center gap-2 h-96 overflow-y-scroll'>
 			{#each Object.keys(scannedFiles) as file }
-				<div class='{scannedFiles[file].scanning || currentlySyncing == file ? 'bg-gray-400/10': 'bg-black/10'} cursor-pointer hover:bg-gray-400/10 rounded  w-full flex items-center justify-center overflow-hidden flex-col px-4 min-h-16'>
+				<div class='{scannedFiles[file].scanning || currentlySyncing == file ? 'dark:bg-gray-400/10 bg-gray-600 ': 'dark:bg-black/10 bg-gray-800'} cursor-pointer dark:hover:bg-gray-400/10 rounded hover:bg-gray-600  w-full flex items-center justify-center overflow-hidden flex-col px-4 min-h-16'>
 					<div class='text-white'>
 						{file}
 					</div>
