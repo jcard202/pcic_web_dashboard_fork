@@ -18,11 +18,11 @@
 	}
 </script>
 
-<div class="mt-4 flex items-center justify-between rounded-b-lg bg-gray-800 py-3">
+<div class="mt-4 flex items-center justify-between">
 	<button
 		class="text-md rounded-md px-5 py-2 font-medium {showPrevious
-			? 'bg-gray-700 text-white'
-			: 'bg-gray-700 text-gray-500'}"
+			? 'bg-blue-600 text-white'
+			: 'bg-blue-600 text-white opacity-50'}"
 		on:click={previous}
 		disabled={!showPrevious}
 	>
@@ -36,7 +36,7 @@
 	<button
 		class="text-md rounded-md px-5 py-2 font-medium {showNext
 			? 'bg-blue-600 text-white'
-			: 'bg-gray-700 text-gray-500'}"
+			: 'bg-blue-600 text-white opacity-50'}"
 		on:click={next}
 		disabled={!showNext}
 	>
