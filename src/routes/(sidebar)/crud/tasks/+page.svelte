@@ -721,7 +721,7 @@
 								.from('tasks')
 								.insert([
 									{
-										task_number: row['Task Number'] ?? `Task-${row['ppir_assignmentid']}` , // Replace with your specific task table column namesservice_group: row['Service Group'],
+										task_number: `Task-${row['ppir_assignmentid']}` , // Replace with your specific task table column namesservice_group: row['Service Group'],
 										service_type: row['Service Type'],
 										service_group: row['Service Group'].replace('0','O'),
 										priority: row['Priority'],
@@ -732,14 +732,7 @@
 								.select('id')
 								.single();
 							if (taskError) {
-								console.log('INSERT THIS',{
-										task_number: row['Task Number'], // Replace with your specific task table column namesservice_group: row['Service Group'],
-										service_type: row['Service Type'],
-										service_group: row['Service Group'].replace('0','O'),
-										priority: row['Priority'],
-										assignee: assigneeId, // Store the assignee user ID
-										file_id: fileReadId
-									});
+								
 								console.error(`Error inserting data into tasks for ${ppirInsuranceId}:`, taskError);
 								showToast(`Error inserting data into tasks for ${ppirInsuranceId}:`, 'error');
 								continue;
