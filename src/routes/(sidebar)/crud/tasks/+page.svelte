@@ -820,6 +820,7 @@
 		} finally {
 			isSyncing = false;
 			currentlySyncing = null;
+			fetchTasks();
 		}
 	}
 
