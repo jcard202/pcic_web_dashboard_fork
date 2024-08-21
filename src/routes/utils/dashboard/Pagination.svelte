@@ -18,9 +18,9 @@
 	}
 </script>
 
-<div class="mt-4 flex items-center justify-between">
+<div class="mx-4 mt-4 flex items-center justify-between">
 	<button
-		class="text-md rounded-md px-5 py-2 font-medium {showPrevious
+		class="rounded-md px-5 py-2 text-sm font-medium {showPrevious
 			? 'bg-blue-600 text-white'
 			: 'bg-blue-600 text-white opacity-50'}"
 		on:click={previous}
@@ -34,7 +34,7 @@
 	</span>
 
 	<button
-		class="text-md rounded-md px-5 py-2 font-medium {showNext
+		class="rounded-md px-5 py-2 text-sm font-medium {showNext
 			? 'bg-blue-600 text-white'
 			: 'bg-blue-600 text-white opacity-50'}"
 		on:click={next}
