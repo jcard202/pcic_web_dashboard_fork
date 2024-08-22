@@ -977,7 +977,10 @@
 					<TableHead class="border-b border-gray-300 bg-gray-50 dark:border-gray-700">
 						{#each userActiveHeaders as header}
 							<TableHeadCell
-								class="whitespace-nowrap px-6 py-3 text-center font-medium text-gray-700 dark:text-gray-300"
+								class="whitespace-nowrap px-6 py-3 {header === 'Inspector Name' ||
+								header === 'Mobile Number'
+									? 'text-left'
+									: 'text-center'} font-medium text-gray-700 dark:text-gray-300"
 							>
 								{header}
 							</TableHeadCell>
@@ -991,7 +994,11 @@
 									class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
 								>
 									{#each userActiveHeaders as header}
-										<TableBodyCell class="px-6 py-4 text-center">
+										<TableBodyCell
+											class="px-6 py-4 {header === 'Inspector Name' || header === 'Mobile Number'
+												? 'text-left'
+												: 'text-center'}"
+										>
 											{#if header === 'Online'}
 												<span class="flex items-center justify-center">
 													<span
