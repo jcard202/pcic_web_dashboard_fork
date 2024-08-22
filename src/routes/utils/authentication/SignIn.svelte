@@ -7,13 +7,13 @@
 		link: '/',
 		imgAlt: 'PCIC Logo'
 	};
-	export let rememberMe = true;
-	export let lostPassword = true;
-	export let createAccount = true;
-	export let lostPasswordLink = '';
+	// export let rememberMe = true;
+	// export let lostPassword = true;
+	// export let createAccount = true;
+	// export let lostPasswordLink = '';
 	export let loginTitle = 'Login to your account';
-	export let registerLink = '';
-	export let createAccountTitle = 'Create account';
+	// export let registerLink = '';
+	// export let createAccountTitle = 'Create account';
 
 	export let mainClass = 'bg-gray-50 dark:bg-gray-900 w-full';
 	export let mainDivClass =
@@ -23,7 +23,7 @@
 	export let siteImgClass = 'mr-4 h-11';
 	export let cardH1Class = 'text-2xl font-bold text-gray-900 dark:text-white';
 
-	export let handleSubmit:any = null; 
+	export let handleSubmit: any = null;
 </script>
 
 <main class={mainClass}>
@@ -39,7 +39,7 @@
 			</h1>
 			<form method="POST" class="mt-8 space-y-6" on:submit={handleSubmit}>
 				<slot />
-				{#if rememberMe || lostPassword}
+				<!-- {#if rememberMe || lostPassword}
 					<div class="flex items-start">
 						{#if rememberMe}
 							<Checkbox class="accent-primary-600" name="remember">Remember me</Checkbox>
@@ -48,13 +48,13 @@
 							<A href={lostPasswordLink} aClass="ml-auto text-sm">Lost Password?</A>
 						{/if}
 					</div>
-				{/if}
-				<Button  type="submit"  size="lg">{loginTitle}</Button>
-				{#if createAccount}
+				{/if} -->
+				<Button type="submit" size="lg">{loginTitle}</Button>
+				<!-- {#if createAccount}
 					<div class="text-sm font-medium text-gray-500 dark:text-gray-400">
-						Not registered? <A href={registerLink}>{createAccountTitle}</A>
+						<A href={registerLink}>{createAccountTitle}</A>
 					</div>
-				{/if}
+				{/if} -->
 			</form>
 		</Card>
 	</div>
