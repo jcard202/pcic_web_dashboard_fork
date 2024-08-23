@@ -263,7 +263,7 @@
 				<TableHead
 					class="border-y border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700"
 				>
-					<TableHeadCell class="w-4 p-4"><Checkbox /></TableHeadCell>
+					<TableHeadCell class="w-4 p-4"></TableHeadCell>
 					{#each ['Name', 'Status', 'Date Added', 'Role', 'Region', 'Actions'] as title}
 						<TableHeadCell class="p-4 font-medium text-gray-900 dark:text-gray-300">
 							{title}
@@ -273,7 +273,7 @@
 				<TableBody>
 					{#each paginatedUsers as user}
 						<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
-							<TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
+							<TableBodyCell class="w-4 p-4"></TableBodyCell>
 							<TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">
 								<Avatar
 									src={user.photo_url || imagesPath('default-avatar.png', 'users')}
