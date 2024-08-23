@@ -4,7 +4,7 @@
     import Alert from '../../../utils/widgets/alert.svelte';
 
     export let open: boolean = false;
-    export let current_user : any;
+    export let current_user : any = null;
     export let data: any;
 
     $: ({ supabase } = data)
@@ -295,7 +295,7 @@
     }
 </script>
 
-<Modal bind:open title={(current_user != null) ? 'Edit user' : 'Add new user'} size="md" class="m-4">
+<Modal bind:open title={(current_user) ? 'Edit user' : 'Add new user'} size="md" class="m-4">
     <div class="space-y-6 p-0">
         {#if showAlert}
             <Alert message={alertMessage} type={alertType} />
