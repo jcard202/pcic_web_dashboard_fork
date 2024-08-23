@@ -295,7 +295,7 @@
     }
 </script>
 
-<Modal bind:open title={(data && Object.keys(data).length) ? 'Edit user' : 'Add new user'} size="md" class="m-4">
+<Modal bind:open title={(current_user != null) ? 'Edit user' : 'Add new user'} size="md" class="m-4">
     <div class="space-y-6 p-0">
         {#if showAlert}
             <Alert message={alertMessage} type={alertType} />
