@@ -77,8 +77,12 @@
       marker.setLngLat([lng, lat]);
     }
 
-    map.setCenter([lng, lat]);
-    map.setZoom(15);
+    map.flyTo({
+      center: [lng, lat],
+      zoom: 17,  // Zoom level closer to the pin
+      speed: 1.6,  // Smooth transition speed
+      curve: 1.2  // Animation curve for a smooth zoom
+    });
   }
 
   onMount(() => {
