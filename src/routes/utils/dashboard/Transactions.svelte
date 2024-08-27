@@ -80,7 +80,7 @@
 	let isLoading = true;
 	let dataError: string | null = null;
 
-	// Dropdown state
+	// Dropdown states
 	let selectedMonth = new Date().getMonth(); // Default to the current month
 	let selectedDay = new Date().getDate(); // Default to today's date
 	let selectedWeek = getCurrentWeekNumber(new Date()); // Default to the current week
