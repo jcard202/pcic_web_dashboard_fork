@@ -8,9 +8,9 @@
 		imgAlt: 'PCIC Logo'
 	};
 	export let user = {
-		name: 'Bonnie Green',
+		name: 'Agent Name',
 		img: '/images/users/bonnie-green.png',
-		imgAlt: 'Bonnie Green'
+		imgAlt: 'Agent Name'
 	};
 	export let btnTitle = 'Unlock';
 	export let pageDescription = 'Better to be safe than sorry.';
@@ -73,9 +73,9 @@
 		imgAlt: 'PCIC Logo'
 	};
 @prop export let user = {
-		name: 'Bonnie Green',
+		name: 'Agent Name',
 		img: '/images/users/bonnie-green.png',
-		imgAlt: 'Bonnie Green'
+		imgAlt: 'Agent Name'
 	};
 @prop export let btnTitle = 'Reset password';
 @prop export let pageDescription = 'Better to be safe than sorry.';

@@ -41,7 +41,7 @@
 	},
 	{
 		"id": 5,
-		"name": "Bonnie Green",
+		"name": "Agent Name",
 		"avatar": "bonnie-green.png",
 		"email": "bonnie.green@flowbite.com",
 		"biography": "I love working with React and Flowbites to create efficient and user-friendly interfaces. In my spare time, I enjoys baking, hiking, and spending time with my family.",
@@ -141,7 +141,7 @@
 	},
 	{
 		"id": 15,
-		"name": "Bonnie Green",
+		"name": "Agent Name",
 		"avatar": "bonnie-green.png",
 		"email": "bonnie.green@flowbite.com",
 		"biography": "I love working with React and Flowbites to create efficient and user-friendly interfaces. In my spare time, I enjoys baking, hiking, and spending time with my family.",
