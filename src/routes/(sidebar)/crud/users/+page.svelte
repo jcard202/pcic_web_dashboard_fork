@@ -68,23 +68,44 @@
 	let itemsPerPage = 10;
 	let paginatedUsers: any[] = [];
 
+
+	let loggedInUser: any = null;
+
+
+	async function fetchLoggedInUserInfo(userId: string) {
+    try {
+      const { data: userInfo, error } = await supabase
+        .from('users')
+        .select('*, regions(region_name)')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+
+      loggedInUser = userInfo;
+      if (loggedInUser.role !== 'National_Admin') {
+        selectedRegion = loggedInUser.regions.region_name;
+      }
+    } catch (error) {
+      console.error('Error fetching logged-in user info:', error);
+      showToast('Error fetching user information', 'error');
+    }
+  }
+
 	onMount(async () => {
-		if (supabase) {
-			supabaseReady = true;
-			const {
-				data: { user }
-			} = await supabase.auth.getUser();
-			if (user) {
-				console.log('Component mounted, user authenticated');
-				await fetchUsers();
-			} else {
-				console.error('No authenticated user found');
-				// Handle unauthenticated state (e.g., redirect to login)
-			}
-		} else {
-			console.error('Supabase client is not available');
-		}
-	});
+    if (supabase) {
+      supabaseReady = true;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await fetchLoggedInUserInfo(user.id);
+        await fetchUsers();
+      } else {
+        console.error('No authenticated user found');
+      }
+    } else {
+      console.error('Supabase client is not available');
+    }
+  });
 
 	async function fetchUsers() {
 		try {
@@ -122,15 +143,26 @@
 	}
 
 	// Function to filter users based on searchQuery, selectedRole, and selectedRegion
+	// function filterUsers() {
+	// 	filteredUsers = users.filter(
+	// 		(user) =>
+	// 			user.inspector_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+	// 			(selectedRole === '' || user.role === selectedRole) &&
+	// 			(selectedRegion === '' || user.regions?.region_name === selectedRegion)
+	// 	);
+	// 	paginateUsers();
+	// }
 	function filterUsers() {
-		filteredUsers = users.filter(
-			(user) =>
-				user.inspector_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-				(selectedRole === '' || user.role === selectedRole) &&
-				(selectedRegion === '' || user.regions?.region_name === selectedRegion)
-		);
-		paginateUsers();
-	}
+    filteredUsers = users.filter(
+      (user) =>
+        user.inspector_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        (selectedRole === '' || user.role === selectedRole) &&
+        (loggedInUser.role === 'National_Admin' ? 
+          (selectedRegion === '' || user.regions?.region_name === selectedRegion) :
+          user.regions?.region_name === loggedInUser.regions.region_name)
+    );
+    paginateUsers();
+  }
 
 	// Function to paginate users
 	function paginateUsers() {
@@ -229,15 +261,16 @@
 					<option value="National_Admin">National Admin</option>
 				</Select>
 				<Select
-					placeholder="Filter by region"
-					class="me-4 w-80 border xl:w-96"
-					bind:value={selectedRegion}
-					on:change={filterUsers}
+				placeholder="Filter by region"
+				class="me-4 w-80 border xl:w-96"
+				bind:value={selectedRegion}
+				on:change={filterUsers}
+				disabled={loggedInUser && loggedInUser.role !== 'National_Admin'}
 				>
-					<option value="">All Regions</option>
-					{#each regions as region}
-						<option value={region}>{region}</option>
-					{/each}
+				<option value="">All Regions</option>
+				{#each regions as region}
+					<option value={region}>{region}</option>
+				{/each}
 				</Select>
 			</div>
 
@@ -256,9 +289,7 @@
 			</div>
 		{:else if paginatedUsers.length === 0}
 			<p class="text-gray-700 dark:text-gray-300">
-				<!-- 
-					Add Design Illustration here
-				-->
+			
 
 				No users found. Add some users to see them here.
 			</p>
