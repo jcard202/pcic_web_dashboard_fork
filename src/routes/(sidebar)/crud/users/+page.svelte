@@ -288,11 +288,47 @@
 				<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3" />
 			</div>
 		{:else if paginatedUsers.length === 0}
+<<<<<<< HEAD
 			<p class="text-gray-700 dark:text-gray-300">
 			
 
 				No users found. Add some users to see them here.
 			</p>
+=======
+			<div
+				class="mt-1 rounded-lg border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-700 dark:bg-gray-800"
+			>
+				<div class="flex flex-col items-center gap-8 md:flex-row">
+					<div class="flex w-full items-center justify-center md:w-1/2">
+						<img src="/no-user.png" alt="No users illustration" class="h-1/2 w-1/2" />
+					</div>
+					<div class="w-full md:w-1/2">
+						<h2 class="mb-4 text-2xl font-bold text-gray-900 dark:text-white">No users found</h2>
+						<p class="mb-6 text-gray-600 dark:text-gray-300">
+							Your user database is currently empty. Let's get started by creating your user
+							profile!
+						</p>
+						<ol class="mb-6 list-decimal space-y-2 pl-5 text-gray-600 dark:text-gray-300">
+							<li>Click the "Create user" button</li>
+							<li>Fill in the user's details in the form</li>
+							<li>Save the new user profile</li>
+						</ol>
+						<p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+							Once users are added, they'll appear in a table on this page, where you can manage and
+							edit all user profiles.
+						</p>
+						<!-- <Button
+							size="lg"
+							class="w-full justify-center gap-2 rounded-md bg-green-600 px-4 py-3 text-base font-medium text-white hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 sm:w-auto"
+							on:click={handleOpenUser}
+						>
+							<PlusOutline size="sm" />
+							Create your first user
+						</Button> -->
+					</div>
+				</div>
+			</div>
+>>>>>>> b3f938945c5b08d5cde21fd7fb457bbc7842603c
 		{:else}
 			<Table>
 				<TableHead
