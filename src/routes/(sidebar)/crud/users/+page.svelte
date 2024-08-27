@@ -245,8 +245,12 @@
 				>
 					<option value="">All Roles</option>
 					<option value="Agent">Agent</option>
-					<option value="Regional_Admin">Regional Admin</option>
-					<option value="National_Admin">National Admin</option>
+					{#if loggedInUser && loggedInUser.role === 'National_Admin'}
+						<option value="Regional_Admin">Regional Admin</option>
+					{/if}
+					{#if loggedInUser && loggedInUser.role === 'National_Admin'}
+						<option value="National_Admin">National Admin</option>
+					{/if}
 				</Select>
 				<Select
 				placeholder="Filter by region"
