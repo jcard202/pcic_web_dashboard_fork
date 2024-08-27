@@ -45,7 +45,8 @@
   }
 
   let loggedInUser: any = null;
-
+  
+  let showErrorModal = false;
 
 	onMount(async () => {
 	
@@ -315,10 +316,22 @@
 			open = false;
 			showAlertMessage('User created successfully.', 'success');
 		} catch (error) {
-			console.error('Error creating user:', error);
-			errorMessage = `Error: ${error instanceof Error ? error.message : String(error)}`;
-			showAlertMessage(`Failed to create user. Please try again later.`, 'error');
+			handleError(error);
+
 		}
+	}
+
+	function closeErrorModal() {
+    showErrorModal = false;
+  }
+
+  let hasError = false;
+
+
+  function handleError(error: any) {
+		console.error('Error creating user:', error);
+		errorMessage = "Failed to create user. Please try again later.";
+		hasError = true;
 	}
 
 	function handleFileInput(event: Event) {
@@ -355,18 +368,23 @@
       input.value = input.value.slice(0, 11);
     }
   }
+
+  function refreshPage() {
+    showErrorModal = false;
+    window.location.reload();
+  }
 </script>
 
 <Modal bind:open title={current_user ? 'Edit user' : 'Add new user'} size="md" class="m-4">
 	<div class="space-y-6 p-0">
-		{#if showAlert}
-			<Alert message={alertMessage} type={alertType} />
-		{/if}
-
-		{#if isLoading}
+		{#if hasError}
+			<div class="text-center">
+				<img src="/no-user.png" alt="Error" class="mx-auto mb-4 h-1/2 w-1/2" />
+				<Alert type="error" message={errorMessage} />
+				<Button class="mt-4" color="red" on:click={refreshPage}>Try Again</Button>
+			</div>
+		{:else if isLoading}
 			<p>Loading regions...</p>
-		{:else if errorMessage}
-			<p class="text-red-500">{errorMessage}</p>
 		{:else}
 			<form action="#" on:submit={handleSubmit}>
 				<div class="grid grid-cols-6 gap-6">
@@ -424,8 +442,8 @@
 						  on:input={restrictToNumbers}
 						  maxlength="11"
 						/>
-					  </Label>
-					  <Label class="col-span-6 space-y-2 sm:col-span-3">
+					</Label>
+					<Label class="col-span-6 space-y-2 sm:col-span-3">
 						<span>Role</span>
 						<Select 
 						  name="role" 
@@ -440,7 +458,7 @@
 							<option value={role}>{role.replace('_', ' ')}</option>
 						  {/each}
 						</Select>
-					  </Label>
+					</Label>
 					<Label class="col-span-6 space-y-2">
 						<span>Region</span>
 						<Select name="region_id" class="mt-2" required bind:value={selectedRegionId}>
