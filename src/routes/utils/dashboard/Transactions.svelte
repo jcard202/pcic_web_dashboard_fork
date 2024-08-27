@@ -183,11 +183,11 @@
 				today.getFullYear()
 			);
 
-			inspectors = users.map((user) => {
-				const userTasks = tasks.filter((task) => task.assignee === user.id);
+			inspectors = users.map((user: { id: any; inspector_name: any; mobile_number: any; is_online: any; email: any; regions: { region_name: any; }; }) => {
+				const userTasks = tasks.filter((task: { assignee: any; }) => task.assignee === user.id);
 				const totalDispatch = userTasks.length;
-				const completed = userTasks.filter((task) => task.status === 'completed').length;
-				const backlogs = userTasks.filter((task) => task.status === 'ongoing').length;
+				const completed = userTasks.filter((task: { status: string; }) => task.status === 'completed').length;
+				const backlogs = userTasks.filter((task: { status: string; }) => task.status === 'ongoing').length;
 
 				const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 				const tasksByDay = weekDays.map((day, index) => {
@@ -196,7 +196,7 @@
 					const dayEnd = new Date(dayStart);
 					dayEnd.setHours(23, 59, 59, 999);
 
-					return userTasks.filter((task) => {
+					return userTasks.filter((task: { created_at: string | number | Date; status: string; }) => {
 						const taskDate = new Date(task.created_at);
 						return taskDate >= dayStart && taskDate <= dayEnd && task.status === 'completed';
 					}).length;
@@ -255,22 +255,34 @@
 		fetchInspectors();
 	}
 
-	// Toggles header selection
-	const toggleHeader = (header: string) => {
-		if (selectedTable == 'tasks') {
-			$taskSelectedHeaders = $taskSelectedHeaders.includes(header)
-				? $taskSelectedHeaders.filter((h) => h !== header)
-				: [...$taskSelectedHeaders, header];
-		} else if (selectedTable == 'regions') {
-			$regionSelectedHeaders = $regionSelectedHeaders.includes(header)
-				? $regionSelectedHeaders.filter((h) => h !== header)
-				: [...$regionSelectedHeaders, header];
-		} else {
-			userSelectedHeaders = userSelectedHeaders.includes(header)
-				? userSelectedHeaders.filter((h) => h !== header)
-				: [...userSelectedHeaders, header];
-		}
-	};
+	
+	function toggleHeader(header: string) {
+    if (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].includes(header)) {
+      if (userSelectedHeaders.includes(header)) {
+        userSelectedHeaders = userSelectedHeaders.filter(h => h !== header);
+        // Check if no days are selected, then uncheck total columns
+        if (!['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].some(day => userSelectedHeaders.includes(day))) {
+          userSelectedHeaders = userSelectedHeaders.filter(h => !['Total Dispatch', 'Total Completed', 'Backlogs'].includes(h));
+        }
+      } else {
+        userSelectedHeaders = [...userSelectedHeaders, header];
+      }
+    } else if (['Total Dispatch', 'Total Completed', 'Backlogs'].includes(header)) {
+      if (userSelectedHeaders.includes(header)) {
+        userSelectedHeaders = userSelectedHeaders.filter(h => h !== header);
+      } else if (['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].some(day => userSelectedHeaders.includes(day))) {
+        userSelectedHeaders = [...userSelectedHeaders, header];
+      }
+    } else {
+      if (userSelectedHeaders.includes(header)) {
+        userSelectedHeaders = userSelectedHeaders.filter(h => h !== header);
+      } else {
+        userSelectedHeaders = [...userSelectedHeaders, header];
+      }
+    }
+  }
+
+  $: isDaySelected = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].some(day => userSelectedHeaders.includes(day));
 
 	// Updates the active columns based on selected headers
 	const updateColumns = () => {
@@ -422,7 +434,6 @@
 	});
 
 	const headers = [
-		'Inspector Name',
 		'Mobile Number',
 		'Online',
 		'Mon',
@@ -685,7 +696,7 @@
 	<div class="py-4">
 		<h2 class="mb-4 text-2xl font-bold text-gray-500 dark:text-gray-400">Customize Columns</h2>
 
-		<div class="grid grid-cols-3 gap-2">
+		<div class="grid grid-cols-3 gap-4">
 			{#if selectedTable == 'tasks'}
 				{#each $taskAllHeaders as header}
 					<Checkbox
@@ -705,14 +716,58 @@
 					</Checkbox>
 				{/each}
 			{:else}
-				{#each headers as header}
+				<div>
+					<h2 > Personal Data </h2>
 					<Checkbox
-						checked={userSelectedHeaders.includes(header)}
-						on:change={() => toggleHeader(header)}
+						checked={userSelectedHeaders.includes('Mobile Number')}
+						on:change={() => toggleHeader('Mobile Number')}
 					>
-						{header}
+						Mobile Number
 					</Checkbox>
-				{/each}
+					<Checkbox
+						checked={userSelectedHeaders.includes('Region')}
+						on:change={() => toggleHeader('Region')}
+					>
+						Region
+					</Checkbox>
+					<Checkbox
+						checked={userSelectedHeaders.includes('Email')}
+						on:change={() => toggleHeader('Email')}
+					>
+						Email
+					</Checkbox>
+					<Checkbox
+						checked={userSelectedHeaders.includes('Online')}
+						on:change={() => toggleHeader('Online')}
+					>
+						Online
+					</Checkbox>
+				</div>
+				<div>
+					<h2> Days </h2>
+
+					{#each ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as day}
+						<Checkbox
+							checked={userSelectedHeaders.includes(day)}
+							on:change={() => toggleHeader(day)}
+						>
+							{day}
+						</Checkbox>
+					{/each}
+				</div>
+				<div>
+					<h2> Tasks Data </h2>
+
+					{#each ['Total Dispatch', 'Total Completed', 'Backlogs'] as header}
+						<Checkbox
+							checked={userSelectedHeaders.includes(header)}
+							on:change={() => toggleHeader(header)}
+							disabled={!['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].some(day => userSelectedHeaders.includes(day))}
+						>
+							{header}
+						</Checkbox>
+					{/each}
+				</div>
 			{/if}
 		</div>
 
