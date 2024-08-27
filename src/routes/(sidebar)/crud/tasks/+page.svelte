@@ -1199,9 +1199,9 @@
 								checked={selectedTasks.length >= filteredTasks.length && filteredTasks.length > 0}
 							/>
 						</TableHeadCell>
-						{#each ['Task Name', 'Service Group', 'Service Type', 'Attempts', 'Priority', 'Status', 'Assignee', 'Actions'] as title}
-							<TableHeadCell class="ps-4 font-normal">
-								<div class="flex items-center">
+						{#each ['Task Name', 'Service Group', 'Service Type', 'Attempts', 'Priority', 'Status', 'Assignee', 'Actions'] as title, index}
+							<TableHeadCell class=" font-normal {index > 1 ? 'text-center' : ''}">
+								<div class="flex items-center {index > 1 ? 'justify-center' : ''}">
 									{title}
 									{#if ['Task Name', 'Service Type', 'Priority'].includes(title)}
 										{#if !sortings.includes(title + ' Desc') && !sortings.includes(title + ' Asc')}
@@ -1275,32 +1275,32 @@
 										</div>
 									</div>
 								</TableBodyCell>
-								<TableBodyCell class="p-4 font-normal text-gray-500 dark:text-gray-400">
+								<TableBodyCell class="p-4 text-center font-normal text-gray-500 dark:text-gray-400">
 									{task.service_group}
 								</TableBodyCell>
 								<TableBodyCell
-									class="max-w-sm overflow-hidden truncate p-4 text-base font-normal text-gray-500 dark:text-gray-400 xl:max-w-xs"
+									class="max-w-sm overflow-hidden truncate p-4 text-center text-base font-normal text-gray-500 dark:text-gray-400 xl:max-w-xs"
 								>
 									{task.service_type}
 								</TableBodyCell>
-								<TableBodyCell class="p-4">
+								<TableBodyCell class="p-4 text-center">
 									{task.attempt_count}
 								</TableBodyCell>
 								<TableBodyCell
 									class="p-4 font-normal {setPriorityColor(
 										task.priority
-									)} dark:bg-opacity-25 dark:bg-${setPriorityColor(task.priority)}"
+									)} dark:bg-opacity-25 dark:bg-${setPriorityColor(task.priority)} text-center"
 								>
 									{task.priority.toUpperCase()}
 								</TableBodyCell>
 								<TableBodyCell
 									class="p-4 font-normal {setStatusColor(
 										task.status
-									)} dark:bg-opacity-25 dark:bg-${setStatusColor(task.status)}"
+									)} dark:bg-opacity-25 dark:bg-${setStatusColor(task.status)} text-center"
 								>
 									{task.status.toUpperCase()}
 								</TableBodyCell>
-								<TableBodyCell class="p-4 font-normal text-gray-500 dark:text-gray-400">
+								<TableBodyCell class="p-4 text-center font-normal text-gray-500 dark:text-gray-400">
 									<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
 										<div class="text-base font-semibold text-gray-900 dark:text-white">
 											{task.users.inspector_name.toUpperCase()}
@@ -1310,7 +1310,7 @@
 										</div>
 									</div>
 								</TableBodyCell>
-								<TableBodyCell class="space-x-2">
+								<TableBodyCell class="space-x-2 text-center">
 									<Button
 										size="sm"
 										class="gap-2 px-3"

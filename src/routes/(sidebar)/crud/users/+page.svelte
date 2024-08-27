@@ -268,8 +268,12 @@
 					class="border-y border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700"
 				>
 					<TableHeadCell class="w-4 p-4"></TableHeadCell>
-					{#each ['Name', 'Status', 'Date Added', 'Role', 'Region', 'Actions'] as title}
-						<TableHeadCell class="p-4 font-medium text-gray-900 dark:text-gray-300">
+					{#each ['Name', 'Status', 'Date Added', 'Role', 'Region', 'Actions'] as title, index}
+						<TableHeadCell
+							class="p-4 font-medium text-gray-900 dark:text-gray-300 {index > 0
+								? 'text-center'
+								: ''}"
+						>
 							{title}
 						</TableHeadCell>
 					{/each}
@@ -293,8 +297,8 @@
 									</div>
 								</div>
 							</TableBodyCell>
-							<TableBodyCell class="p-4">
-								<span class="flex items-center">
+							<TableBodyCell class="p-4 text-center">
+								<span class="flex items-center justify-center">
 									<span
 										class={`h-2.5 w-2.5 rounded-full bg-${getStatusColor(user.is_online)}-500 mr-2`}
 									></span>
@@ -303,12 +307,14 @@
 									</span>
 								</span>
 							</TableBodyCell>
-							<TableBodyCell class="p-4">
+							<TableBodyCell class="p-4 text-center">
 								{new Date(user.created_at).toLocaleDateString()}
 							</TableBodyCell>
-							<TableBodyCell class="p-4">{user.role}</TableBodyCell>
-							<TableBodyCell class="p-4">{user.regions?.region_name || 'N/A'}</TableBodyCell>
-							<TableBodyCell class="space-x-2 p-4">
+							<TableBodyCell class="p-4 text-center">{user.role}</TableBodyCell>
+							<TableBodyCell class="p-4 text-center"
+								>{user.regions?.region_name || 'N/A'}</TableBodyCell
+							>
+							<TableBodyCell class="flex items-center justify-center space-x-2 p-4">
 								<Button
 									size="sm"
 									class="gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
