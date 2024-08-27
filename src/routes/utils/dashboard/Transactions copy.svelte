@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import TaskTimeline from './TaskTimeline.svelte';
+	import jsPDF from 'jspdf';
+	import autoTable from 'jspdf-autotable';
+	import * as XLSX from 'xlsx';
+	import { FilePdfOutline, TableColumnOutline } from 'flowbite-svelte-icons';
+	import TaskTable from '$lib/utils/report-generation/components/TaskTable.svelte';
+	import RegionTable from '$lib/utils/report-generation/components/RegionTable.svelte';
+
 	import {
-		Breadcrumb,
-		BreadcrumbItem,
 		Table,
 		TableBody,
 		TableBodyCell,
@@ -14,65 +19,23 @@
 		Button,
 		Checkbox,
 		Modal,
-		Toggle,
-		Select,
-		Input
+		Select
 	} from 'flowbite-svelte';
-	import jsPDF from 'jspdf';
-	import autoTable from 'jspdf-autotable';
-	import * as XLSX from 'xlsx';
-	import {
-		CloseOutline,
-		FilePdfOutline,
-		FilterOutline,
-		PlusOutline,
-		SortOutline,
-		TableColumnOutline
-	} from 'flowbite-svelte-icons';
-	import TaskTable from '$lib/utils/report-generation/components/TaskTable.svelte';
-	import RegionTable from '$lib/utils/report-generation/components/RegionTable.svelte';
 
 	import {
-		addTaskFilter,
-		addTaskSortCriteria,
-		applyTaskFilters,
-		applyTaskSorting,
-		clearTaskFilters,
-		clearTaskSort,
 		initializeTaskFilteredData,
-		removeTaskFilter,
-		removeTaskSortCriteria,
-		showTaskFilter,
-		showTaskSorting,
 		taskActiveHeaders,
 		taskAllHeaders,
-		taskFilters,
-		taskOperators,
 		taskSelectedHeaders,
 		taskSortCriteria
 	} from '$lib/utils/report-generation/taskStore';
+
 	import {
-		addRegionFilter,
-		addRegionSortCriteria, // Add this
-		applyRegionFilters,
-		applyRegionSorting, // Add this
-		clearRegionFilters,
-		clearRegionSort, // Add this
-		initializeRegionFilteredData, // Add this
+		initializeRegionFilteredData,
 		regionActiveHeaders,
 		regionAllHeaders,
-		regionFilters,
-		regionOperators,
-		regionSelectedHeaders,
-		regionSortCriteria, // Add this
-		removeRegionFilter,
-		removeRegionSortCriteria, // Add this
-		showRegionFilter,
-		showRegionSorting
+		regionSelectedHeaders
 	} from '$lib/utils/report-generation/regionStore';
-
-	import ButtonContainer from '$lib/utils/report-generation/components/ButtonContainer.svelte';
-	import { slide } from 'svelte/transition';
 
 	let showActivity = false;
 	let selectedUserId: string | null = null;
@@ -81,13 +44,13 @@
 	let dataError: string | null = null;
 
 	// Dropdown states
-	let selectedMonth = new Date().getMonth(); // Default to the current month
-	let selectedDay = new Date().getDate(); // Default to today's date
-	let selectedWeek = getCurrentWeekNumber(new Date()); // Default to the current week
+	let selectedMonth = new Date().getMonth();
+	let selectedDay = new Date().getDate();
+	let selectedWeek = getCurrentWeekNumber(new Date());
 
-	let monthOptions = Array.from({ length: 12 }, (_, i) => i); // Array for 12 months
-	let dayOptions = Array.from({ length: 31 }, (_, i) => i + 1); // Array for 31 days
-	let weekOptions: any[] = []; // Dynamically populated based on selected date
+	let monthOptions = Array.from({ length: 12 }, (_, i) => i);
+	let dayOptions = Array.from({ length: 31 }, (_, i) => i + 1);
+	let weekOptions: any[] = [];
 
 	let showColumnModal = false;
 	let userActiveHeaders = [
@@ -135,7 +98,8 @@
 		selectedWeek = getCurrentWeekNumber(selectedDate);
 		const totalWeeksInMonth = getCurrentWeekNumber(
 			new Date(new Date().getFullYear(), selectedMonth + 1, 0)
-		); // Get number of weeks in the month
+		);
+		// Get number of weeks in the month
 		weekOptions = Array.from({ length: totalWeeksInMonth }, (_, i) => i + 1);
 	}
 
@@ -183,6 +147,11 @@
 				today.getFullYear()
 			);
 
+			/**
+			 * BUG: Parameter 'user' implicitly has an 'any' type.
+			 *
+			 * For fix.
+			 */
 			inspectors = users.map((user) => {
 				const userTasks = tasks.filter((task) => task.assignee === user.id);
 				const totalDispatch = userTasks.length;
@@ -234,13 +203,15 @@
 
 	function handleMonthChange(event: Event) {
 		selectedMonth = parseInt((event.target as HTMLSelectElement).value);
-		updateWeekOptions(); // Update week options based on selected month and day
+		// Update week options based on selected month and day
+		updateWeekOptions();
 		fetchInspectors();
 	}
 
 	function handleDayChange(event: Event) {
 		selectedDay = parseInt((event.target as HTMLSelectElement).value);
-		updateWeekOptions(); // Update week options based on selected month and day
+		// Update week options based on selected month and day
+		updateWeekOptions();
 		fetchInspectors();
 	}
 
@@ -251,7 +222,8 @@
 			selectedMonth,
 			new Date().getFullYear()
 		);
-		selectedDay = startOfWeek.getDate(); // Adjust the selected day to the first day of the week
+		// Adjust the selected day to the first day of the week
+		selectedDay = startOfWeek.getDate();
 		fetchInspectors();
 	}
 
@@ -297,7 +269,7 @@
 						acc[header] = inspector.mobile ?? 'N/A';
 						break;
 					case 'Online':
-						acc[header] = inspector.online ? 'Online' : 'Offline';
+						acc[header] = inspector.online ? '' : 'X';
 						break;
 					case 'Mon':
 						acc[header] = inspector.Mon ?? 0;
@@ -348,7 +320,7 @@
 
 	const generatePDF = () => {
 		const doc = new jsPDF({
-			orientation: 'landscape', // Change to landscape mode to fit more columns
+			orientation: 'landscape',
 			unit: 'pt',
 			format: 'A4'
 		});
@@ -369,19 +341,18 @@
 			startY: 45,
 			theme: 'grid',
 			headStyles: {
-				fillColor: [41, 128, 185], // Table header background color
+				fillColor: [41, 128, 185],
 				textColor: [255, 255, 255],
-				fontSize: 10, // Adjusted font size for headers
+				fontSize: 10,
 				halign: 'center'
 			},
 			bodyStyles: {
-				fontSize: 8, // Adjusted font size for body text
+				fontSize: 8,
 				halign: 'center'
 			},
 			columnStyles: {
-				0: { cellWidth: 'auto' }, // Adjust column widths dynamically
+				0: { cellWidth: 'auto' },
 				1: { cellWidth: 'auto' }
-				// You can define other columns here similarly if needed
 			},
 			styles: {
 				overflow: 'linebreak',
@@ -390,10 +361,10 @@
 			margin: { top: 20 },
 			didParseCell: function (data) {
 				if (data.section === 'body' && data.column.index === 1) {
-					data.cell.styles.cellWidth = 'auto'; // Allow dynamic width for some columns
+					data.cell.styles.cellWidth = 'auto';
 				}
 			},
-			tableWidth: 'auto' // Auto adjust the table width to fit the content
+			tableWidth: 'auto'
 		});
 
 		doc.save('inspectors_report.pdf');
@@ -418,7 +389,8 @@
 	};
 
 	onMount(() => {
-		updateWeekOptions(); // Initialize week options
+		// Initialize week options
+		updateWeekOptions();
 		fetchInspectors();
 	});
 
@@ -455,8 +427,7 @@
 		}
 	};
 
-	// pagination
-
+	// Pagination
 	$: if (inspectors.length > 0) {
 		paginateInspectors();
 	}
@@ -505,7 +476,7 @@
 					<div class="flex items-center gap-6">
 						<div class="flex items-center">
 							<label for="monthSelect" class="mr-2 text-sm text-gray-700 dark:text-gray-300"
-								>Select Month:</label
+								>Month:</label
 							>
 							<select
 								id="monthSelect"
@@ -522,13 +493,13 @@
 						</div>
 						<div class="flex items-center">
 							<label for="daySelect" class="mr-2 text-sm text-gray-700 dark:text-gray-300"
-								>Select Day:</label
+								>Day:</label
 							>
 							<select
 								id="daySelect"
 								on:change={handleDayChange}
 								bind:value={selectedDay}
-								class="w-20 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-indigo-400"
+								class="w-18 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-indigo-400"
 							>
 								{#each dayOptions as day}
 									<option value={day} selected={day === selectedDay}>{day}</option>
@@ -537,13 +508,13 @@
 						</div>
 						<div class="flex items-center">
 							<label for="weekSelect" class="mr-2 text-sm text-gray-700 dark:text-gray-300"
-								>Select Week:</label
+								>Week:</label
 							>
 							<select
 								id="weekSelect"
 								on:change={handleWeekChange}
 								bind:value={selectedWeek}
-								class="w-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-indigo-400"
+								class="w-28 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-indigo-400"
 							>
 								{#each weekOptions as week}
 									<option value={week} selected={week === selectedWeek}>Week {week}</option>
@@ -551,334 +522,6 @@
 							</select>
 						</div>
 					</div>
-				{:else if selectedTable === 'regions'}
-					<!-- <ButtonContainer>
-						<Button
-							class="flex items-center gap-2 border-none text-xs"
-							on:click={() => ($showRegionFilter = !$showRegionFilter)}
-							color={$regionFilters.length > 0 ? 'green' : 'light'}
-							size="xs"
-						>
-							<FilterOutline /> Filter
-						</Button>
-						{#if $showRegionFilter}
-							<div
-								transition:slide={{ axis: 'y', duration: 600 }}
-								class="absolute top-12 z-20 w-[500px] rounded border border-white bg-gray-800 px-2 py-1"
-							>
-								{#if $regionFilters.length > 0}
-									{#each $regionFilters as filter, index}
-										<div class="flex items-center gap-2 py-1">
-											<Select
-												id="header-select"
-												class="w-32 rounded border border-white py-1 text-xs"
-												bind:value={filter.selectedHeader}
-												placeholder="Select Column"
-											>
-												{#each $regionActiveHeaders as header}
-													<option value={header}>{header}</option>
-												{/each}
-											</Select>
-											<Select
-												id="operator-select"
-												class="w-24 rounded border border-white py-1 text-xs"
-												bind:value={filter.selectedOperator}
-												placeholder="Select Operator"
-											>
-												{#each regionOperators as { value, name }}
-													<option {value}>{name}</option>
-												{/each}
-											</Select>
-											<Input
-												class="w-32 rounded bg-[#1f2937] py-1 text-xs"
-												type="text"
-												bind:value={filter.value}
-												placeholder="Value"
-												required
-												color="base"
-											/>
-											<Button
-												class="flex size-6 items-center gap-2 border-none text-xs"
-												on:click={() => removeRegionFilter(index)}
-												size="xs"
-												color="light"
-											>
-												<CloseOutline />
-											</Button>
-										</div>
-									{/each}
-								{:else}
-									<h2 class="text-sm">No Filters applied to the table.</h2>
-								{/if}
-								<hr class="my-2" />
-								<div class="flex items-center justify-between py-1">
-									<button
-										on:click={addRegionFilter}
-										class="flex items-center gap-2 text-xs text-white"
-									>
-										<PlusOutline class="size-4" />Add filter
-									</button>
-									<div class="flex items-center gap-2">
-										<button
-											on:click={clearRegionFilters}
-											class="{$regionFilters.length > 0 ? 'block' : 'hidden'} text-xs text-red-400"
-										>
-											Clear filter
-										</button>
-										<button
-											on:click={() => {
-												applyRegionFilters();
-												$showRegionFilter = false;
-											}}
-											class="flex items-center gap-2 text-xs text-white"
-										>
-											Apply filter
-										</button>
-									</div>
-								</div>
-							</div>
-						{/if}
-					</ButtonContainer> -->
-					<!-- <ButtonContainer>
-						<Button
-							class="flex items-center gap-2 border-none text-xs"
-							on:click={() => ($showRegionSorting = !$showRegionSorting)}
-							color={$regionSortCriteria.length > 0 ? 'green' : 'light'}
-							size="xs"
-						>
-							<SortOutline /> Sort
-						</Button>
-						{#if $showRegionSorting}
-							<div
-								transition:slide={{ axis: 'y', duration: 600 }}
-								class="absolute top-12 z-20 w-[400px] rounded border border-white bg-gray-800 px-2 py-1"
-							>
-								{#if $regionSortCriteria.length > 0}
-									{#each $regionSortCriteria as criteria, index}
-										<div class="flex items-center gap-2 py-1">
-											<Select
-												class="w-32 rounded border border-white py-1 text-xs"
-												bind:value={criteria.column}
-												placeholder="Select Column"
-											>
-												{#each $regionActiveHeaders as header}
-													<option value={header}>{header}</option>
-												{/each}
-											</Select>
-											<div class="flex items-center">
-												<Toggle color="green" bind:checked={criteria.ascending} class="mr-2" />
-												<span class="text-xs text-white">
-													{criteria.ascending ? 'Ascending' : 'Descending'}
-												</span>
-											</div>
-											<Button
-												class="flex size-6 items-center justify-center border-none text-xs"
-												on:click={() => removeRegionSortCriteria(index)}
-												size="xs"
-												color="light"
-											>
-												<CloseOutline />
-											</Button>
-										</div>
-									{/each}
-								{:else}
-									<h2 class="text-sm">No sorting criteria applied to the table.</h2>
-								{/if}
-								<hr class="my-2" />
-								<div class="flex items-center justify-between py-1">
-									<button
-										on:click={addRegionSortCriteria}
-										class="flex items-center gap-2 text-xs text-white"
-									>
-										<PlusOutline class="size-4" />Pick a column to sort by
-									</button>
-									<div class="flex items-center gap-2">
-										<button
-											on:click={clearRegionSort}
-											class="text-xs text-red-400 {$regionSortCriteria.length > 0
-												? 'block'
-												: 'hidden'}"
-										>
-											Clear sort
-										</button>
-										<button
-											on:click={() => {
-												applyRegionSorting();
-												$showRegionSorting = false;
-											}}
-											class="text-xs text-white"
-										>
-											Apply sort
-										</button>
-									</div>
-								</div>
-							</div>
-						{/if}
-					</ButtonContainer> -->
-				{:else}
-					<!-- <ButtonContainer>
-						<Button
-							class="flex items-center gap-2 border-none text-xs"
-							on:click={() => ($showTaskFilter = !$showTaskFilter)}
-							color={$taskFilters.length > 0 ? 'green' : 'light'}
-							size="xs"
-						>
-							<FilterOutline /> Filter
-						</Button>
-						{#if $showTaskFilter}
-							<div
-								transition:slide={{ axis: 'y', duration: 600 }}
-								class="absolute top-12 z-20 w-[500px] rounded border border-white bg-gray-800 px-2 py-1"
-							>
-								{#if $taskFilters.length > 0}
-									{#each $taskFilters as filter, index}
-										<div class="flex items-center gap-2 py-1">
-											<Select
-												id="header-select"
-												class="w-32 rounded border border-white py-1 text-xs"
-												bind:value={filter.selectedHeader}
-												placeholder="Select Column"
-											>
-												{#each $taskActiveHeaders as header}
-													<option value={header}>{header}</option>
-												{/each}
-											</Select>
-											<Select
-												id="operator-select"
-												class="w-24 rounded border border-white py-1 text-xs"
-												bind:value={filter.selectedOperator}
-												placeholder="Select Operator"
-											>
-												{#each taskOperators as { value, name }}
-													<option {value}>{name}</option>
-												{/each}
-											</Select>
-											<Input
-												class="w-32 rounded bg-[#1f2937] py-1 text-xs"
-												type="text"
-												bind:value={filter.value}
-												placeholder="Value"
-												required
-												color="base"
-											/>
-											<Button
-												class="flex size-6 items-center gap-2 border-none text-xs"
-												on:click={() => removeTaskFilter(index)}
-												size="xs"
-												color="light"
-											>
-												<CloseOutline />
-											</Button>
-										</div>
-									{/each}
-								{:else}
-									<h2 class="text-sm">No Filters applied to the table.</h2>
-								{/if}
-								<hr class="my-2" />
-								<div class="flex items-center justify-between py-1">
-									<button
-										on:click={addTaskFilter}
-										class="flex items-center gap-2 text-xs text-white"
-									>
-										<PlusOutline class="size-4" />Add filter
-									</button>
-									<div class="flex items-center gap-2">
-										<button
-											on:click={clearTaskFilters}
-											class="{$taskFilters.length > 0 ? 'block' : 'hidden'} text-xs text-red-400"
-										>
-											Clear filter
-										</button>
-										<button
-											on:click={() => {
-												applyTaskFilters();
-												$showTaskFilter = false;
-											}}
-											class="flex items-center gap-2 text-xs text-white"
-										>
-											Apply filter
-										</button>
-									</div>
-								</div>
-							</div>
-						{/if}
-					</ButtonContainer> -->
-					<!-- <ButtonContainer>
-						<Button
-							class="flex items-center gap-2 border-none text-xs"
-							on:click={() => ($showTaskSorting = !$showTaskSorting)}
-							color={$taskSortCriteria.length > 0 ? 'green' : 'light'}
-							size="xs"
-						>
-							<SortOutline /> Sort
-						</Button>
-						{#if $showTaskSorting}
-							<div
-								transition:slide={{ axis: 'y', duration: 600 }}
-								class="absolute top-12 z-20 w-[400px] rounded border border-white bg-gray-800 px-2 py-1"
-							>
-								{#if $taskSortCriteria.length > 0}
-									{#each $taskSortCriteria as criteria, index}
-										<div class="flex items-center gap-2 py-1">
-											<Select
-												class="w-32 rounded border border-white py-1 text-xs"
-												bind:value={criteria.column}
-												placeholder="Select Column"
-											>
-												{#each $taskActiveHeaders as header}
-													<option value={header}>{header}</option>
-												{/each}
-											</Select>
-											<div class="flex items-center">
-												<Toggle color="green" bind:checked={criteria.ascending} class="mr-2" />
-												<span class="text-xs text-white">
-													{criteria.ascending ? 'Ascending' : 'Descending'}
-												</span>
-											</div>
-											<Button
-												class="flex size-6 items-center justify-center border-none text-xs"
-												on:click={() => removeTaskSortCriteria(index)}
-												size="xs"
-												color="light"
-											>
-												<CloseOutline />
-											</Button>
-										</div>
-									{/each}
-								{:else}
-									<h2 class="text-sm">No sorting criteria applied to the table.</h2>
-								{/if}
-								<hr class="my-2" />
-								<div class="flex items-center justify-between py-1">
-									<button
-										on:click={addTaskSortCriteria}
-										class="flex items-center gap-2 text-xs text-white"
-									>
-										<PlusOutline class="size-4" />Pick a column to sort by
-									</button>
-									<div class="flex items-center gap-2">
-										<button
-											on:click={clearTaskSort}
-											class="text-xs text-red-400 {$taskSortCriteria.length > 0
-												? 'block'
-												: 'hidden'}"
-										>
-											Clear sort
-										</button>
-										<button
-											on:click={() => {
-												applyTaskSorting();
-												$showTaskSorting = false;
-											}}
-											class="text-xs text-white"
-										>
-											Apply sort
-										</button>
-									</div>
-								</div>
-							</div>
-						{/if}
-					</ButtonContainer> -->
 				{/if}
 				<!-- EXPANDER -->
 				<div class="flex-1"></div>
@@ -891,7 +534,7 @@
 						placeholder=""
 					>
 						<option value="users">User Task Summary</option>
-						<option value="tasks">Task Report</option>
+						<option value="tasks">Task Summary</option>
 						<option value="regions">Regions Summary</option>
 					</Select>
 				</div>
@@ -909,13 +552,13 @@
 					</Button>
 					<Button
 						class="flex items-center gap-2 text-xs"
-						color="green"
+						color="red"
 						size="xs"
 						on:click={generatePDF}><FilePdfOutline /> Download PDF</Button
 					>
 					<Button
 						class="flex items-center gap-2 text-xs"
-						color="red"
+						color="green"
 						size="xs"
 						on:click={generateExcel}><TableColumnOutline /> Download Excel</Button
 					>
@@ -931,48 +574,6 @@
 			{:else if selectedTable === 'tasks'}
 				<TaskTable />
 			{:else if selectedTable === 'users'}
-				<!-- <Table hoverable={true}>
-					<TableHead class="border-b border-gray-300 bg-gray-50 dark:border-gray-700">
-						{#each userActiveHeaders as header}
-							<TableHeadCell
-								class="whitespace-nowrap px-6 py-3 text-center font-medium text-gray-700 dark:text-gray-300"
-							>
-								{header}
-							</TableHeadCell>
-						{/each}
-					</TableHead>
-					<TableBody>
-						{#each inspectors as inspector}
-							<TableBodyRow
-								on:click={() => handleRowClick(inspector.id)}
-								class="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-							>
-								{#each userActiveHeaders as header}
-									<TableBodyCell class="px-6 py-4 text-center">
-										{#if header === 'Online'}
-											<span class="flex items-center justify-center">
-												<span
-													class={`h-3 w-3 rounded-full ${
-														inspector.online ? 'bg-green-500' : 'bg-gray-500'
-													} mr-2`}
-												></span>
-												<span
-													class={`text-sm font-semibold ${
-														inspector.online ? 'text-green-600' : 'text-gray-500'
-													}`}
-												>
-													{inspector.online ? 'Online' : 'Offline'}
-												</span>
-											</span>
-										{:else}
-											{mapInspectorData(inspector, userActiveHeaders)[header]}
-										{/if}
-									</TableBodyCell>
-								{/each}
-							</TableBodyRow>
-						{/each}
-					</TableBody>
-				</Table> -->
 				<Table hoverable={true}>
 					<TableHead class="border-b border-gray-300 bg-gray-50 dark:border-gray-700">
 						{#each userActiveHeaders as header}
@@ -1093,9 +694,3 @@
 		</div>
 	</div>
 </Modal>
-
-<!-- <style>
-	main {
-		padding: 16px;
-	}
-</style> -->

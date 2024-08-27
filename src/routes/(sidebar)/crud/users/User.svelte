@@ -316,7 +316,7 @@
 						<Input
 							name="inspector_name"
 							class="border outline-none"
-							placeholder="e.g. Bonnie Green"
+							placeholder="e.g. Agent Name"
 							value={current_user?.inspector_name}
 							required
 						/>
@@ -327,7 +327,7 @@
 							name="email"
 							type="email"
 							class="border outline-none"
-							placeholder="e.g. bonnie@flowbite.com"
+							placeholder="e.g. agent@email.com"
 							value={current_user?.email}
 							required
 						/>

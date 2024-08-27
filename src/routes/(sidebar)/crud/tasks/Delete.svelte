@@ -5,7 +5,7 @@
 	export let deleteTask:any = null;
 </script>
 
-<Heading tag="h5" class="mb-6 text-sm font-semibold uppercase">Delete item</Heading>
+<Heading tag="h5" class="mb-6 text-sm font-semibold uppercase">Delete</Heading>
 <CloseButton
 	on:click={() => (hidden = true)}
 	class="absolute right-2.5 top-2.5 text-gray-400 hover:text-black dark:text-white"

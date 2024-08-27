@@ -256,6 +256,10 @@
 			</div>
 		{:else if paginatedUsers.length === 0}
 			<p class="text-gray-700 dark:text-gray-300">
+				<!-- 
+					Add Design Illustration here
+				-->
+
 				No users found. Add some users to see them here.
 			</p>
 		{:else}

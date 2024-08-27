@@ -96,18 +96,22 @@
 
 	let selectedTasks: any[] = [];
 
-	let isNational  = false;
+	let isNational = false;
 
 	let isScanning = false;
 
-	let currentlySyncing:any = null;
+	let currentlySyncing: any = null;
 
 	$: ({ supabase } = data);
 
 	onMount(async () => {
 		current_user = (await supabase.auth.getUser()).data.user;
-		const {data: user, error}= await supabase.from('users').select('role').eq('id', current_user.id).single();
-		isNational = user?.role == 'National_Admin'
+		const { data: user, error } = await supabase
+			.from('users')
+			.select('role')
+			.eq('id', current_user.id)
+			.single();
+		isNational = user?.role == 'National_Admin';
 		await fetchUsers();
 		await fetchTasks();
 	});
@@ -517,9 +521,9 @@
 		return doc.output('datauristring');
 	};
 
-	let scannedFiles:any = {};
+	let scannedFiles: any = {};
 
-	async function scanFTP(){
+	async function scanFTP() {
 		isScanning = true;
 		try {
 			const directory = '/Work';
@@ -547,9 +551,10 @@
 					// Check if the file is a CSV
 					console.log(`Processing file: ${file.name}`);
 					scannedFiles[file.name] = {
-						rows : [],
-						synced : [],
-						scanning:true}
+						rows: [],
+						synced: [],
+						scanning: true
+					};
 					const fetched_file = await fetch('/api/get-file', {
 						method: 'POST',
 						headers: {
@@ -571,12 +576,10 @@
 						header: true,
 						skipEmptyLines: true
 					});
-					scannedFiles[file.name]['length'] = (parsedData.data as any[]).length
-
+					scannedFiles[file.name]['length'] = (parsedData.data as any[]).length;
 
 					// Iterate over each row in the CSV file
 					for (const row of parsedData.data as any[]) {
-
 						const ppirInsuranceId = row['ppir_insuranceid']; // Replace with your actual column name
 
 						// Check if the row already exists in the ppir_forms table
@@ -592,18 +595,21 @@
 								selectError
 							);
 							showToast('System Error: Error checking existence of ppir_form', 'error');
-							scannedFiles[file.name]['rows'] = [row,...scannedFiles[file.name]['rows'] ?? [] ]
+							scannedFiles[file.name]['rows'] = [row, ...(scannedFiles[file.name]['rows'] ?? [])];
 							continue; // Skip to the next row if there's an error
 						}
 
 						if (existingRow) {
-							scannedFiles[file.name]['synced'] = [row,...scannedFiles[file.name]['synced'] ?? [] ]
-						}else{
-							scannedFiles[file.name]['rows'] = [row,...scannedFiles[file.name]['rows'] ?? [] ]
+							scannedFiles[file.name]['synced'] = [
+								row,
+								...(scannedFiles[file.name]['synced'] ?? [])
+							];
+						} else {
+							scannedFiles[file.name]['rows'] = [row, ...(scannedFiles[file.name]['rows'] ?? [])];
 						}
 					}
 
-					scannedFiles[file.name]['scanning']  = false;
+					scannedFiles[file.name]['scanning'] = false;
 				}
 			}
 		} catch (error) {
@@ -619,7 +625,6 @@
 	async function syncWithFTP() {
 		isSyncing = true;
 		try {
-			
 			// Iterate over each file
 			for (const file of Object.keys(scannedFiles)) {
 				if (file.endsWith('.csv')) {
@@ -640,7 +645,7 @@
 					if (existingFile) {
 						// If the file already exists, skip processingconsole.log(`File ${fileName} already exists in the database. Skipping file.`);
 						fileReadId = existingFile.id;
-					}else{
+					} else {
 						// store file to table
 						const { data: fileReadData, error: fileReadError } = await supabase
 							.from('file_read')
@@ -653,9 +658,8 @@
 							continue; // Skip to the next file if there's an error
 						}
 
-						fileReadId = fileReadData.id
+						fileReadId = fileReadData.id;
 					}
-					
 
 					// Get the ID of the inserted file// Download the CSV fileconst csvData = await sftp.get(`/path/to/your/directory/${file.name}`);
 					// const fileReadId = '1';
@@ -721,9 +725,9 @@
 								.from('tasks')
 								.insert([
 									{
-										task_number: `Task-${row['ppir_assignmentid']}` , // Replace with your specific task table column namesservice_group: row['Service Group'],
+										task_number: `Task-${row['ppir_assignmentid']}`, // Replace with your specific task table column namesservice_group: row['Service Group'],
 										service_type: row['Service Type'],
-										service_group: row['Service Group'].replace('0','O'),
+										service_group: row['Service Group'].replace('0', 'O'),
 										priority: row['Priority'],
 										assignee: assigneeId, // Store the assignee user ID
 										file_id: fileReadId
@@ -732,7 +736,6 @@
 								.select('id')
 								.single();
 							if (taskError) {
-								
 								console.error(`Error inserting data into tasks for ${ppirInsuranceId}:`, taskError);
 								showToast(`Error inserting data into tasks for ${ppirInsuranceId}:`, 'error');
 								continue;
@@ -797,8 +800,10 @@
 								`Data for ${ppirInsuranceId} successfully inserted into both ppir_forms and tasks.`,
 								'success'
 							);
-							scannedFiles[file].rows = scannedFiles[file].rows.filter((_row:any)=> _row.ppir_insuranceid != row.ppir_insuranceid)
-							scannedFiles[file].synced = [...scannedFiles[file].synced, row]
+							scannedFiles[file].rows = scannedFiles[file].rows.filter(
+								(_row: any) => _row.ppir_insuranceid != row.ppir_insuranceid
+							);
+							scannedFiles[file].synced = [...scannedFiles[file].synced, row];
 						} else {
 							console.log(
 								`Row with ppir_insuranceid ${ppirInsuranceId} already exists in ppir_forms. Skipping insertion.`
@@ -807,9 +812,12 @@
 					}
 				}
 			}
-			if(Object.keys(scannedFiles).find((file)=> scannedFiles[file].rows.length > 0) != null){
-				showToast('Some files were not able to sync properly, please contact the developers', 'error');
-			}else{
+			if (Object.keys(scannedFiles).find((file) => scannedFiles[file].rows.length > 0) != null) {
+				showToast(
+					'Some files were not able to sync properly, please contact the developers',
+					'error'
+				);
+			} else {
 				showToast('Sync completed successfully!', 'success');
 			}
 		} catch (error) {
@@ -964,9 +972,9 @@
 								.from('tasks')
 								.insert([
 									{
-										task_number: row['Task Number'] ?? `Task-${row['ppir_assignmentid']}` , // Replace with your specific task table column namesservice_group: row['Service Group'],
+										task_number: row['Task Number'] ?? `Task-${row['ppir_assignmentid']}`, // Replace with your specific task table column namesservice_group: row['Service Group'],
 										service_type: row['Service Type'],
-										service_group: row['Service Group'].replace('0','O'),
+										service_group: row['Service Group'].replace('0', 'O'),
 										priority: row['Priority'],
 										assignee: assigneeId, // Store the assignee user ID
 										file_id: fileReadId
@@ -975,14 +983,14 @@
 								.select('id')
 								.single();
 							if (taskError) {
-								console.log('INSERT THIS',{
-										task_number: row['Task Number'], // Replace with your specific task table column namesservice_group: row['Service Group'],
-										service_type: row['Service Type'],
-										service_group: row['Service Group'].replace('0','O'),
-										priority: row['Priority'],
-										assignee: assigneeId, // Store the assignee user ID
-										file_id: fileReadId
-									});
+								console.log('INSERT THIS', {
+									task_number: row['Task Number'], // Replace with your specific task table column namesservice_group: row['Service Group'],
+									service_type: row['Service Type'],
+									service_group: row['Service Group'].replace('0', 'O'),
+									priority: row['Priority'],
+									assignee: assigneeId, // Store the assignee user ID
+									file_id: fileReadId
+								});
 								console.error(`Error inserting data into tasks for ${ppirInsuranceId}:`, taskError);
 								showToast(`Error inserting data into tasks for ${ppirInsuranceId}:`, 'error');
 								continue;
@@ -1055,7 +1063,6 @@
 					}
 				}
 			}
-			
 		} catch (error) {
 			// Type assertion
 			const message = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -1126,22 +1133,22 @@
 
 			<!-- Right-Aligned Buttons -->
 			<div slot="end" class="flex items-center justify-center space-x-2">
-			{#if isNational}
-				<Button
-					class="whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
-					on:click={()=>{
-						modalType = 'sync';
-						open = true;
-					}}
-					disabled={isSyncing}
-				>
-					{#if isSyncing}
-						<span class="loader"></span>
-					{:else}
-						<ArrowsRepeatOutline size="sm" /> Sync
-					{/if}
-				</Button>
-			{/if}
+				{#if isNational}
+					<Button
+						class="whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+						on:click={() => {
+							modalType = 'sync';
+							open = true;
+						}}
+						disabled={isSyncing}
+					>
+						{#if isSyncing}
+							<span class="loader"></span>
+						{:else}
+							<ArrowsRepeatOutline size="sm" /> Sync
+						{/if}
+					</Button>
+				{/if}
 				<Button
 					class="whitespace-nowrap rounded-md bg-gray-200 px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:focus:ring-indigo-400"
 					on:click={async () => {
@@ -1170,7 +1177,7 @@
 						toggle(Task);
 					}}
 				>
-					Add New Task
+					Add Task
 				</Button>
 			</div>
 		</Toolbar>
@@ -1326,7 +1333,7 @@
 											toggle(Delete);
 										}}
 									>
-										<TrashBinSolid size="sm" /> Delete item
+										<TrashBinSolid size="sm" /> Delete
 									</Button>
 								</TableBodyCell>
 							</TableBodyRow>
@@ -1364,9 +1371,11 @@
 	/>
 </Drawer>
 
-<Modal bind:open size="{modalType == 'sync' ? 'md' : 'sm'}">
+<Modal bind:open size={modalType == 'sync' ? 'md' : 'sm'}>
 	{#if modalType == 'sync'}
-		<div class='mx-auto mb-4 mt-8 h-14 w-14 rounded-full bg-green-500 flex justify-center items-center'>
+		<div
+			class="mx-auto mb-4 mt-8 flex h-14 w-14 items-center justify-center rounded-full bg-green-500"
+		>
 			<ArrowsRepeatOutline class="  h-10 w-10 text-white" />
 		</div>
 		{#if isScanning}
@@ -1383,73 +1392,66 @@
 			</h3>
 		{/if}
 
-		<div class='w-full p-4 rounded-xl bg-black/10 flex-col flex items-center gap-2 h-96 overflow-y-scroll'>
-			{#each Object.keys(scannedFiles) as file }
-				<div class='{scannedFiles[file].scanning || currentlySyncing == file ? 'dark:bg-gray-400/10 bg-gray-600 ': 'dark:bg-black/10 bg-gray-800'} cursor-pointer dark:hover:bg-gray-400/10 rounded hover:bg-gray-600  w-full flex items-center justify-center overflow-hidden flex-col px-4 min-h-16'>
-					<div class='text-white'>
+		<div
+			class="flex h-96 w-full flex-col items-center gap-2 overflow-y-scroll rounded-xl bg-black/10 p-4"
+		>
+			{#each Object.keys(scannedFiles) as file}
+				<div
+					class="{scannedFiles[file].scanning || currentlySyncing == file
+						? 'bg-gray-600 dark:bg-gray-400/10 '
+						: 'bg-gray-800 dark:bg-black/10'} flex min-h-16 w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded px-4 hover:bg-gray-600 dark:hover:bg-gray-400/10"
+				>
+					<div class="text-white">
 						{file}
 					</div>
 					{#if scannedFiles[file].scanning}
-						<div class=' text-sm text-gray-400'>
-							Scanning
-						</div>
+						<div class=" text-sm text-gray-400">Scanning</div>
 					{:else if scannedFiles[file].rows.length > 0}
-						<div class='text-sm text-orange-400'>
+						<div class="text-sm text-orange-400">
 							{scannedFiles[file].synced.length} / {scannedFiles[file].length} synced
 						</div>
 					{:else if currentlySyncing == file}
-						<div class=' text-sm text-green-500'>
-							Syncing...
-						</div>
+						<div class=" text-sm text-green-500">Syncing...</div>
 					{:else}
-						<div class=' text-sm text-green-500'>
-							Synced
-						</div>
+						<div class=" text-sm text-green-500">Synced</div>
 					{/if}
 				</div>
 			{/each}
 
 			{#if isScanning}
 				<div>
-					<span class="loader"></span> 
-					<span class='mt-2 text-sm text-gray-40'>
-						{Object.keys(scannedFiles).find((file)=> scannedFiles[file].scanning) == null
-							 ? 'Please wait ...'
-							: 'Scanning a file ...'
-						}
+					<span class="loader"></span>
+					<span class="text-gray-40 mt-2 text-sm">
+						{Object.keys(scannedFiles).find((file) => scannedFiles[file].scanning) == null
+							? 'Please wait ...'
+							: 'Scanning a file ...'}
 					</span>
 				</div>
 			{:else if isSyncing}
 				<div>
-					<span class="loader"></span> 
-					<span class='mt-2 text-sm text-gray-40'>
-						{currentlySyncing == null
-							 ? 'Please wait ...'
-							: 'Syncing a file ...'
-						}
+					<span class="loader"></span>
+					<span class="text-gray-40 mt-2 text-sm">
+						{currentlySyncing == null ? 'Please wait ...' : 'Syncing a file ...'}
 					</span>
 				</div>
-			{:else}
-				{#if Object.keys(scannedFiles).length <= 0}
-					<div class='w-full h-full flex justify-center items-center'>
-						No files listed, press 'Scan FTP Server' to scan for files.
-					</div>
-				{/if}
+			{:else if Object.keys(scannedFiles).length <= 0}
+				<div class="flex h-full w-full items-center justify-center">
+					No files listed, press 'Scan FTP Server' to scan for files.
+				</div>
 			{/if}
-
 		</div>
 
 		<div class="flex items-center justify-center">
 			<Button
 				color="red"
 				class="mr-2"
-				disabled = {isScanning ||isSyncing}
+				disabled={isScanning || isSyncing}
 				on:click={async () => {
 					await syncWithFTP();
 				}}
-				>
+			>
 				{#if isSyncing}
-				<span class="loader mr-2"></span> Sync to Database
+					<span class="loader mr-2"></span> Sync to Database
 				{:else}
 					Sync to Database
 				{/if}
@@ -1457,13 +1459,13 @@
 			<Button
 				color="red"
 				class="mr-2"
-				disabled = {isScanning ||isSyncing}
+				disabled={isScanning || isSyncing}
 				on:click={async () => {
 					await scanFTP();
 				}}
-				>
+			>
 				{#if isScanning}
-						<span class="loader mr-2"></span> Scan FTP Server
+					<span class="loader mr-2"></span> Scan FTP Server
 				{:else}
 					Scan FTP Server
 				{/if}

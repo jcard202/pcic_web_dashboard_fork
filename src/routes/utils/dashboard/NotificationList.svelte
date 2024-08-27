@@ -26,7 +26,7 @@
 			when="a few moments ago"
 			color="purple"
 		>
-			New message from <span class="font-semibold text-gray-900 dark:text-white">Bonnie Green</span>
+			New message from <span class="font-semibold text-gray-900 dark:text-white">Agent Name</span>
 			: "Hey, what's up? All set for the presentation?"
 		</Notification>
 		<Notification
