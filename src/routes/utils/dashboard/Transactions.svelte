@@ -79,6 +79,8 @@
 	let inspectors: any[] = [];
 	let isLoading = true;
 	let dataError: string | null = null;
+	let showPagination = true;
+
 
 	// Dropdown states
 	let selectedMonth = new Date().getMonth();
@@ -225,6 +227,8 @@
 	function handleRowClick(userId: string) {
 		selectedUserId = userId;
 		showActivity = true;
+		showPagination = false;
+
 	}
 
 	function goBack() {
@@ -358,75 +362,162 @@
 		return mappedData;
 	};
 
-	const generatePDF = () => {
-		const doc = new jsPDF({
-			orientation: 'landscape',
-			unit: 'pt',
-			format: 'A4'
-		});
+	// const generatePDF = () => {
+	// 	const doc = new jsPDF({
+	// 		orientation: 'landscape',
+	// 		unit: 'pt',
+	// 		format: 'A4'
+	// 	});
 
-		const headers = userActiveHeaders;
-		const body = inspectors.map((inspector) =>
-			headers.map((header) => mapInspectorData(inspector, headers)[header])
-		);
+	// 	const headers = userActiveHeaders;
+	// 	const body = inspectors.map((inspector) =>
+	// 		headers.map((header) => mapInspectorData(inspector, headers)[header])
+	// 	);
 
-		doc.setFontSize(18);
-		doc.text('Inspectors Weekly Tasks', doc.internal.pageSize.width / 2, 25, {
-			align: 'center'
-		});
+	// 	doc.setFontSize(18);
+	// 	doc.text('Inspectors Weekly Tasks', doc.internal.pageSize.width / 2, 25, {
+	// 		align: 'center'
+	// 	});
 
-		autoTable(doc, {
-			head: [headers],
-			body,
-			startY: 45,
-			theme: 'grid',
-			headStyles: {
-				fillColor: [41, 128, 185],
-				textColor: [255, 255, 255],
-				fontSize: 10,
-				halign: 'center'
-			},
-			bodyStyles: {
-				fontSize: 8,
-				halign: 'center'
-			},
-			columnStyles: {
-				0: { cellWidth: 'auto' },
-				1: { cellWidth: 'auto' }
-			},
-			styles: {
-				overflow: 'linebreak',
-				cellWidth: 'wrap'
-			},
-			margin: { top: 20 },
-			didParseCell: function (data) {
-				if (data.section === 'body' && data.column.index === 1) {
-					data.cell.styles.cellWidth = 'auto';
-				}
-			},
-			tableWidth: 'auto'
-		});
+	// 	autoTable(doc, {
+	// 		head: [headers],
+	// 		body,
+	// 		startY: 45,
+	// 		theme: 'grid',
+	// 		headStyles: {
+	// 			fillColor: [41, 128, 185],
+	// 			textColor: [255, 255, 255],
+	// 			fontSize: 10,
+	// 			halign: 'center'
+	// 		},
+	// 		bodyStyles: {
+	// 			fontSize: 8,
+	// 			halign: 'center'
+	// 		},
+	// 		columnStyles: {
+	// 			0: { cellWidth: 'auto' },
+	// 			1: { cellWidth: 'auto' }
+	// 		},
+	// 		styles: {
+	// 			overflow: 'linebreak',
+	// 			cellWidth: 'wrap'
+	// 		},
+	// 		margin: { top: 20 },
+	// 		didParseCell: function (data) {
+	// 			if (data.section === 'body' && data.column.index === 1) {
+	// 				data.cell.styles.cellWidth = 'auto';
+	// 			}
+	// 		},
+	// 		tableWidth: 'auto'
+	// 	});
 
-		doc.save('inspectors_report.pdf');
-	};
+	// 	doc.save('inspectors_report.pdf');
+	// };
 
-	const generateExcel = () => {
-		const headers = userActiveHeaders;
-		const body = inspectors.map((inspector) => mapInspectorData(inspector, headers));
+	// const generateExcel = () => {
+	// 	const headers = userActiveHeaders;
+	// 	const body = inspectors.map((inspector) => mapInspectorData(inspector, headers));
 
-		// Create worksheet
-		const worksheet = XLSX.utils.json_to_sheet(body, { header: headers });
-		// Adjust column widths
-		const columnWidths = headers.map((header) => ({ wch: Math.max(header.length, 15) }));
-		worksheet['!cols'] = columnWidths;
+	// 	// Create worksheet
+	// 	const worksheet = XLSX.utils.json_to_sheet(body, { header: headers });
+	// 	// Adjust column widths
+	// 	const columnWidths = headers.map((header) => ({ wch: Math.max(header.length, 15) }));
+	// 	worksheet['!cols'] = columnWidths;
 
-		// Create workbook and append the worksheet
-		const workbook = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(workbook, worksheet, 'Inspectors Weekly Tasks');
+	// 	// Create workbook and append the worksheet
+	// 	const workbook = XLSX.utils.book_new();
+	// 	XLSX.utils.book_append_sheet(workbook, worksheet, 'Inspectors Weekly Tasks');
 
-		// Write the workbook to a file
-		XLSX.writeFile(workbook, 'inspectors_report.xlsx');
-	};
+	// 	// Write the workbook to a file
+	// 	XLSX.writeFile(workbook, 'inspectors_report.xlsx');
+	// };
+
+	function getTodayDate() {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+
+  const generatePDF = () => {
+    if (!isDaySelected) {
+      return;
+    }
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'A4'
+    });
+
+    const headers = userActiveHeaders;
+    const body = inspectors.map((inspector) =>
+      headers.map((header) => mapInspectorData(inspector, headers)[header])
+    );
+
+    doc.setFontSize(18);
+    doc.text('Inspectors Weekly Tasks', doc.internal.pageSize.width / 2, 25, {
+      align: 'center'
+    });
+
+    autoTable(doc, {
+      head: [headers],
+      body,
+      startY: 45,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: [255, 255, 255],
+        fontSize: 10,
+        halign: 'center'
+      },
+      bodyStyles: {
+        fontSize: 8,
+        halign: 'center'
+      },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { cellWidth: 'auto' }
+      },
+      styles: {
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
+      },
+      margin: { top: 20 },
+      didParseCell: function (data) {
+        if (data.section === 'body' && data.column.index === 1) {
+          data.cell.styles.cellWidth = 'auto';
+        }
+      },
+      tableWidth: 'auto'
+    });
+
+    const dayToday = getTodayDate();
+    doc.save(`inspectors_report_${dayToday}.pdf`);
+  };
+
+  const generateExcel = () => {
+    if (!isDaySelected) {
+      return;
+    }
+
+    const headers = userActiveHeaders;
+    const body = inspectors.map((inspector) => mapInspectorData(inspector, headers));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(body, { header: headers });
+
+    // Adjust column widths
+    const columnWidths = headers.map((header) => ({ wch: Math.max(header.length, 15) }));
+    worksheet['!cols'] = columnWidths;
+
+    // Create workbook and append the worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Inspectors Weekly Tasks');
+
+    // Write the workbook to a file
+    const dayToday = getTodayDate();
+    XLSX.writeFile(workbook, `inspectors_report_${dayToday}.xlsx`);
+  };
 
 	onMount(() => {
 		updateWeekOptions();
@@ -592,14 +683,15 @@
 						class="flex items-center gap-2 text-xs"
 						color="red"
 						size="xs"
-						on:click={generatePDF}><FilePdfOutline /> Download PDF</Button
+						on:click={generatePDF} disabled={!isDaySelected} ><FilePdfOutline /> Download PDF</Button
 					>
 					<Button
 						class="flex items-center gap-2 text-xs"
 						color="green"
 						size="xs"
-						on:click={generateExcel}><TableColumnOutline /> Download Excel</Button
+						on:click={generateExcel} disabled={!isDaySelected} ><TableColumnOutline /> Download Excel</Button
 					>
+
 				</div>
 			{/if}
 
@@ -675,21 +767,21 @@
 		</div>
 	{/if}
 
-	{#if selectedTable === 'users'}
-		<div class="mx-4 mt-4 flex items-center justify-between">
-			<Button color="blue" on:click={handlePreviousPage} disabled={currentPage === 1}>
-				Previous
-			</Button>
-			<span>Page {currentPage} of {Math.ceil(inspectors.length / itemsPerPage)} </span>
-			<Button
-				color="blue"
-				on:click={handleNextPage}
-				disabled={currentPage * itemsPerPage >= inspectors.length}
-			>
-				Next
-			</Button>
-		</div>
-	{/if}
+	{#if selectedTable === 'users' && showPagination}
+	<div class="mx-4 mt-4 flex items-center justify-between">
+		<Button color="blue" on:click={handlePreviousPage} disabled={currentPage === 1}>
+			Previous
+		</Button>
+		<span>Page {currentPage} of {Math.ceil(inspectors.length / itemsPerPage)}</span>
+		<Button
+			color="blue"
+			on:click={handleNextPage}
+			disabled={currentPage * itemsPerPage >= inspectors.length}
+		>
+			Next
+		</Button>
+	</div>
+{/if}
 </main>
 
 <Modal bind:open={showColumnModal} size="lg" autoclose={false}>
