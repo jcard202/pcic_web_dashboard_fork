@@ -4,7 +4,6 @@
 	import Alert from '../../../utils/widgets/alert.svelte';
 
 	export let open: boolean = false;
-	export let current_user: any = null;
 	export let data: any;
 
 	$: ({ supabase } = data);
@@ -24,6 +23,7 @@
 	let photoFile: File | null = null;
 	let isAuthenticated = false;
 
+
 	const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 	const DEFAULT_PROFILE_PIC =
 		'https://htmlstream.com/preview/unify-v2.6/assets/img-temp/400x450/img5.jpg';
@@ -33,8 +33,22 @@
 	let alertType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
 	export let selectedRegionId: string | null;
+	export let current_user: any = null;
+  	let selectedRole = '';
+
+	  $: {
+    if (current_user) {
+      selectedRole = current_user.role;
+    } else {
+      selectedRole = '';
+    }
+  }
+
+  let loggedInUser: any = null;
+
 
 	onMount(async () => {
+	
 		const {
 			data: { user },
 			error
@@ -47,7 +61,42 @@
 		}
 		await fetchRegions();
 		isLoading = false;
+
+		if (user) {
+      isAuthenticated = true;
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+      } else {
+        loggedInUser = userData;
+      }
+    }
 	});
+
+	function getAllowedRoles() {
+    if (!loggedInUser) return [];
+    
+    switch (loggedInUser.role) {
+      case 'National_Admin':
+        return ['Agent', 'Regional_Admin', 'National_Admin'];
+      case 'Regional_Admin':
+        return ['Agent'];
+      default:
+        return [];
+    }
+  }
+
+  function handleRoleChange(event: { target: { value: string; }; }) {
+    selectedRole = event.target.value;
+    if (current_user) {
+      current_user.role = selectedRole;
+    }
+  }
 
 	async function fetchRegions() {
 		try {
@@ -297,7 +346,7 @@
 		}, 5000); // Hide alert after 5 seconds
 	}
 
-	function restrictToNumbers(event) {
+	function restrictToNumbers(event: { target: any; }) {
     const input = event.target;
     input.value = input.value.replace(/[^0-9]/g, '');
     
@@ -376,15 +425,22 @@
 						  maxlength="11"
 						/>
 					  </Label>
-					<Label class="col-span-6 space-y-2 sm:col-span-3">
+					  <Label class="col-span-6 space-y-2 sm:col-span-3">
 						<span>Role</span>
-						<Select name="role" class="mt-2" value={current_user?.role} required>
-							<option value="">Select a role</option>
-							{#each allowedRoles as role}
-								<option value={role}>{role}</option>
-							{/each}
+						<Select 
+						  name="role" 
+						  class="mt-2" 
+						  bind:value={selectedRole}
+						  on:change={handleRoleChange}
+						  required
+						  disabled={!getAllowedRoles().length}
+						>
+						  <option value="">Select a role</option>
+						  {#each getAllowedRoles() as role}
+							<option value={role}>{role.replace('_', ' ')}</option>
+						  {/each}
 						</Select>
-					</Label>
+					  </Label>
 					<Label class="col-span-6 space-y-2">
 						<span>Region</span>
 						<Select name="region_id" class="mt-2" required bind:value={selectedRegionId}>
