@@ -505,7 +505,7 @@
 					<div class="flex items-center gap-6">
 						<div class="flex items-center">
 							<label for="monthSelect" class="mr-2 text-sm text-gray-700 dark:text-gray-300"
-								>Select Month:</label
+								>Month:</label
 							>
 							<select
 								id="monthSelect"
@@ -522,7 +522,7 @@
 						</div>
 						<div class="flex items-center">
 							<label for="daySelect" class="mr-2 text-sm text-gray-700 dark:text-gray-300"
-								>Select Day:</label
+								>Day:</label
 							>
 							<select
 								id="daySelect"
@@ -537,13 +537,13 @@
 						</div>
 						<div class="flex items-center">
 							<label for="weekSelect" class="mr-2 text-sm text-gray-700 dark:text-gray-300"
-								>Select Week:</label
+								>Week:</label
 							>
 							<select
 								id="weekSelect"
 								on:change={handleWeekChange}
 								bind:value={selectedWeek}
-								class="w-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-indigo-400"
+								class="w-28 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:focus:ring-indigo-400"
 							>
 								{#each weekOptions as week}
 									<option value={week} selected={week === selectedWeek}>Week {week}</option>
@@ -909,13 +909,13 @@
 					</Button>
 					<Button
 						class="flex items-center gap-2 text-xs"
-						color="green"
+						color="red"
 						size="xs"
 						on:click={generatePDF}><FilePdfOutline /> Download PDF</Button
 					>
 					<Button
 						class="flex items-center gap-2 text-xs"
-						color="red"
+						color="green"
 						size="xs"
 						on:click={generateExcel}><TableColumnOutline /> Download Excel</Button
 					>
