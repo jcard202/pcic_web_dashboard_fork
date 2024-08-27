@@ -296,6 +296,16 @@
 			showAlert = false;
 		}, 5000); // Hide alert after 5 seconds
 	}
+
+	function restrictToNumbers(event) {
+    const input = event.target;
+    input.value = input.value.replace(/[^0-9]/g, '');
+    
+    // Optionally, limit the length to 11 digits (adjust as needed)
+    if (input.value.length > 11) {
+      input.value = input.value.slice(0, 11);
+    }
+  }
 </script>
 
 <Modal bind:open title={current_user ? 'Edit user' : 'Add new user'} size="md" class="m-4">
@@ -354,14 +364,18 @@
 					<Label class="col-span-6 space-y-2 sm:col-span-3">
 						<span>Mobile Number</span>
 						<Input
-							name="mobile_number"
-							type="tel"
-							class="border outline-none"
-							placeholder="e.g. 09472728018"
-							value={current_user?.mobile_number}
-							required
+						  name="mobile_number"
+						  type="tel"
+						  class="border outline-none"
+						  placeholder="e.g. 09472728018"
+						  value={current_user?.mobile_number}
+						  required
+						  pattern="[0-9]*"
+						  inputmode="numeric"
+						  on:input={restrictToNumbers}
+						  maxlength="11"
 						/>
-					</Label>
+					  </Label>
 					<Label class="col-span-6 space-y-2 sm:col-span-3">
 						<span>Role</span>
 						<Select name="role" class="mt-2" value={current_user?.role} required>
