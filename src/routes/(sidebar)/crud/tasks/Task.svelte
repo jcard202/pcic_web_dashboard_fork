@@ -72,6 +72,21 @@
 		}
 	}
 
+	const getRegionFromPO = (index: number) => {
+		switch(index){
+			case 4:
+				return '04A';
+			case 5:
+				return '04B';
+			default:
+				if(index < 4){
+					return index;
+				}else{
+					return index-1;
+				}
+		}
+	}
+
 	const getTypeFromPO = (PO:string) =>{
 		switch(PO){
 			case 'PO4A':
@@ -119,13 +134,14 @@
 				<option value={null} selected>Select Type</option>
 				{#each Array.from({ length: 17 }, (_, i) => i) as num}
 					{#if service_group == getPOFromIndex(num+1)}
-						<option selected value="{getPOFromIndex(num+1)}">{getPOFromIndex(num+1)}</option>
+						<option selected value="{getPOFromIndex(num+1)}">Region {getRegionFromPO(num+1)}</option>
 					{:else}
-						<option value="{getPOFromIndex(num+1)}">{getPOFromIndex(num+1)}</option>
+						<option value="{getPOFromIndex(num+1)}">Region {getRegionFromPO(num+1)}</option>
 					{/if}
 				{/each}
 			</Select>
 		</Label>
+		
 
 		<Label class="space-y-2">
 			<span>Service Type</span>

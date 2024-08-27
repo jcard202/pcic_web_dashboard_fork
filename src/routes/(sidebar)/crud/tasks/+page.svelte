@@ -91,6 +91,26 @@
 		type: 'success'
 	};
 
+	const regionMapping = {
+    'PO1': 'Region 1',
+    'PO2': 'Region 2',
+    'PO3': 'Region 3',
+    'PO4A': 'Region 4A',
+    'PO4B': 'Region 4B',
+    'PO5': 'Region 5',
+    'PO6': 'Region 6',
+    'PO7': 'Region 7',
+    'PO8': 'Region 8',
+    'PO9': 'Region 9',
+    'PO10': 'Region 10',
+    'PO11': 'Region 11',
+    'PO12': 'Region 12',
+    'PO13': 'Region 13',
+    'P014': 'NCR',
+    'P015': 'CAR',
+    'P016': 'BARMM'
+  };
+
 	let maxPageItems = 10;
 	let currentPage = 1;
 
