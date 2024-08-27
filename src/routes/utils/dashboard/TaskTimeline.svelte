@@ -32,10 +32,7 @@
         .eq('user_id', userId)
         .order('timestamp', { ascending: false });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       if (!data || data.length === 0) {
         dataError = 'No timeline available for this user.';
@@ -51,18 +48,20 @@
   }
 
   function initializeMap() {
-    if (userLogs.length > 0) {
+    if (userLogs.length > 0 && userLogs[0].longlat) {
+      const [lat, lng] = userLogs[0].longlat.split(',').map(Number);
       map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/dark-v10',
-        center: [0, 0],
-        zoom: 2,
+        center: [lng, lat],
+        zoom: 12,
       });
+      updateMapLocation(userLogs[0].longlat);
     }
   }
 
-  function updateMapLocation(longlat: string) {
-    if (!map) return;
+  function updateMapLocation(longlat: string | null) {
+    if (!map || !longlat) return;
 
     const [lat, lng] = longlat.split(',').map(Number);
 
@@ -81,9 +80,9 @@
 
     map.flyTo({
       center: [lng, lat],
-      zoom: 17,
-      speed: 1.6,
-      curve: 1.2
+      zoom: 15,
+      speed: 1.2,
+      curve: 1.42
     });
   }
 
@@ -101,7 +100,7 @@
 </script>
 
 <div class="flex flex-col h-screen w-full bg-gray-900 text-white">
-  <div class="p-4 bg-gray-800">
+  <div class="p-4 bg-gray-800 flex justify-between items-center">
     <button
       class="flex items-center text-blue-400 hover:text-blue-300 transition-colors duration-300"
       on:click={goBack}
@@ -109,6 +108,7 @@
       <ArrowLeft size={24} class="mr-2" />
       Back to Users
     </button>
+    <h1 class="text-xl font-bold">User Timeline</h1>
   </div>
 
   {#if isLoading}
@@ -125,7 +125,7 @@
     </div>
   {:else}
     <div class="flex-grow flex overflow-hidden">
-      <div class="w-1/2 overflow-y-auto p-4">
+      <div class="w-1/2 overflow-y-auto p-4 custom-scrollbar">
         {#each userLogs as log}
           <div class="bg-gray-800 rounded-lg p-4 shadow mb-4 transition-all duration-300 hover:bg-gray-700">
             <div class="flex justify-between items-start mb-2">
@@ -139,17 +139,19 @@
                   hour12: true 
                 })}
               </span>
-              <button
-                class="p-2 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors duration-300"
-                on:click={() => log.longlat && updateMapLocation(log.longlat)}
-              >
-                <User size={16} />
-              </button>
+              {#if log.longlat}
+                <button
+                  class="p-2 bg-blue-600 rounded-full text-white hover:bg-blue-700 transition-colors duration-300"
+                  on:click={() => updateMapLocation(log.longlat)}
+                >
+                  <User size={16} />
+                </button>
+              {/if}
             </div>
             <h3 class="text-lg font-semibold mb-1">{log.activity}</h3>
             <p class="text-sm text-gray-400">{log.sync_status}</p>
             {#if log.longlat}
-              <p class="text-sm text-gray-400">Location: {log.longlat}</p>
+              <p class="text-sm text-gray-400 mt-1">Location: {log.longlat}</p>
             {/if}
           </div>
         {/each}
@@ -167,5 +169,23 @@
     overflow: hidden;
     background-color: #1a202c;
     color: white;
+  }
+  
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: #4a5568 #2d3748;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #2d3748;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #4a5568;
+    border-radius: 4px;
   }
 </style>
