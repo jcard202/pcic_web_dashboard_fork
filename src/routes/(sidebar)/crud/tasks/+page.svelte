@@ -1250,95 +1250,103 @@
 						{/each}
 					</TableHead>
 					<TableBody>
-						{#each filteredTasks.slice((currentPage - 1) * maxPageItems, (currentPage - 1) * maxPageItems + maxPageItems) as task}
+						{#if filteredTasks.length === 0}
+						  <tr>
+							<td colspan="9" class="text-center py-8">
+							  <p class="text-gray-500 dark:text-gray-400">No tasks available</p>
+							</td>
+						  </tr>
+						{:else}
+						  {#each filteredTasks.slice((currentPage - 1) * maxPageItems, (currentPage - 1) * maxPageItems + maxPageItems) as task}
 							<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
-								<TableBodyCell on:click={() => selectTasks(task)} class="w-4 p-4">
-									<Checkbox checked={selectedTasks.includes(task)} />
-								</TableBodyCell>
-								<TableBodyCell class="flex items-center space-x-6 whitespace-nowrap p-4">
-									<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-										{#if task.status == 'completed'}
-											<button
-												on:click={() => generateFormView(task, true)}
-												class="flex cursor-pointer text-base font-semibold text-gray-900 hover:!text-green-500 dark:text-white"
-											>
-												<PrinterSolid class="mr-2"></PrinterSolid>
-												{task.task_number == '' ? 'NOT SET' : task.task_number}
-											</button>
-										{:else}
-											<div class="flex text-base font-semibold text-gray-900 dark:text-white">
-												{task.task_number == '' ? 'NOT SET' : task.task_number}
-											</div>
-										{/if}
-										<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-											{task.task_type ?? 'ppir'}
-										</div>
-									</div>
-								</TableBodyCell>
-								<TableBodyCell class="p-4 text-center font-normal text-gray-500 dark:text-gray-400">
-									{task.service_group}
-								</TableBodyCell>
-								<TableBodyCell
-									class="max-w-sm overflow-hidden truncate p-4 text-center text-base font-normal text-gray-500 dark:text-gray-400 xl:max-w-xs"
-								>
-									{task.service_type}
-								</TableBodyCell>
-								<TableBodyCell class="p-4 text-center">
-									{task.attempt_count}
-								</TableBodyCell>
-								<TableBodyCell
-									class="p-4 font-normal {setPriorityColor(
-										task.priority
-									)} dark:bg-opacity-25 dark:bg-${setPriorityColor(task.priority)} text-center"
-								>
-									{task.priority.toUpperCase()}
-								</TableBodyCell>
-								<TableBodyCell
-									class="p-4 font-normal {setStatusColor(
-										task.status
-									)} dark:bg-opacity-25 dark:bg-${setStatusColor(task.status)} text-center"
-								>
-									{task.status.toUpperCase()}
-								</TableBodyCell>
-								<TableBodyCell class="p-4 text-center font-normal text-gray-500 dark:text-gray-400">
-									<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-										<div class="text-base font-semibold text-gray-900 dark:text-white">
-											{task.users.inspector_name.toUpperCase()}
-										</div>
-										<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
-											{task.users.email.toLowerCase()}
-										</div>
-									</div>
-								</TableBodyCell>
-								<TableBodyCell class="space-x-2 text-center">
-									<Button
-										size="sm"
-										class="gap-2 px-3"
-										on:click={() => {
-											selected_task = task;
-											if (task.ppir_forms) {
-												formView = generateFormView(selected_task);
-											}
-											toggle(Task);
-										}}
+							  <TableBodyCell on:click={() => selectTasks(task)} class="w-4 p-4">
+								<Checkbox checked={selectedTasks.includes(task)} />
+							  </TableBodyCell>
+							  <TableBodyCell class="flex items-center space-x-6 whitespace-nowrap p-4">
+								<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+								  {#if task.status == 'completed'}
+									<button
+									  on:click={() => generateFormView(task, true)}
+									  class="flex cursor-pointer text-base font-semibold text-gray-900 hover:!text-green-500 dark:text-white"
 									>
-										<EditOutline size="sm" /> Manage
-									</Button>
-									<Button
-										color="red"
-										size="sm"
-										class="gap-2 px-3"
-										on:click={() => {
-											selected_task = task;
-											toggle(Delete);
-										}}
-									>
-										<TrashBinSolid size="sm" /> Delete
-									</Button>
-								</TableBodyCell>
+									  <PrinterSolid class="mr-2"></PrinterSolid>
+									  {task.task_number == '' ? 'NOT SET' : task.task_number}
+									</button>
+								  {:else}
+									<div class="flex text-base font-semibold text-gray-900 dark:text-white">
+									  {task.task_number == '' ? 'NOT SET' : task.task_number}
+									</div>
+								  {/if}
+								  <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+									{task.task_type ?? 'ppir'}
+								  </div>
+								</div>
+							  </TableBodyCell>
+							  <TableBodyCell class="p-4 text-center font-normal text-gray-500 dark:text-gray-400">
+								{task.service_group}
+							  </TableBodyCell>
+							  <TableBodyCell
+								class="max-w-sm overflow-hidden truncate p-4 text-center text-base font-normal text-gray-500 dark:text-gray-400 xl:max-w-xs"
+							  >
+								{task.service_type}
+							  </TableBodyCell>
+							  <TableBodyCell class="p-4 text-center">
+								{task.attempt_count}
+							  </TableBodyCell>
+							  <TableBodyCell
+								class="p-4 font-normal {setPriorityColor(
+								  task.priority
+								)} dark:bg-opacity-25 dark:bg-${setPriorityColor(task.priority)} text-center"
+							  >
+								{task.priority.toUpperCase()}
+							  </TableBodyCell>
+							  <TableBodyCell
+								class="p-4 font-normal {setStatusColor(
+								  task.status
+								)} dark:bg-opacity-25 dark:bg-${setStatusColor(task.status)} text-center"
+							  >
+								{task.status.toUpperCase()}
+							  </TableBodyCell>
+							  <TableBodyCell class="p-4 text-center font-normal text-gray-500 dark:text-gray-400">
+								<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+								  <div class="text-base font-semibold text-gray-900 dark:text-white">
+									{task.users.inspector_name.toUpperCase()}
+								  </div>
+								  <div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+									{task.users.email.toLowerCase()}
+								  </div>
+								</div>
+							  </TableBodyCell>
+							  <TableBodyCell class="space-x-2 text-center">
+								<Button
+								  size="sm"
+								  class="gap-2 px-3"
+								  on:click={() => {
+									selected_task = task;
+									if (task.ppir_forms) {
+									  formView = generateFormView(selected_task);
+									}
+									toggle(Task);
+								  }}
+								>
+								  <EditOutline size="sm" /> Manage
+								</Button>
+								<Button
+								  color="red"
+								  size="sm"
+								  class="gap-2 px-3"
+								  on:click={() => {
+									selected_task = task;
+									toggle(Delete);
+								  }}
+								>
+								  <TrashBinSolid size="sm" /> Delete
+								</Button>
+							  </TableBodyCell>
 							</TableBodyRow>
-						{/each}
-					</TableBody>
+						  {/each}
+						{/if}
+					  </TableBody>
 				</Table>
 			</div>
 			<Pagination
