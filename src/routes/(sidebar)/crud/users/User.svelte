@@ -6,10 +6,6 @@
 	export let open: boolean = false;
 	export let data: any;
 
-	
-
-
-
 	$: ({ supabase } = data);
 
 	interface Region {
