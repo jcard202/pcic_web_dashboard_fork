@@ -33,6 +33,8 @@
 
 	let open: boolean = false;
 
+	let searchModalOpen = false;
+
 	let completeWarning: boolean = true;
 	let viewForm = false;
 
@@ -51,13 +53,17 @@
 
 	let selected_user: any = null;
 
-	const filterUsers = (event: any) => {
-		const query = event.target.value.toLowerCase();
+	const filterUsers = (event: Event) => {
+		const query = (event.target as HTMLInputElement).value.toLowerCase();
 		filteredUsers = users.filter((user) => user.inspector_name.toLowerCase().includes(query));
+	};
+	const handleUserSelect = (user: any) => {
+		selected_user = user;
+		searchModalOpen = false;
 	};
 	const handleUserChange = (event: Event) => {
 		const select = event.target as HTMLSelectElement;
-		selected_user = users.find((user) => user.id === select.value);
+		selected_user = users.find((user) => user.id === select.value) || null;
 	};
 	const handlePOChange = (event: any) => {
 		service_group = event.target.value;
@@ -198,17 +204,20 @@
 
 		<Label class="space-y-2">
 			<span>Assignee</span>
-			<Select
-				name="assignee"
-				class="border font-normal outline-none"
-				bind:value={selected_user}
-				required
-			>
-				<option value={null}>Select an assignee</option>
-				{#each users as user}
-					<option value={user}>{user.inspector_name}</option>
-				{/each}
-			</Select>
+			<div class="flex space-x-2">
+				<Select
+					name="assignee"
+					class="flex-grow border font-normal outline-none"
+					bind:value={selected_user}
+					required
+				>
+					<option value={null}>Select an assignee</option>
+					{#each users as user}
+						<option value={user}>{user.inspector_name}</option>
+					{/each}
+				</Select>
+				<Button on:click={() => (searchModalOpen = true)}>Search</Button>
+			</div>
 		</Label>
 
 		{#if selected_task}
@@ -325,4 +334,24 @@
 			<Button color="alternative" on:click={() => (open = false)}>Close</Button>
 		</div>
 	{/if}
+</Modal>
+
+<Modal bind:open={searchModalOpen} size="md">
+	<h3 class="mb-4 text-xl font-medium text-gray-900 dark:text-white">Search Users</h3>
+	<Input
+		name="userSearch"
+		class="mb-4 border font-normal outline-none"
+		placeholder="Search users..."
+		on:input={filterUsers}
+	/>
+	<div class="h-48 w-full overflow-y-scroll rounded-lg bg-black/[0.05] p-2">
+		{#each filteredUsers as user}
+			<Button on:click={() => handleUserSelect(user)} class="mb-2 w-full"
+				>{user.inspector_name}</Button
+			>
+		{/each}
+	</div>
+	<div class="mt-4 flex justify-end">
+		<Button color="alternative" on:click={() => (searchModalOpen = false)}>Close</Button>
+	</div>
 </Modal>
