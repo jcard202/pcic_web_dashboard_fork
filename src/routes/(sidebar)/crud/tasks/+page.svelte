@@ -124,6 +124,8 @@
 
 	let hasScannedFiles = false;
 
+	let syncError: string | null = null;
+
 	$: ({ supabase } = data);
 
 	onMount(async () => {
@@ -647,6 +649,7 @@
 
 	async function syncWithFTP() {
 		isSyncing = true;
+		syncError = null;
 		try {
 			// Iterate over each file
 			for (const file of Object.keys(scannedFiles)) {
@@ -836,19 +839,17 @@
 				}
 			}
 			if (Object.keys(scannedFiles).find((file) => scannedFiles[file].rows.length > 0) != null) {
-				showToast(
-					'Some files were not able to sync properly, please contact the developers',
-					'error'
-				);
+				syncError = 'Some files were not able to sync properly, please contact the developers';
+				showToast(syncError, 'error');
 			} else {
 				showToast('Sync completed successfully!', 'success');
 			}
 			hasScannedFiles = false;
 		} catch (error) {
-			// Type assertion
 			const message = error instanceof Error ? error.message : 'An unknown error occurred';
 			console.error('Sync failed:', message);
-			showToast('Sync failed: ' + message, 'error');
+			syncError = 'Sync failed: ' + message;
+			showToast(syncError, 'error');
 		} finally {
 			isSyncing = false;
 			currentlySyncing = null;
@@ -1496,6 +1497,12 @@
 				{/if}
 			</Button>
 		</div>
+		{#if syncError}
+			<div class="mt-4 text-center text-red-500">
+				<ExclamationCircleSolid class="mr-2 inline-block" />
+				{syncError}
+			</div>
+		{/if}
 	{:else}
 		<ExclamationCircleSolid class="mx-auto mb-4 mt-8 h-10 w-10 text-red-600" />
 
