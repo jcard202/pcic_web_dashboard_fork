@@ -158,10 +158,10 @@
 			return urlData.publicUrl;
 		} catch (error) {
 			console.error('Error in uploadPhoto function:', error);
-			throw error;
+			throw error; 
 		}
 	}
-
+	// Unused
 	async function formLoad(event: Event) {
 		const formData = new FormData(event.target as HTMLFormElement);
 		formData.append('email', data.email);
