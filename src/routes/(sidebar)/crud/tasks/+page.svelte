@@ -40,6 +40,7 @@
 	import Pagination from '../../../utils/dashboard/Pagination.svelte';
 	import jsPDF from 'jspdf';
 	import Papa from 'papaparse';
+	
 
 	let isSyncing = false;
 
@@ -121,9 +122,11 @@
 	};
 
 	const handleStatusChange = (status: string) => {
-		statusFilter = status;
-		sortFilterTasks();
-	};
+    statusFilter = status;
+    currentPage = 1; // Reset to page 1 when changing status filter
+    sortFilterTasks();
+};
+
 
 	const showToast = (message: string, type: 'success' | 'error') => {
 		toastProps = { show: true, message, type };
@@ -208,12 +211,16 @@
 					break;
 			}
 		}
+		currentPage = 1;
+
 	};
 
 	const filterBySearch = (event: any) => {
-		search = event.target.value.toLowerCase();
-		sortFilterTasks();
-	};
+    search = event.target.value.toLowerCase();
+    currentPage = 1; // Reset to page 1 when searching
+    sortFilterTasks();
+};
+
 
 	const setStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
@@ -1255,10 +1262,13 @@
 						{#if filteredTasks.length === 0}
 							<tr>
 								<td colspan="9" class="text-center py-8">
+									<img src="/images/empty-box.png" alt="No tasks available" class="mx-auto mb-4 mt-20" style="width: 250px; height: auto;" />
 									<p class="text-gray-500 dark:text-gray-400">No tasks available</p>
 								</td>
 							</tr>
 						{:else}
+					
+					
 							{#each filteredTasks.slice((currentPage - 1) * maxPageItems, (currentPage - 1) * maxPageItems + maxPageItems) as task}
 								<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
 							  <TableBodyCell on:click={() => selectTasks(task)} class="w-4 p-4">
@@ -1354,11 +1364,11 @@
 			<!-- Pagination and buttons below the table items -->
 			<div class="bg-gray-800 p-4">
 				<Pagination
-					bind:currentPage
-					totalPages={Math.ceil(filteredTasks.length / maxPageItems)}
-					pageSize={maxPageItems}
-					totalItems={filteredTasks.length}
-				></Pagination>
+    bind:currentPage
+    totalPages={Math.ceil(filteredTasks.length / maxPageItems)}
+    pageSize={maxPageItems}
+    totalItems={filteredTasks.length}
+></Pagination>
 		
 			</div>
 		</div>
