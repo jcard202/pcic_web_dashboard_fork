@@ -1362,7 +1362,7 @@
 				</Table>
 			</div>
 			<!-- Pagination and buttons below the table items -->
-			<div class="bg-gray-800 p-4">
+			<div>
 				<Pagination
     bind:currentPage
     totalPages={Math.ceil(filteredTasks.length / maxPageItems)}

@@ -314,10 +314,12 @@
 		</div>
 	</div>
 		{:else}
-			<Table>
-				<TableHead
-					class="border-y border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700"
-				>
+		<div class="flex flex-col h-full" style="height: 45rem;"> <!-- Adjust height to fit your design -->
+			<!-- Table container with a fixed height -->
+			<div class="flex-grow overflow-x-auto">
+				<Table class="select-none h-full">
+				<TableHead class="sticky top-0 border-y border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
+
 					<TableHeadCell class="w-4 p-4"></TableHeadCell>
 					{#each ['Name', 'Status', 'Date Added', 'Role', 'Region', 'Actions'] as title, index}
 						<TableHeadCell
@@ -329,10 +331,10 @@
 						</TableHeadCell>
 					{/each}
 				</TableHead>
-				<TableBody>
+				<TableBody class="h-full" style="max-height: 40rem; overflow-y: auto;">
 					{#each paginatedUsers as user}
-						<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
-							<TableBodyCell class="w-4 p-4"></TableBodyCell>
+					<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
+						<TableBodyCell class="w-4 p-4"></TableBodyCell>
 							<TableBodyCell class="mr-12 flex items-center space-x-6 whitespace-nowrap p-4">
 								<Avatar
 									src={user.photo_url || imagesPath('default-avatar.png', 'users')}
@@ -392,12 +394,14 @@
 					{/each}
 				</TableBody>
 			</Table>
-
+		</div>
+		<!-- Pagination and buttons below the table items -->
+		<div>
 			<div class="mt-4 flex justify-between">
 				<Button color="blue" on:click={handlePreviousPage} disabled={currentPage === 1}>
 					Previous
 				</Button>
-				<span>Page {currentPage} of {Math.ceil(filteredUsers.length / itemsPerPage)}</span>
+				<span class="text-gray-400">Page {currentPage} of {Math.ceil(filteredUsers.length / itemsPerPage)}</span>
 				<Button
 					color="blue"
 					on:click={handleNextPage}
@@ -406,8 +410,11 @@
 					Next
 				</Button>
 			</div>
-		{/if}
+		</div>
 	</div>
+{/if}
+
+</div>
 </main>
 
 <User
