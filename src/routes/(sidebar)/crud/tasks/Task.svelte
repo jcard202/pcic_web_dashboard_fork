@@ -351,7 +351,4 @@
 			>
 		{/each}
 	</div>
-	<div class="mt-4 flex justify-end">
-		<Button color="alternative" on:click={() => (searchModalOpen = false)}>Close</Button>
-	</div>
 </Modal>
