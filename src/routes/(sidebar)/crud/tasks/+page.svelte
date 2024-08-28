@@ -91,6 +91,26 @@
 		type: 'success'
 	};
 
+	const regionMapping = {
+		PO1: 'Region 1',
+		PO2: 'Region 2',
+		PO3: 'Region 3',
+		PO4A: 'Region 4A',
+		PO4B: 'Region 4B',
+		PO5: 'Region 5',
+		PO6: 'Region 6',
+		PO7: 'Region 7',
+		PO8: 'Region 8',
+		PO9: 'Region 9',
+		PO10: 'Region 10',
+		PO11: 'Region 11',
+		PO12: 'Region 12',
+		PO13: 'Region 13',
+		P014: 'NCR',
+		P015: 'CAR',
+		P016: 'BARMM'
+	};
+
 	let maxPageItems = 10;
 	let currentPage = 1;
 
@@ -101,6 +121,10 @@
 	let isScanning = false;
 
 	let currentlySyncing: any = null;
+
+	let hasScannedFiles = false;
+
+	let syncError: string | null = null;
 
 	$: ({ supabase } = data);
 
@@ -612,6 +636,7 @@
 					scannedFiles[file.name]['scanning'] = false;
 				}
 			}
+			hasScannedFiles = Object.keys(scannedFiles).length > 0;
 		} catch (error) {
 			// Type assertion
 			const message = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -624,6 +649,7 @@
 
 	async function syncWithFTP() {
 		isSyncing = true;
+		syncError = null;
 		try {
 			// Iterate over each file
 			for (const file of Object.keys(scannedFiles)) {
@@ -813,18 +839,17 @@
 				}
 			}
 			if (Object.keys(scannedFiles).find((file) => scannedFiles[file].rows.length > 0) != null) {
-				showToast(
-					'Some files were not able to sync properly, please contact the developers',
-					'error'
-				);
+				syncError = 'Some files were not able to sync properly, please contact the developers';
+				showToast(syncError, 'error');
 			} else {
 				showToast('Sync completed successfully!', 'success');
 			}
+			hasScannedFiles = false;
 		} catch (error) {
-			// Type assertion
 			const message = error instanceof Error ? error.message : 'An unknown error occurred';
 			console.error('Sync failed:', message);
-			showToast('Sync failed: ' + message, 'error');
+			syncError = 'Sync failed: ' + message;
+			showToast(syncError, 'error');
 		} finally {
 			isSyncing = false;
 			currentlySyncing = null;
@@ -1453,7 +1478,7 @@
 			<Button
 				color="red"
 				class="mr-2"
-				disabled={isScanning || isSyncing}
+				disabled={isScanning || isSyncing || !hasScannedFiles}
 				on:click={async () => {
 					await syncWithFTP();
 				}}
@@ -1465,10 +1490,11 @@
 				{/if}
 			</Button>
 			<Button
-				color="red"
+				color="green"
 				class="mr-2"
 				disabled={isScanning || isSyncing}
 				on:click={async () => {
+					hasScannedFiles = false;
 					await scanFTP();
 				}}
 			>
@@ -1479,6 +1505,12 @@
 				{/if}
 			</Button>
 		</div>
+		{#if syncError}
+			<div class="mt-4 text-center text-red-500">
+				<ExclamationCircleSolid class="mr-2 inline-block" />
+				{syncError}
+			</div>
+		{/if}
 	{:else}
 		<ExclamationCircleSolid class="mx-auto mb-4 mt-8 h-10 w-10 text-red-600" />
 

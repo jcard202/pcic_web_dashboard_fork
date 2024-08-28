@@ -4,8 +4,11 @@
 	import Alert from '../../../utils/widgets/alert.svelte';
 
 	export let open: boolean = false;
-	export let current_user: any = null;
 	export let data: any;
+
+	
+
+
 
 	$: ({ supabase } = data);
 
@@ -24,6 +27,7 @@
 	let photoFile: File | null = null;
 	let isAuthenticated = false;
 
+
 	const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 	const DEFAULT_PROFILE_PIC =
 		'https://htmlstream.com/preview/unify-v2.6/assets/img-temp/400x450/img5.jpg';
@@ -33,8 +37,23 @@
 	let alertType: 'success' | 'error' | 'warning' | 'info' = 'info';
 
 	export let selectedRegionId: string | null;
+	export let current_user: any = null;
+  	let selectedRole = '';
+
+	  $: {
+    if (current_user) {
+      selectedRole = current_user.role;
+    } else {
+      selectedRole = '';
+    }
+  }
+
+  let loggedInUser: any = null;
+  
+  let showErrorModal = false;
 
 	onMount(async () => {
+	
 		const {
 			data: { user },
 			error
@@ -47,7 +66,42 @@
 		}
 		await fetchRegions();
 		isLoading = false;
+
+		if (user) {
+      isAuthenticated = true;
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+      } else {
+        loggedInUser = userData;
+      }
+    }
 	});
+
+	function getAllowedRoles() {
+    if (!loggedInUser) return [];
+    
+    switch (loggedInUser.role) {
+      case 'National_Admin':
+        return ['Agent', 'Regional_Admin', 'National_Admin'];
+      case 'Regional_Admin':
+        return ['Agent'];
+      default:
+        return [];
+    }
+  }
+
+  function handleRoleChange(event: { target: { value: string; }; }) {
+    selectedRole = event.target.value;
+    if (current_user) {
+      current_user.role = selectedRole;
+    }
+  }
 
 	async function fetchRegions() {
 		try {
@@ -266,10 +320,22 @@
 			open = false;
 			showAlertMessage('User created successfully.', 'success');
 		} catch (error) {
-			console.error('Error creating user:', error);
-			errorMessage = `Error: ${error instanceof Error ? error.message : String(error)}`;
-			showAlertMessage(`Failed to create user. Please try again later.`, 'error');
+			handleError(error);
+
 		}
+	}
+
+	function closeErrorModal() {
+    showErrorModal = false;
+  }
+
+  let hasError = false;
+
+
+  function handleError(error: any) {
+		console.error('Error creating user:', error);
+		errorMessage = "Failed to create user. Please try again later.";
+		hasError = true;
 	}
 
 	function handleFileInput(event: Event) {
@@ -296,18 +362,33 @@
 			showAlert = false;
 		}, 5000); // Hide alert after 5 seconds
 	}
+
+	function restrictToNumbers(event: { target: any; }) {
+    const input = event.target;
+    input.value = input.value.replace(/[^0-9]/g, '');
+    
+    // Optionally, limit the length to 11 digits (adjust as needed)
+    if (input.value.length > 11) {
+      input.value = input.value.slice(0, 11);
+    }
+  }
+
+  function refreshPage() {
+    showErrorModal = false;
+    window.location.reload();
+  }
 </script>
 
 <Modal bind:open title={current_user ? 'Edit user' : 'Add new user'} size="md" class="m-4">
 	<div class="space-y-6 p-0">
-		{#if showAlert}
-			<Alert message={alertMessage} type={alertType} />
-		{/if}
-
-		{#if isLoading}
+		{#if hasError}
+			<div class="text-center">
+				<img src="/no-user.png" alt="Error" class="mx-auto mb-4 h-1/2 w-1/2" />
+				<Alert type="error" message={errorMessage} />
+				<Button class="mt-4" color="red" on:click={refreshPage}>Try Again</Button>
+			</div>
+		{:else if isLoading}
 			<p>Loading regions...</p>
-		{:else if errorMessage}
-			<p class="text-red-500">{errorMessage}</p>
 		{:else}
 			<form action="#" on:submit={handleSubmit}>
 				<div class="grid grid-cols-6 gap-6">
@@ -354,21 +435,32 @@
 					<Label class="col-span-6 space-y-2 sm:col-span-3">
 						<span>Mobile Number</span>
 						<Input
-							name="mobile_number"
-							type="tel"
-							class="border outline-none"
-							placeholder="e.g. 09472728018"
-							value={current_user?.mobile_number}
-							required
+						  name="mobile_number"
+						  type="tel"
+						  class="border outline-none"
+						  placeholder="e.g. 09472728018"
+						  value={current_user?.mobile_number}
+						  required
+						  pattern="[0-9]*"
+						  inputmode="numeric"
+						  on:input={restrictToNumbers}
+						  maxlength="11"
 						/>
 					</Label>
 					<Label class="col-span-6 space-y-2 sm:col-span-3">
 						<span>Role</span>
-						<Select name="role" class="mt-2" value={current_user?.role} required>
-							<option value="">Select a role</option>
-							{#each allowedRoles as role}
-								<option value={role}>{role}</option>
-							{/each}
+						<Select 
+						  name="role" 
+						  class="mt-2" 
+						  bind:value={selectedRole}
+						  on:change={handleRoleChange}
+						  required
+						  disabled={!getAllowedRoles().length}
+						>
+						  <option value="">Select a role</option>
+						  {#each getAllowedRoles() as role}
+							<option value={role}>{role.replace('_', ' ')}</option>
+						  {/each}
 						</Select>
 					</Label>
 					<Label class="col-span-6 space-y-2">
