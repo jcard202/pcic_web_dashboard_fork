@@ -91,26 +91,6 @@
 		type: 'success'
 	};
 
-	const regionMapping = {
-		PO1: 'Region 1',
-		PO2: 'Region 2',
-		PO3: 'Region 3',
-		PO4A: 'Region 4A',
-		PO4B: 'Region 4B',
-		PO5: 'Region 5',
-		PO6: 'Region 6',
-		PO7: 'Region 7',
-		PO8: 'Region 8',
-		PO9: 'Region 9',
-		PO10: 'Region 10',
-		PO11: 'Region 11',
-		PO12: 'Region 12',
-		PO13: 'Region 13',
-		P014: 'NCR',
-		P015: 'CAR',
-		P016: 'BARMM'
-	};
-
 	let maxPageItems = 10;
 	let currentPage = 1;
 
@@ -121,10 +101,6 @@
 	let isScanning = false;
 
 	let currentlySyncing: any = null;
-
-	let hasScannedFiles = false;
-
-	let syncError: string | null = null;
 
 	$: ({ supabase } = data);
 
@@ -636,7 +612,6 @@
 					scannedFiles[file.name]['scanning'] = false;
 				}
 			}
-			hasScannedFiles = Object.keys(scannedFiles).length > 0;
 		} catch (error) {
 			// Type assertion
 			const message = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -649,7 +624,6 @@
 
 	async function syncWithFTP() {
 		isSyncing = true;
-		syncError = null;
 		try {
 			// Iterate over each file
 			for (const file of Object.keys(scannedFiles)) {
@@ -839,17 +813,18 @@
 				}
 			}
 			if (Object.keys(scannedFiles).find((file) => scannedFiles[file].rows.length > 0) != null) {
-				syncError = 'Some files were not able to sync properly, please contact the developers';
-				showToast(syncError, 'error');
+				showToast(
+					'Some files were not able to sync properly, please contact the developers',
+					'error'
+				);
 			} else {
 				showToast('Sync completed successfully!', 'success');
 			}
-			hasScannedFiles = false;
 		} catch (error) {
+			// Type assertion
 			const message = error instanceof Error ? error.message : 'An unknown error occurred';
 			console.error('Sync failed:', message);
-			syncError = 'Sync failed: ' + message;
-			showToast(syncError, 'error');
+			showToast('Sync failed: ' + message, 'error');
 		} finally {
 			isSyncing = false;
 			currentlySyncing = null;
@@ -1097,6 +1072,7 @@
 			isSyncing = false;
 		}
 	}
+
 </script>
 
 <MetaTag {path} {description} {title} {subtitle} />
@@ -1209,15 +1185,16 @@
 
 		<!-- Conditional Rendering for Loading, No Tasks, or Task Table -->
 		{#if isLoading}
-			<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
-				<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3" />
-			</div>
-		{:else}
-			<div class="overflow-x-auto">
-				<Table class="select-none">
-					<TableHead
-						class="sticky top-0 border-y border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700"
-					>
+		<div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50">
+			<img src="/images/pcic-spinner.gif" alt="Loading..." class="h-1/2 w-1/3" />
+		</div>
+	{:else}
+		<div class="flex flex-col h-full" style="height: 45rem;"> <!-- Adjust height to fit your design -->
+			<!-- Table container with a fixed height -->
+			<div class="flex-grow overflow-x-auto">
+				<Table class="select-none h-full">
+					<TableHead class="sticky top-0 border-y border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-700">
+	
 						<TableHeadCell class="w-4 p-4">
 							<Checkbox
 								on:click={selectAllTasks}
@@ -1274,16 +1251,16 @@
 							</TableHeadCell>
 						{/each}
 					</TableHead>
-					<TableBody>
+					<TableBody class="h-full" style="max-height: 40rem; overflow-y: auto;">
 						{#if filteredTasks.length === 0}
-						  <tr>
-							<td colspan="9" class="text-center py-8">
-							  <p class="text-gray-500 dark:text-gray-400">No tasks available</p>
-							</td>
-						  </tr>
+							<tr>
+								<td colspan="9" class="text-center py-8">
+									<p class="text-gray-500 dark:text-gray-400">No tasks available</p>
+								</td>
+							</tr>
 						{:else}
-						  {#each filteredTasks.slice((currentPage - 1) * maxPageItems, (currentPage - 1) * maxPageItems + maxPageItems) as task}
-							<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
+							{#each filteredTasks.slice((currentPage - 1) * maxPageItems, (currentPage - 1) * maxPageItems + maxPageItems) as task}
+								<TableBodyRow class="text-base hover:bg-gray-100 dark:hover:bg-gray-800">
 							  <TableBodyCell on:click={() => selectTasks(task)} class="w-4 p-4">
 								<Checkbox checked={selectedTasks.includes(task)} />
 							  </TableBodyCell>
@@ -1369,18 +1346,24 @@
 								</Button>
 							  </TableBodyCell>
 							</TableBodyRow>
-						  {/each}
+							{/each}
 						{/if}
-					  </TableBody>
+					</TableBody>
 				</Table>
 			</div>
-			<Pagination
-				bind:currentPage
-				totalPages={Math.ceil(filteredTasks.length / maxPageItems)}
-				pageSize={maxPageItems}
-				totalItems={filteredTasks.length}
-			></Pagination>
-		{/if}
+			<!-- Pagination and buttons below the table items -->
+			<div class="bg-gray-800 p-4">
+				<Pagination
+					bind:currentPage
+					totalPages={Math.ceil(filteredTasks.length / maxPageItems)}
+					pageSize={maxPageItems}
+					totalItems={filteredTasks.length}
+				></Pagination>
+		
+			</div>
+		</div>
+	{/if}
+	
 	</div>
 </main>
 
@@ -1478,7 +1461,7 @@
 			<Button
 				color="red"
 				class="mr-2"
-				disabled={isScanning || isSyncing || !hasScannedFiles}
+				disabled={isScanning || isSyncing}
 				on:click={async () => {
 					await syncWithFTP();
 				}}
@@ -1490,11 +1473,10 @@
 				{/if}
 			</Button>
 			<Button
-				color="green"
+				color="red"
 				class="mr-2"
 				disabled={isScanning || isSyncing}
 				on:click={async () => {
-					hasScannedFiles = false;
 					await scanFTP();
 				}}
 			>
@@ -1505,12 +1487,6 @@
 				{/if}
 			</Button>
 		</div>
-		{#if syncError}
-			<div class="mt-4 text-center text-red-500">
-				<ExclamationCircleSolid class="mr-2 inline-block" />
-				{syncError}
-			</div>
-		{/if}
 	{:else}
 		<ExclamationCircleSolid class="mx-auto mb-4 mt-8 h-10 w-10 text-red-600" />
 
